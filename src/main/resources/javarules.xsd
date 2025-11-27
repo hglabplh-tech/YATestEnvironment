@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:simpleType name="jdatatypes">
+        <xs:restriction>
+            <xs:enumeration value="INTEGER"/>
+            <xs:enumeration value="LONG"/>
+            <xs:enumeration value="FLOAT"/>
+            <xs:enumeration value="DOUBLE"/>
+            <xs:enumeration value="BIGINTEGER"/>
+            <xs:enumeration value="STRING"/>
+            <xs:enumeration value="CHAR"/>
+            <xs:enumeration value="ARRAY"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+        <xs:complexType name="parameter" id="parameter">
+            <xs:sequence>
+               <xs:element name="name" type="xs:string"/>
+               <xs:element name="index" type="xs:integer"/>
+                <xs:element name="datatype" type="jdatatypes"/>
+                <xs:element name="rule" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+
+    <xs:complexType name="meth" id="meths">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="mparameters" type="parameter" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="returnRule" type="xs:string"/>
+            <xs:element name="country" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="class">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="methdef" type="meth" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
+
+</xs:schema>
