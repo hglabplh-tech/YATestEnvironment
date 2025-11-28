@@ -14,7 +14,24 @@
                    [:roles
                     [:role "developer"]
                     [:role "maintainer"]]]])
-  :repositories [["jitpack" "https://jitpack.io"]]
+  :repositories [["java.net" "https://download.java.net/maven/2"]
+                 ["jitpack" "https://jitpack.io"]
+                 [ "UniHildes"  "https://projects.sse.uni-hildesheim.de/qm/maven"]
+                 ["sonatype" {:url "https://oss.sonatype.org/content/repositories/releases"
+                              ;; If a repository contains releases only setting
+                              ;; :snapshots to false will speed up dependencies.
+                              :snapshots false
+                              ;; Disable signing releases deployed to this repo.
+                              ;; (Not recommended.)
+                              :sign-releases false
+                              ;; You can also set the policies for how to handle
+                              ;; :checksum failures to :fail, :warn, or :ignore.
+                              :checksum :fail
+                              ;; How often should this repository be checked for
+                              ;; snapshot updates? (:daily, :always, or :never)
+                              :update :always
+                              ;; You can also apply them to releases only:
+                              :releases {:checksum :fail :update :always}}]]
   :dependencies [[org.clojure/clojure "1.12.3"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [lein-javadoc "0.3.0"]
@@ -24,23 +41,39 @@
                  [com.github.technomancy/leiningen "2.11.2"]
                  [org.reflections/reflections "0.10.2"]
                  [org.clojure/data.json "2.5.1"]
-                 [org.junit.jupiter/junit-jupiter-engine "5.9.1"]]
+                 [org.junit.jupiter/junit-jupiter-engine "5.9.1"]
+                 [lein-asciidoctorj/lein-asciidoctorj "0.0.5"]
+                 ;; https://mvnrepository.com/artifact/jdk.tools/jdk.tools
+                 [jdk.tools/jdk.tools "1.7"]
+                ]
 
 
   :user {:signing {:gpg-key true
-                   :ssh-key "~/.ssh/id_rsa"}}
+                   :ssh-key "~/.ssh/id_rsa"
+                    }}
+
+
   :plugins [[lein-codox "0.10.8"]
             [lein-cljsbuild "1.0.1"]
             [lein-ubersource "0.1.1"]
-            [lein-javadoc "0.3.0"]]
+            [lein-javadoc "0.3.0"]
+            [lein-javac-resources "0.1.1"]]
+  :omit-source true  ; excludes .java and .clj files from the generated JAR file
+            ; you may not want to set this unless all code is AOT-compiled
+  :hooks [leiningen.javac-resources]
 
   :javac-options ["-target" "17" "-source" "17" "-Xlint:-options"]
+
+  :jvm-opts ["-Dclojure.compiler.disable-locals-clearing=false"
+             "-Dclojure.compiler.elide-meta=[:doc :file :line :added]"
+             ; notice the array is not quoted like it would be if you passed it directly on the command line.
+             "-Dclojure.compiler.direct-linking=true"]
 
 
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]                      ; Java source is stored separately.
   :test-paths ["src/test/clj" "src/test/java"]
-  :resource-paths ["src/test/resources"]
+  :resource-paths ["src/test/resources" "lib/tools.jar"]
 
   :aot :all
 
@@ -51,7 +84,7 @@
                           "java-tests-compile" "javac," "codox.main/generate-docs"]
             "all-tests"  ["test," "java-tests"]}
 
-  :uberjar {:prep-tasks ["clean" "javac" "codox" "compile"]
+  :uberjar {:prep-tasks ["clean" "javac" "codox" "compile" "javadoc"]
             :aot        :all}
   :classifiers [["sources" {:source-paths      ^:replace ["src/main/clojure"]
                             :java-source-paths ^:replace ["src/main/java"]
@@ -72,8 +105,10 @@
                        :metadata    {:doc/format :markdown}
                        :themes      [:rdash]
                        :output-path "docs"}}
-  :javadoc-opts {
-                 :package-names ["io.github.hglabplh-tech"]}
+  :javadoc-opts {:package-names ["io.github.hglabplh_tech.reflect.clojure.api",
+                 "io.github.hglabplh-tech.tests"]
+
+                 }
 
 
   :deploy-repositories [["clojars" {:url "https://repo.clojars.org/"
