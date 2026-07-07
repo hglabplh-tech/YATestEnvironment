@@ -1,4 +1,6 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.packages
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.packages
   (:import (java.util Set)
            (java.lang Package)
            (org.reflections Reflections)

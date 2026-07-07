@@ -1,6 +1,10 @@
+/*
+ * Copyright (c) 2026 Harald Glab-Plhak
+ */
+
 package io.github.hglabplh_tech.reflect.clojure.api.example.annot_rec;
 
-public abstract class AnnotTestBase implements  HumanResource {
+public abstract class AnnotTestBase implements HumanResource {
 
     @Override
     public String getEmployeeName(String team, EmployeeType type) {

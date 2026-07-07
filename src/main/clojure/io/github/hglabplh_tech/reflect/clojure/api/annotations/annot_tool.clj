@@ -1,5 +1,5 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.annotations.annot-tool
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.reflect-annotation :as refla])
+(ns io.github.hglabplh-tech.reflect.clojure.api.annotations.annot-tool
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.reflect-annotation :as refla])
   (:import (io.github.hglabplh_tech.reflect.clojure.api.annotations  AnnotationTool)))
 
 (defn get-annotation-info

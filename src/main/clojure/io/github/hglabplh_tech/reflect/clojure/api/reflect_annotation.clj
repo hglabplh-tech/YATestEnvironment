@@ -1,4 +1,6 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.reflect-annotation
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.reflect-annotation
   (:import (java.lang Class)
            (java.lang.reflect Constructor Field Method)
            (io.github.hglabplh_tech.reflect.clojure.api.utils AnnotationsUtil)))

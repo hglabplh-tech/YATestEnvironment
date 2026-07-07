@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2026 Harald Glab-Plhak
+ */
+
 package io.github.hglabplh_tech.reflect.clojure.api.example.annot_rec;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-public class AnnotTestClass extends AnnotTestBase implements  HumanResource {
+public class AnnotTestClass extends AnnotTestBase implements HumanResource {
 
     @CheckForNull
     private final Category theCategory;
@@ -26,13 +30,13 @@ public class AnnotTestClass extends AnnotTestBase implements  HumanResource {
         return theCategory;
     }
 
-    @TransportSpec(transportType = TransportSpec.TransportType.PIPE,
+    @io.github.hglabplh_tech.reflect.clojure.api.example.annot_rec.TransportSpec(transportType = io.github.hglabplh_tech.reflect.clojure.api.example.annot_rec.TransportSpec.TransportType.PIPE,
     sourceType = Category.class, targetType = StringBuilder.class)
     public EmployeeType emplType() {
         return emplType;
     }
 
-    @TransportSpec(transportType = TransportSpec.TransportType.HTTP)
+    @io.github.hglabplh_tech.reflect.clojure.api.example.annot_rec.TransportSpec(transportType = TransportSpec.TransportType.HTTP)
     public String name() {
         return name;
     }

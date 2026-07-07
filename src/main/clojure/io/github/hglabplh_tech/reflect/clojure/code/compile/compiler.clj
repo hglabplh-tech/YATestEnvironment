@@ -1,14 +1,27 @@
-(ns io.github.hglabplh_tech.reflect.clojure.code.compile.compiler
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.packages :as pkg]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-class :refer :all]
-            [io.github.hglabplh_tech.reflect.clojure.api.convert-java-cloj :as conv]
-            [io.github.hglabplh_tech.datacode.gen.yaml.yamlgenerator :as ygen]
-            [io.github.hglabplh_tech.datacode.gen.xml.xmlgenerator :as xgen]
-            [io.github.hglabplh_tech.datacode.gen.json.jsongenerator :as jgen])
+(ns io.github.hglabplh-tech.reflect.clojure.code.compile.compiler
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.packages :as pkg]
+            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.api.convert-java-cloj :as conv]
+            [io.github.hglabplh_tech.reflect.clojure.code.generate.generator :as gen]
+            [io.github.hglabplh_tech.reflect.clojure.code.generate.yaml.yamlgenerator :as ygen]
+            [io.github.hglabplh_tech.reflect.clojure.code.generate.xml.xmlgenerator :as xgen]
+            [io.github.hglabplh_tech.reflect.clojure.code.generate.json.jsongenerator :as jgen]
+            [io.github.hglabplh_tech.reflect.clojure.code.generate.codegen.jgenerator :as cgen])
   (:import (clojure.lang Symbol)
            (java.lang Class)
            (io.github.hglabplh_tech.reflect.clojure.api.utils ClassUtil)))
 
+(defn- hooks-for-format [out-format]
+  (case (keyword out-format)
+    :json jgen/generator
+    :xml xgen/generator
+    :yaml ygen/generator
+    :yml ygen/generator
+    :java cgen/generator
+    :codegen cgen/generator
+    :jcode cgen/generator
+    (throw (IllegalArgumentException.
+            (str "unsupported output format: " out-format)))))
 
 (defn compile-class
   "The class to compile is given by it's canonical class name"
@@ -29,8 +42,10 @@
 ^Symbol out-format]
 (let [clazz (Class/forName canonical-name)
       clazz-util (ClassUtil. clazz)
-      comp-res (conv/retrieve-class-info clazz-util)]
-  ))
+      comp-res (conv/retrieve-class-info clazz-util)
+      hooks (hooks-for-format out-format)]
+  (gen/register-hooks! hooks)
+  (gen/generate comp-res)))
 
 
 (defn search-compile-class

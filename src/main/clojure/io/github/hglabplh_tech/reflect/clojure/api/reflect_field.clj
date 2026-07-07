@@ -1,5 +1,7 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.reflect-field
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.reflect-types :as rtypes])
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.reflect-field
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.reflect-types :as rtypes])
   (:import (io.github.hglabplh_tech.reflect.clojure.api.utils FieldsUtil)))
 
 (defn get-field-name

@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.clojure.code.ast-table-defs
+(ns io.github.hglabplh-tech.reflect.clojure.code.ast-table-defs
   (:import (java.lang.reflect Type
                               TypeVariable
                               GenericArrayType

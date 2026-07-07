@@ -1,11 +1,11 @@
+/*
+ * Copyright (c) 2026 Harald Glab-Plhak
+ */
+
 package io.github.hglabplh_tech.reflect.clojure.api.app_exam;
 
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
 public enum AppConfigFields {
     HOST("Host", FieldType.STRING_TYPE, "localhost"),
@@ -43,7 +43,7 @@ public enum AppConfigFields {
     public enum FieldType {
         LONG_TYPE("long", Long.TYPE),
         INT_TYPE("integer", Integer.TYPE),
-        URL_TYPE("URL", java.net.URL.class),
+        URL_TYPE("URL", URL.class),
         STRING_TYPE("string", String.class),;
 
         private final String typeName;

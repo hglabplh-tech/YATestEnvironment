@@ -1,6 +1,8 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.reflect-meths-ctors
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.reflect-types :as rtypes]
-            [io.github.hglabplh_tech.reflect.clojure.general.cloj-java-represent :as represent])
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.reflect-meths-ctors
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.reflect-types :as rtypes]
+            [io.github.hglabplh-tech.reflect.clojure.general.cloj-java-represent :as represent])
   (:import (io.github.hglabplh_tech.reflect.clojure.api.utils MethsCtorsUtil)))
 
 (defn get-ctor-name

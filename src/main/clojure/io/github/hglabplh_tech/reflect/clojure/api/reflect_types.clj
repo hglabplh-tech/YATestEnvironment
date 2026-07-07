@@ -1,4 +1,6 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.reflect-types
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.reflect-types
   (:import (io.github.hglabplh_tech.reflect.clojure.api.utils ClassUtil FieldsUtil MethsCtorsUtil)
            (java.lang.reflect Constructor Method Modifier AnnotatedType)))
 

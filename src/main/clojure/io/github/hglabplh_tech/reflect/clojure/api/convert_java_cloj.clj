@@ -1,12 +1,14 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.convert-java-cloj
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.reflect-annotation :as annot]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-class :as rcl]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-field :as fields]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-meths-ctors :as meths]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-special-forms :as er-refl]
-            [io.github.hglabplh_tech.reflect.clojure.general.cloj-java-represent :as represent]))
+;; Copyright (c) 2026 Harald Glab-Plhak
 
-(declare retrieve-class-info)
+(ns io.github.hglabplh-tech.reflect.clojure.api.convert-java-cloj
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.reflect-annotation :as annot]
+            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as rcl]
+            [io.github.hglabplh-tech.reflect.clojure.api.reflect-field :as fields]
+            [io.github.hglabplh-tech.reflect.clojure.api.reflect-meths-ctors :as meths]
+            [io.github.hglabplh-tech.reflect.clojure.api.reflect-special-forms :as er-refl]
+            [io.github.hglabplh-tech.reflect.clojure.general.cloj-java-represent :as represent]))
+
+(declare retrive-class-info)
 
 (defn retrieve-ctor-info
   "retrieve the information about the constructor of a class like
@@ -90,7 +92,9 @@
         enclosing-ctor (rcl/get-enclosing-constructor clazz-util)
         enclosing-meth (rcl/get-enclosing-method clazz-util)
         enum-specs (er-refl/analyze-enum (rcl/get-the-class clazz-util))
-        record-specs (er-refl/analyze-record (rcl/get-the-class clazz-util))]
+        record-specs (er-refl/analyze-record (rcl/get-the-class clazz-util))
+        lambda-specs (er-refl/analyze-lambda (rcl/get-the-class clazz-util))
+        switch-specs (er-refl/analyze-switch (rcl/get-the-class clazz-util))]
     {:class
      {:obj-name              class-name
       :attributes            attributes
@@ -102,7 +106,9 @@
       :enclosing-constructor enclosing-ctor
       :enclosing-method      enclosing-meth
       :enum-specs            enum-specs
-      :record-specs          record-specs}
+      :record-specs          record-specs
+      :lambda-specs          lambda-specs
+      :switch-specs          switch-specs}
      }
     ))
 (defn retrieve-class-body [constructors class-fields class-methods inner-classes]
@@ -110,7 +116,7 @@
         field-infos (map retrieve-field-info class-fields)
         method-infos (map retrieve-method-info class-methods)
         class-infos (map (fn [clazz]
-                           (retrieve-class-info (rcl/get-class-util-by-class clazz)))
+                           (retrive-class-info (rcl/get-class-util-by-class clazz)))
                          inner-classes)]
 
     {:body {:ctor-infos   ctor-infos
@@ -120,7 +126,7 @@
     ))
 
 
-(defn retrieve-class-info [clazz-util]
+(defn retrive-class-info [clazz-util]
   (let [class-def (retrieve-direct-class-parameters clazz-util)
         class-body (retrieve-class-body (rcl/get-all-ctors clazz-util)
                                         (rcl/get-all-fields clazz-util)
@@ -131,3 +137,8 @@
       :cl-body
       class-body}})
   )
+
+(defn retrieve-class-info
+  "Compatibility alias for the original misspelled retrive-class-info function."
+  [clazz-util]
+  (retrive-class-info clazz-util))

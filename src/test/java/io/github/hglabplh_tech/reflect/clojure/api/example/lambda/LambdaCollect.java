@@ -1,16 +1,14 @@
+/*
+ * Copyright (c) 2026 Harald Glab-Plhak
+ */
+
 package io.github.hglabplh_tech.reflect.clojure.api.example.lambda;
 
-import org.codehaus.plexus.util.cli.CommandLineUtils;
-
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 public class LambdaCollect {
     private static Function supply;

@@ -1,7 +1,11 @@
-(ns io.github.hglabplh_tech.reflect.clojure.api.reflect-special-forms
-  (:require [io.github.hglabplh_tech.reflect.clojure.api.reflect-types :as types])
+;; Copyright (c) 2026 Harald Glab-Plhak
+
+(ns io.github.hglabplh-tech.reflect.clojure.api.reflect-special-forms
+  (:require [io.github.hglabplh-tech.reflect.clojure.api.reflect-types :as types])
   (:import (io.github.hglabplh_tech.reflect.clojure.api.utils
-             SpecialFormsUtil)
+             LambdaUtil
+             SpecialFormsUtil
+             SwitchUtil)
            (java.lang.reflect  AnnotatedType)           ))
 
 (declare handle-record
@@ -37,6 +41,16 @@
    :static true}
   [clazz]
   (let [lambda-spec
-        (SpecialFormsUtil/getGeneralLambdaExprSpec clazz)]
+        (LambdaUtil/getLambdaSpec clazz)]
     lambda-spec)
+  )
+
+(defn analyze-switch
+  "Analyze switch statements and switch expressions"
+  {:added "1.1.0"
+   :static true}
+  [clazz]
+  (let [switch-spec
+        (SwitchUtil/getSwitchSpec clazz)]
+    switch-spec)
   )

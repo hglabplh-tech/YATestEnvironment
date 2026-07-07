@@ -1,3 +1,5 @@
+;; Copyright (c) 2026 Harald Glab-Plhak
+
 ;;; classpath.clj: utilities for working with the Java class path
 
 ;; by Stuart Sierra, http://stuartsierra.com/
@@ -16,7 +18,7 @@
 (ns
   ^{:author "Stuart Sierra"
      :doc "Utilities for dealing with the JVM's classpath"}
-  io.github.hglabplh_tech.reflect.clojure.api.classpath
+  io.github.hglabplh-tech.reflect.clojure.api.classpath
   (:require [clojure.java.io :as io])
   (:import (java.io File)
            (java.util.jar JarFile JarEntry)
