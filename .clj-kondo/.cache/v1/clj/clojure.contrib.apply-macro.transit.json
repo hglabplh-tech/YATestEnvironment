@@ -1,0 +1,1 @@
+["^ ","~$spread",["^ ","~:fixed-arities",["~#set",[1]],"~:private",true,"~:ns","~$clojure.contrib.apply-macro","~:name","^0","~:type","~:fn","~:col",1,"~:top-ns","^5","~:row",26],"~$apply-macro",["^ ","^;",34,"^9",1,"~:macro",true,"~:varargs-min-arity",1,"^6","^<","^4","^5","^:","^5"],"~:deprecated","1.2","~:filename","clojure/contrib/apply_macro.clj"]

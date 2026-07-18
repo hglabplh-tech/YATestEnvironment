@@ -1,0 +1,1 @@
+["^ ","~$compile-hook",["^ ","~:row",10,"~:col",1,"~:varargs-min-arity",2,"~:name","^0","~:ns","~$lein-asciidoctor.plugin","~:top-ns","^6","~:type","~:fn"],"~$activate",["^ ","^1",15,"^2",1,"~:fixed-arities",["~#set",[0]],"^4","^:","^5","^6","^7","^6","^8","^9"],"~:filename","lein_asciidoctor/plugin.clj"]
