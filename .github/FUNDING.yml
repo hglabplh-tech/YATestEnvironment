@@ -1,4 +1,7 @@
-# GitHub Sponsors funding configuration.
-# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+# Copyright (c) 2026 Harald Glab-Plhak. Licensed under the MIT License.
+# GitHub Sponsors funding configuration for YATestEnvironment.
+github: hglabplh_tech
+custom:
+  - "https://stripe.com"
+  - "https://github.com/hglabplh-tech/YATestEnvironment"
 
-github: ["hglabplh-tech"]
