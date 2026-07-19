@@ -1,9 +1,6 @@
 package io.github.hglabplh_tech.python.inspect.api.utils;
-import clojure.lang.IPersistentMap;
-import clojure.lang.IPersistentVector;
-import clojure.lang.Keyword;
-import clojure.lang.PersistentArrayMap;
-import clojure.lang.PersistentVector;
+
+import clojure.lang.*;
 import jep.Interpreter;
 import jep.SharedInterpreter;
 
@@ -12,11 +9,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
  * Loads a Python inspection program from the class path and uses JEP to inspect
  * compiled CPython modules. Results are returned as immutable Clojure values.
+ *
  * @author Harald Glab-Plhak
  * @since 1.4
  * (C) Copyright 2026 (Harald Glab-Plhak)
@@ -24,9 +23,16 @@ import java.util.*;
 
 public class InspectPythonCode implements AutoCloseable {
 
+    /** Constant for the inspector code path*/
     private static final String INSPECTOR_RESOURCE = "/python/compiled_inspector.py";
 
+    /** Constant for the properties path */
+    private static final String INSPECTOR_PROPS = "/pycinspect.properties";
+
+    /** Constant for the environment name of setting  the python venv*/
     private static final String PYTHON_VN = "PYTHON_VN";
+
+    /** python major version*/
     private static final int REQUIRED_PYTHON_MAJOR = 3;
     private static final int REQUIRED_PYTHON_MINOR = 14;
 
@@ -42,6 +48,35 @@ public class InspectPythonCode implements AutoCloseable {
         configureVirtualEnvironment();
         validateEmbeddedPython();
         this.python.exec(readResource(INSPECTOR_RESOURCE));
+    }
+
+    /**
+     * Return the path of the python environment
+     * @return the absolute path to env
+     * @throws IOException I/O error reading properties
+     * @since 1.4
+     */
+    private static Path resolveVirtualEnvironment() throws IOException {
+
+        String value;
+
+        Properties props = new Properties();
+        props.load(resolveResource(INSPECTOR_PROPS));
+        if (props.getProperty(PYTHON_VN) != null) {
+            value = props.getProperty(PYTHON_VN);
+        } else if (System.getProperty(PYTHON_VN) != null) {
+            value = System.getProperty(PYTHON_VN);
+        } else {
+            value = System.getenv(PYTHON_VN);
+        }
+
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(
+                    "Environment variable " + PYTHON_VN
+                            + " must point to a Python 3.14 virtual environment"
+            );
+        }
+        return Paths.get(value).toAbsolutePath().normalize();
     }
 
     private static Path validateVirtualEnvironment(Path path) {
@@ -67,8 +102,8 @@ public class InspectPythonCode implements AutoCloseable {
     public static Path virtualEnvironmentPython(Path virtualEnvironment) {
         boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
         return windows
-                ? virtualEnvironment.resolve("Scripts").resolve("python3.exe")
-                : virtualEnvironment.resolve("bin").resolve("python3");
+                ? virtualEnvironment.resolve("Scripts").resolve("python.exe")
+                : virtualEnvironment.resolve("bin").resolve("python");
     }
 
     private static String[] virtualEnvironmentSitePackages(Path virtualEnvironment) {
@@ -89,12 +124,12 @@ public class InspectPythonCode implements AutoCloseable {
                 import os
                 import site
                 import sys
-
+                
                 _vn = os.path.abspath(_java_virtual_env)
                 for _path in reversed(list(_java_site_packages)):
                     if os.path.isdir(_path):
                         site.addsitedir(_path)
-
+                
                 # JEP embeds a fixed CPython runtime. We intentionally do not replace
                 # sys.prefix; the virtualenv is used as the dependency/package source.
                 os.environ["VIRTUAL_ENV"] = _vn
@@ -138,6 +173,7 @@ public class InspectPythonCode implements AutoCloseable {
         );
         return requirePersistentMap(convert(raw), "module inspection result");
     }
+
     private static void validateVirtualEnvironmentInterpreter(Path virtualEnvironment) {
         Path executable = virtualEnvironmentPython(virtualEnvironment);
         if (!Files.isRegularFile(executable)) {
@@ -170,6 +206,16 @@ public class InspectPythonCode implements AutoCloseable {
         }
     }
 
+    /**
+     * Inspect a python class from a pyc
+     *
+     * @param moduleName     the module name
+     * @param compiledModule the compiled module path
+     * @param className      the name of the class
+     * @return the persistent
+     * Map for clojure describing the pyc class
+     * @since 1.4
+     */
     public IPersistentMap inspectClass(
             String moduleName,
             Path compiledModule,
@@ -202,7 +248,9 @@ public class InspectPythonCode implements AutoCloseable {
         Objects.requireNonNull(compiledModule, "compiledModule");
     }
 
-    /** Recursively converts JEP Java containers to persistent Clojure values. */
+    /**
+     * Recursively converts JEP Java containers to persistent Clojure values.
+     */
     private static Object convert(Object value) {
         if (value == null || value instanceof String || value instanceof Number || value instanceof Boolean) {
             return value;
@@ -249,12 +297,22 @@ public class InspectPythonCode implements AutoCloseable {
         );
     }
 
-    private static String readResource(String resourceName) {
+    private static InputStream resolveResource(String resourceName) {
         try (InputStream input = InspectPythonCode.class.getResourceAsStream(resourceName)) {
             if (input == null) {
                 throw new IllegalStateException("Resource not found: " + resourceName);
             }
+            return input;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String readResource(String resourceName) {
+
+        try (InputStream input = resolveResource(resourceName)) {
             return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+
         } catch (IOException exception) {
             throw new IllegalStateException("Could not read resource: " + resourceName, exception);
         }
