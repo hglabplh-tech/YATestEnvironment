@@ -24,7 +24,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.ClojFunctionalUt
  * interface.
  * </p>
  *
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class LambdaUtil {
 

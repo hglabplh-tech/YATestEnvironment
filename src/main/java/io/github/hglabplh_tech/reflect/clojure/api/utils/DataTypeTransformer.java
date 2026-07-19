@@ -14,7 +14,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.ClojFunctionalUt
  * This s a utility class for transforming data from Java to a well readable
  * processable form of clojure data
  *
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class DataTypeTransformer {
 

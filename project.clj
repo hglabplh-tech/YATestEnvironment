@@ -1,4 +1,4 @@
-(defproject org.clojars.hglabplh/YATestEnvironment "1.1.0-SNAPSHOT"
+(defproject org.clojars.hglabplh/YATestEnvironment "1.4-SNAPSHOT"
   :description "Clojure project to have a test Environment "
   :url "https://github.com/hglabplh-tech/YATestEnvironment.git"
   :license {:name "MIT License"
@@ -45,6 +45,8 @@
                  [lein-asciidoctorj/lein-asciidoctorj "0.0.5"]
                  ;; https://mvnrepository.com/artifact/jdk.tools/jdk.tools
                  [jdk.tools/jdk.tools "1.7"]
+                 ;; Source: https://mvnrepository.com/artifact/org.ninia/jep
+                 [org.ninia/jep "4.3.1"]
                 ]
 
 

@@ -15,7 +15,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.ClojFunctionalUt
 /**
  * This s a utility class for the types enum, records and 'lambda'
  *
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class SpecialFormsUtil {
 

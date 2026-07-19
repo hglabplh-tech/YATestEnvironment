@@ -24,7 +24,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.DataTypeTransfor
  * a given annotation.
  *
  * @param <T> T is the type of the class and this type extends the annotation class
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class AnnotationTool<T extends Annotation> {
 

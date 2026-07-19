@@ -13,7 +13,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.ClojFunctionalUt
  * This s a utility class for conversion from Java Types to  clojure vectors
  * or maps representing the content
  *
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class FieldsUtil {
 

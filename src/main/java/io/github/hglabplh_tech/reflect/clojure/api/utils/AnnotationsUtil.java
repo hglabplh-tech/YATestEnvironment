@@ -13,7 +13,7 @@ import static io.github.hglabplh_tech.reflect.clojure.api.utils.ClojFunctionalUt
  * This is a utility class for getting the Annotations belonging to a
  * class method field
  *
- * @author Harald Glab-Plhak (Harald G.P. IT-Consulting / Projéct Support)
+ * @author Harald Glab-Plhak
  */
 public class AnnotationsUtil {
 
