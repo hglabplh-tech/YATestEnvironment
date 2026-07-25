@@ -2,15 +2,9 @@
   (:refer-clojure :exclude [def defn fn])
 (:require [io.github.hglabplh_tech.test.suite.static-code.analysis.reflect-code]  [schema.core :as schema]
           [active.data.realm.attach :refer :all]
-          [active.data.realm.inspection :as realm-inspection]
-          [active.data.struct.internal.closed-struct-map :as struct-map]
-          [active.data.struct :as struct]
-          [active.data.raw-record :as record]
-          [active.data.realm.internal.record-meta :as recm]
+          [active.data.realm.inspection :as ad-inspection]
           [clojure.pprint :refer :all]
-          [active.data.realm :as realm]
           [schema.core :as schema]
-          [active.data.realm.attach :refer :all]
           [active.data.record :as sut]
           [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :as fc]
           [io.github.hglabplh_tech.test.suite.datagen.active-data.parse-meta :as pactd]
@@ -19,14 +13,11 @@
 
 
 (clojure.core/defn get-rec-meta [raw-meta]
-  (let [dummy (do (println "the meta: " raw-meta )
+  
+  (let [meta-datum (do (println "the meta: " raw-meta )
                   (println "the type: " (type raw-meta)
-                           "is record: " (active.data.raw-record/record? raw-meta)))
-
-
-        ;;struct-keys (struct/struct-keys raw-meta)
-        ;;str-map (struct-map/build-map raw-meta struct-keys)
-        parsed-meta  (pactd/select-meta-rec raw-meta)
+                           "is realm: " (ad-inspection/realm? raw-meta)))
+        parsed-meta  (pactd/select-meta-rec meta-datum)
         ]
     parsed-meta
     ))

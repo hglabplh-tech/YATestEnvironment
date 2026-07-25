@@ -66,6 +66,9 @@ YATestEnvironment is a Clojure and Java test automation environment. It combines
 - Generates default sample values when no custom rule is provided.
 - Supports generated cases per analyzed function or method.
 - Can execute generated Clojure function cases and record them through the spy call-flow mechanism.
+- Includes an artifact-generation Player adapted from the standalone testdatagen design into the existing datagen namespace layout.
+- Processes EDN generation jobs by walking jobs and sample sequences, invoking format generators, and writing through selected storage backends.
+- Supports project/feature/subfeature and project/class/method hierarchies for generated artifact paths.
 
 ## Configurable Generation
 
@@ -76,6 +79,8 @@ YATestEnvironment is a Clojure and Java test automation environment. It combines
 - Supports per-function and per-parameter rules.
 - Supports parameter type overrides, numeric minimum and maximum values, explicit value lists, and format hints.
 - Includes an XSD resource for Java-oriented method/parameter rule structures.
+- Reads and validates EDN artifact-generation configuration for Player-based file and memory generation jobs.
+- Includes a sample EDN generator configuration under test resources.
 
 ## Generated Payload Formats
 
@@ -85,6 +90,8 @@ YATestEnvironment is a Clojure and Java test automation environment. It combines
 - Generates text payloads.
 - Generates Clojure string/printed data payloads.
 - Includes simple PDF payload generation for compact test-case output.
+- Generates standalone artifact payloads for TXT, PDF, DOCX, JPEG, TIFF where ImageIO supports it, and relational EDN rows.
+- Creates portable DOCX artifacts through JDK ZIP/OOXML generation without introducing a new runtime dependency.
 
 ## SQLite Persistence
 
@@ -93,6 +100,7 @@ YATestEnvironment is a Clojure and Java test automation environment. It combines
 - Stores analyzed parameter rows with position, name, type, and generated values.
 - Stores generated test payloads by function, case index, and output format.
 - Uses a default database path under `target/test-data/generated-test-data.sqlite`.
+- Provides artifact storage through memory, filesystem, and JDBC-backed PostgreSQL backends.
 
 ## Java Reflection API
 

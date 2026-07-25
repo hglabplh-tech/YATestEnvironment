@@ -114,8 +114,22 @@
      cooked-result#
      ))
 
-;;{:schema (=> Bool Num Num), :ns #object[clojure.lang.Namespace 0x78504ce9 io.github.hglabplh_tech.test.suite.datagen.fun-reader-test], :name my-test, :active.data.realm.attach/realm #active.data.realm.internal.records/function-realm{description function (number, number) -> boolean, predicate #object[clojure.core$fn_QMARK_ 0x26d8908e clojure.core$fn_QMARK_@26d8908e], metadata {}, function-realm-cases (#active.data.realm.internal.records/function-case{function-case-positional-argument-realms [#active.data.realm.internal.records/builtin-scalar-realm{description number, predicate #object[clojure.core$number_QMARK_ 0x30e2016a clojure.core$number_QMARK_@30e2016a], metadata {}, builtin-scalar-realm-id :number} #active.data.realm.internal.records/builtin-scalar-realm{description number, predicate #object[clojure.core$number_QMARK_ 0x30e2016a clojure.core$number_QMARK_@30e2016a], metadata {}, builtin-scalar-realm-id :number}], function-case-optional-arguments-realm nil, function-case-return-realm #active.data.realm.internal.records/builtin-scalar-realm{description boolean, predicate #object[clojure.core$boolean_QMARK_ 0x649f2009 clojure.core$boolean_QMARK_@649f2009], metadata {}, builtin-scalar-realm-id :boolean}})}, :file hgp/cljito/datagen/fun_reader_test.clj, :column 1, :raw-arglists ([first :- (active.data.realm.schema/schema (active.data.realm/compile realm/number)) second :- (active.data.realm.schema/schema (active.data.realm/compile realm/number))]), :line 8, :arglists ([first second]), :doc Inputs: [first :- (active.data.realm.schema/schema (active.data.realm/compile realm/number)) second :- (active.data.realm.schema/schema (active.data.realm/compile realm/number))]
+;;{:schema (=> Bool Num Num), :ns #object[clojure.lang.Namespace 0x78504ce9 io.github.hglabplh_tech.test.suite.datagen.fun-reader-test],
+;; :name my-test, :active.data.realm.attach/realm #active.data.realm.internal.records/function-realm{description function (number, number) ->
+;; boolean, predicate #object[clojure.core$fn_QMARK_ 0x26d8908e clojure.core$fn_QMARK_@26d8908e], metadata {},
+;; function-realm-cases (#active.data.realm.internal.records/function-case{function-case-positional-argument-realms
+;; [#active.data.realm.internal.records/builtin-scalar-realm{description number,
+;; predicate #object[clojure.core$number_QMARK_ 0x30e2016a clojure.core$number_QMARK_@30e2016a], metadata {}, builtin-scalar-realm-id :number}
+;; #active.data.realm.internal.records/builtin-scalar-realm{description number, predicate #object[clojure.core$number_QMARK_
+;; 0x30e2016a clojure.core$number_QMARK_@30e2016a], metadata {}, builtin-scalar-realm-id :number}], function-case-optional-arguments-realm nil,
+;; function-case-return-realm #active.data.realm.internal.records/builtin-scalar-realm{description boolean, predicate #object[clojure.core$boolean_QMARK_
+;; 0x649f2009 clojure.core$boolean_QMARK_@649f2009], metadata {}, builtin-scalar-realm-id :boolean}})}, :file hgp/cljito/datagen/fun_reader_test.clj,
+;; :column 1, :raw-arglists ([first :- (active.data.realm.schema/schema (active.data.realm/compile realm/number)) second
+;; :- (active.data.realm.schema/schema (active.data.realm/compile realm/number))]), :line 8, :arglists ([first second]),
+;; :doc Inputs: [first :- (active.data.realm.schema/schema (active.data.realm/compile realm/number)) second :-
+;; (active.data.realm.schema/schema (active.data.realm/compile realm/number))]
 ;; Returns: (active.data.realm.schema/schema (active.data.realm/compile realm/boolean))}
+
 (clojure.core/defn parse-arg-types [arg-type-defs]
   (let [descriptors (first (second (first arg-type-defs)))
         arg-type-seq (vec (map (clojure.core/fn [val]
