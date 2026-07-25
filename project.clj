@@ -74,7 +74,7 @@
 
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]                      ; Java source is stored separately.
-  :test-paths ["src/test/clj" "src/test/java"]
+  :test-paths ["src/test/clojure" "src/test/java"]
   :resource-paths ["src/test/resources" "lib/tools.jar"]
 
   :aot :all

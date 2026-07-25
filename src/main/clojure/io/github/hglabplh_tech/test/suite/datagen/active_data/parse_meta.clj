@@ -171,10 +171,11 @@
         (throw (IllegalArgumentException. "no active-data realm"))
         )))))
 
-(clojure.core/defn get-fun-descr-active-meta [meta-data]
+(clojure.core/defn get-data-active-meta [meta-data]
   (let [active-meta (get meta-data attach/fn-realm-meta-key)
         a-meta  (map   (clojure.core/fn [val]
-                         [val]) active-meta)
+                         (let [cooked (select-meta-rec val)]
+                         [cooked]))  active-meta)
         stripped-meta-desc (first a-meta)
         the-value (first (rest (first stripped-meta-desc)))]
     the-value

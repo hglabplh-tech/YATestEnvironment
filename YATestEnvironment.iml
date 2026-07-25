@@ -13,10 +13,14 @@
       <sourceFolder url="file://$MODULE_DIR$/lib/tools.jar" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/clojure" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/clj" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/clojure" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/src/test/clj" />
+      <excludeFolder url="file://$MODULE_DIR$/src/test/clojure/io/github" />
+      <excludeFolder url="file://$MODULE_DIR$/src/test/clojure/io/github/hglabplh_tech" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src/test/clojure/io" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

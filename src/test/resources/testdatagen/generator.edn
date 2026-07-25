@@ -1,0 +1,29 @@
+{:defaults {:locale "de-DE"
+            :seed 20260718}
+ :storage {:type :file
+           :config {:base-dir "target/generated-test-artifacts"}}
+ :jobs [{:format :txt
+         :count 2
+         :hierarchy {:project "atlas"
+                     :feature "document-import"
+                     :subfeature "plain-text"}}
+        {:format :pdf
+         :count 1
+         :hierarchy {:project "atlas"
+                     :feature "document-import"
+                     :subfeature "pdf-validation"}}
+        {:format :docx
+         :count 1
+         :hierarchy {:project "atlas"
+                     :feature "document-import"
+                     :subfeature "word-export"}}
+        {:format :jpeg
+         :count 1
+         :hierarchy {:project "atlas"
+                     :feature "image-export"
+                     :subfeature "jpeg-preview"}}
+        {:format :relational
+         :count 2
+         :hierarchy {:project "customer-service"
+                     :class "CustomerRepository"
+                     :method "findActiveCustomers"}}]}
