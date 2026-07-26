@@ -1,8 +1,8 @@
 (ns io.github.hglabplh_tech.test.suite.datagen.pipeline
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [io.github.hglabplh-tech.reflect.clojure.api.convert-java-cloj :as java-convert]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as reflect-class]
+            [io.github.hglabplh-tech.reflect.java.api.convert-java-cloj :as java-convert]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as reflect-class]
             [io.github.hglabplh_tech.test.suite.datagen.config :as config]
             [io.github.hglabplh_tech.test.suite.datagen.sqlite :as sqlite]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :as fc]
