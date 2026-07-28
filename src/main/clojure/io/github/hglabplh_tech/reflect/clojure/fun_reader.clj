@@ -12,6 +12,7 @@
           [schema.core :as schema]
           [active.data.realm.attach :refer :all]
           [active.data.record :as sut]
+          [active.data.realm.attach :as attach]
           [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :as fc]
           [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
           [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]))
@@ -22,11 +23,8 @@
   (let [dummy (do (println "the meta: " raw-meta )
                   (println "the type: " (type raw-meta)
                            "is record: " (active.data.raw-record/record? raw-meta)))
-
-
-        ;;struct-keys (struct/struct-keys raw-meta)
-        ;;str-map (struct-map/build-map raw-meta struct-keys)
-        parsed-meta  (pactd/select-meta-rec raw-meta)
+        active-meta (get raw-meta attach/fn-realm-meta-key)
+        parsed-meta  (pactd/select-meta-rec active-meta)
         ]
     (pprint parsed-meta)
     parsed-meta

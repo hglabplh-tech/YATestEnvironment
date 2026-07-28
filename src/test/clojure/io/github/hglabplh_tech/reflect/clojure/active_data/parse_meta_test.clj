@@ -38,8 +38,8 @@
 
 
 
-(deftest structured-def-rec-schema.test (testing "The conversion of the active data - meta-schema records to structured output")
-                                        (let [m-data (meta-full io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta-test my-test)
-                                          cooked (get-data-active-meta m-data) ]
+(deftest function_reflect_ad (testing "The conversion of the active data - meta-schema records to structured output")
+                                        (let [m-data (meta-raw io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta-test my-test)
+                                          cooked m-data]
                                           (pprint cooked)
                                           ))
