@@ -208,7 +208,7 @@
 
 (clojure.core/defn get-data-active-meta [meta-data]
   (let [active-meta (get meta-data attach/fn-realm-meta-key)
-        a-meta (walk-through select-meta-rec active-meta)
+        a-meta (select-meta-rec active-meta)
         stripped-meta-desc (first a-meta)
         the-value (first (rest (first stripped-meta-desc)))]
     (pprint active-meta)
