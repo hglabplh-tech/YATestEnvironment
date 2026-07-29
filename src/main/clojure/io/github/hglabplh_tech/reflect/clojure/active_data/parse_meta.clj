@@ -10,7 +10,7 @@
          result []]
     (if (empty? the-rest)
       result
-      (let [the-result (fun (first the-rest))]
+      (let [the-result  (fun (doall (first the-rest)))]
         (recur (rest the-rest) (conj result the-result)))
       )
     ))
@@ -37,8 +37,10 @@
           (let [result {:from-predicate (rinspect/from-predicate value)}])
 
           (rinspect/integer-from-to? value)
-          (let [cooked {:int-from-val (rinspect/integer-from-to-realm-from value)
-                        :int-to-val   (rinspect/integer-from-to-realm-to value)}]
+          (let [int-from-realm-raw (rinspect/integer-from-to-realm-from value)
+                int-to-realm-raw (rinspect/integer-from-to-realm-to value)
+                cooked {:int-from-val (select-meta-rec int-from-realm-raw)
+                        :int-to-val    (select-meta-rec int-to-realm-raw)}]
             (println "realm integer from to")
             [realm-base cooked]
             )
@@ -66,20 +68,18 @@
             [realm-base cooked])
 
           (rinspect/sequence-of? value)
-          (let [cooked {:sequence-of-realm
-                        (select-meta-rec
-                          (rinspect/sequence-of-realm-realm value))}]
+          (let [raw (rinspect/sequence-of-realm-realm value)
+                cooked {:sequence-of-realm
+                        (select-meta-rec raw)}]
             (println "realm sequence of")
             [realm-base cooked]
             )
-          (is-a? rinspect/set-of-realm-realm value)
-          (let [realm-raw (rinspect/set-of-realm-realm value)
-                the-realm {:set-of-realm-realm (select-meta-rec realm-raw)}]
-            [realm-base the-realm])
+
           (rinspect/set-of? value)
-          (let [cooked {:set-of-realm
+          (let [realm-realm-raw (rinspect/set-of-realm-realm value)
+                cooked {:set-of-realm
                         (select-meta-rec
-                          (rinspect/set-of-realm-realm value))}]
+                          realm-realm-raw)}]
             (println "realm set of")
             [realm-base cooked]
             )
