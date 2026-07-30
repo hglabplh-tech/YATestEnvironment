@@ -20,7 +20,7 @@
     (println "Funtion select-meta-rec ->")
     (pprint value)
 
-    (if (or (rinspect/realm? value) (is-a? rinspect/function-case value))
+    (if (or (rinspect/realm? value) (is-a? rinspect/function-case value) (is-a? rinspect/builtin-scalar-realm-id value))
       (let [realm-base (if (rinspect/realm? value)
                          {:description   (rinspect/description value)
                           :predicate-fun (rinspect/predicate value)
@@ -28,13 +28,15 @@
                          {})]
         (cond
           (rinspect/builtin-scalar? value)
-          (let [cooked {:scalar-realm-id (rinspect/builtin-scalar-realm-id value)}]
+          (let [realm-id-raw (rinspect/builtin-scalar-realm-id value)
+                cooked {:scalar-realm-id realm-id-raw}]
             (println "scalar realm")
             [realm-base cooked]
             )
 
           (rinspect/from-predicate? value)
-          (let [result {:from-predicate (rinspect/from-predicate value)}])
+          (let [result {:from-predicate (rinspect/from-predicate value)}]
+            )
 
           (rinspect/integer-from-to? value)
           (let [int-from-realm-raw (rinspect/integer-from-to-realm-from value)
@@ -202,7 +204,10 @@
             (println "named realm")
             [realm-base cooked]))
         (do
-          (throw (IllegalArgumentException. (str "invalid realm member " value)))
+          (println " it is a case shoul never happen")
+          (pprint value)
+          [value]
+          ;;(throw (IllegalArgumentException. (str "invalid realm member " value)))
           )))))
 
 
@@ -214,5 +219,3 @@
     (pprint active-meta)
     the-value
     ))
-
-
