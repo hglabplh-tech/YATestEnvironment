@@ -18,7 +18,7 @@
     <url>https://github.com/hglabplh-tech/YATestEnvironment</url>
     <connection>scm:git:git://github.com/hglabplh-tech/YATestEnvironment.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/hglabplh-tech/YATestEnvironment.git</developerConnection>
-    <tag>143bc97bd5fa1858b49c7751701fee4ec0a30ffd</tag>
+    <tag>cb1dd9bde5f5226e856795f320b9815c350e7061</tag>
   </scm>
   <build>
     <sourceDirectory>src/main/clojure</sourceDirectory>

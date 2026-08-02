@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.java.example.the-main
+(ns io.github.hglabplh_tech.reflect.examples.clojure.the-main
   (:refer-clojure :exclude [defn fn])
   (:require [clojure.pprint :refer :all]
             [active.data.realm :as realm]

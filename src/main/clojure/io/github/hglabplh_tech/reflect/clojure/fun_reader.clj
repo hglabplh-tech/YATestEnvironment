@@ -29,7 +29,6 @@
         ;;parsed-meta  (pactd/active-rec-to-schema  active-meta) ;; was select.... before / from parse_meta.clj
         parsed-meta  (pactd/decompile-active-rec active-meta)
         ]
-    (pprint parsed-meta)
     parsed-meta
     ))
 
@@ -86,11 +85,6 @@
      (analyze-fun result#)))
 
 (defmacro meta-raw [ns-in obj]
-  `(do
-      ~@(get-meta-raw ns-in obj)
+  (let [result `(do ~@(get-meta-raw ns-in obj)) ]
+      result
       ))
-
-(defmacro meta-full [ns-in obj]
-  `(do
-     ~@(get-meta-full ns-in obj)
-     ))

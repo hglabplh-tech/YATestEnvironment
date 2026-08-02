@@ -47,7 +47,6 @@
   (let [position-args-raw (rinspect/function-case-positional-argument-realms fun-case)
         pos-args-def (mapv (fn [v]
                              (println "pos arguments:")
-                             (pprint v)
                              (decompile-active-rec v)) position-args-raw)
         opt-args-raw (rinspect/function-case-optional-arguments-realm fun-case)
         opt-args-def (if (nil? opt-args-raw)
@@ -213,13 +212,14 @@
                          :name-realm (decompile-active-rec realm-raw)}}]
             (pprint cooked)
             (println "named realm")
-            [realm-base cooked]))
+            [realm-base cooked])
+        :else
         (do
           (println " This case should never happen")        ;; FIXME: here we have a gap
           (pprint value)
           [value]
           ;;(throw (IllegalArgumentException. (str "invalid realm member " value)))
-          )))))
+          ) )))))
 
 
 (clojure.core/defn get-data-active-meta [meta-data]
