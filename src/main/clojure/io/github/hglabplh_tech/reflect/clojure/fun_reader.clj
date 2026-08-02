@@ -17,14 +17,17 @@
           [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
           [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]))
 
-
+(clojure.core/defn printout_excp [excp]
+  (println (.getMessage excp))
+  (.printStackTrace excp))
 
 (clojure.core/defn get-rec-meta [raw-meta]
   (let [dummy (do (println "the meta: " raw-meta )
                   (println "the type: " (type raw-meta)
                            "is record: " (active.data.raw-record/record? raw-meta)))
         active-meta (get raw-meta attach/fn-realm-meta-key)
-        parsed-meta  (pactd/select-meta-rec active-meta)
+        ;;parsed-meta  (pactd/active-rec-to-schema  active-meta) ;; was select.... before / from parse_meta.clj
+        parsed-meta  (pactd/decompile-active-rec active-meta)
         ]
     (pprint parsed-meta)
     parsed-meta
@@ -50,8 +53,14 @@
     (if-not (or (nil? ns-intern-map)
                 (empty? ns-intern-map))
       (let [meta-data (meta rec)]
-        (get-rec-meta meta-data)
+        (try
+           (get-rec-meta meta-data)
+           (catch Throwable excp
+             (printout_excp excp)
+             ))
+        ;;(get-rec-meta meta-data)
         ))))
+
 
 (clojure.core/defn get-meta-full [namespace-sym record-sym]
   (let [ns-intern-map (ns-interns namespace-sym)
