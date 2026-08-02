@@ -70,11 +70,7 @@
     (pprint value)
 
     (if (or (rinspect/realm? value) (is-a? rinspect/builtin-scalar-realm-id value)) ;; FIXME normally only hafe to ask for realm :-(
-      (let [realm-base (if (rinspect/realm? value)
-                         {:description   (rinspect/description value)
-                          :predicate-fun (rinspect/predicate value)
-                          :meta-data     (rinspect/metadata value)}
-                         {})]
+      (let [realm-base (realm-base-schema value)]
         (cond
           (rinspect/builtin-scalar? value)
           (let [realm-id-raw (rinspect/builtin-scalar-realm-id value)
