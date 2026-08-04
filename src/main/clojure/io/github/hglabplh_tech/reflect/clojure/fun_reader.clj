@@ -84,7 +84,5 @@
                        )]
      (analyze-fun result#)))
 
-(defmacro meta-raw [ns-in obj]
-  (let [result `(do ~@(get-meta-raw ns-in obj)) ]
-      result
-      ))
+(defmacro decompile-meta [ns-in obj]
+  `(do ~@(get-meta-raw ns-in obj)))

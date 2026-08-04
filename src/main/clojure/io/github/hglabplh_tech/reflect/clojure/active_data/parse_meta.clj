@@ -24,7 +24,7 @@
 (clojure.core/defn realm-base-schema [value]
   (if (rinspect/realm? value)
     {:description   (rinspect/description value)
-     :predicate-fun (rinspect/predicate value)
+     ;;:predicate-fun (rinspect/predicate value)
      :meta-data     (rinspect/metadata value)}
     {}))
 
@@ -45,9 +45,7 @@
 (clojure.core/defn fun-case-output-input-schema [fun-case]
   (println "function case entered ->")
   (let [position-args-raw (rinspect/function-case-positional-argument-realms fun-case)
-        pos-args-def (mapv (fn [v]
-                             (println "pos arguments:")
-                             (decompile-active-rec v)) position-args-raw)
+        pos-args-def (mapv decompile-active-rec  position-args-raw)
         opt-args-raw (rinspect/function-case-optional-arguments-realm fun-case)
         opt-args-def (if (nil? opt-args-raw)
                        []
@@ -68,7 +66,7 @@
     (println "Funtion select-meta-rec ->")
     (pprint value)
 
-    (if (or (rinspect/realm? value) (is-a? rinspect/builtin-scalar-realm-id value)) ;; FIXME normally only hafe to ask for realm :-(
+    (if (rinspect/realm? value) ;; FIXME normally only have to ask for realm :-(
       (let [realm-base (realm-base-schema value)]
         (cond
           (rinspect/builtin-scalar? value)
@@ -158,7 +156,7 @@
             [realm-base cooked]
             )
 
-          (rinspect/enum? value)
+          (rinspect/enum? value)                            ;; FIXME it seems in some place the predicate fun is called accidentally
           (let [raw (rinspect/enum-realm-values value)
                 cooked {:enum-def raw}]
             (println "enum realm")
