@@ -24,7 +24,7 @@
 
 (deftest structured-def-rec-schema.test (testing "The conversion of the meta-schema records to structured output"
 
-                                          (pprint (get-rec-meta the-rec))
+                                          (pprint (get-decompiled-active-data the-rec))
                                           (pprint (decompile-meta
                                                     io.github.hglabplh-tech.reflect.clojure.fun-reader-test
                                                     test-the-rec))

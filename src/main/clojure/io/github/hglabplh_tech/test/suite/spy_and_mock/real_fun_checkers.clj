@@ -6,11 +6,12 @@
             [active.data.realm :as realm]
             [active.data.realm.attach :refer :all]
             [active.data.realm.internal.record-meta :as act-meta]
-
+            [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
             [active.data.realm.internal.records :as realm-records]
             [active.data.raw-record :as rrec]
             [schema.core :as sc]
             [active.data.record :as sut]
+
             [clojure.pprint :refer :all]
             [clojure.test :refer :all]
             [schema.spec.core :refer :all]
@@ -18,16 +19,22 @@
 (def to-spy :spy-key)
 (def to-mock :mock-key)
 
-
+(declare structure-schema)
 (defmacro get-fun-meta [funname]
   `(meta (var ~funname)))
 
-(clojure.core/defn get-active-meta [all-meta-data gen-meta-data]
-  (let [record-meta-data (get all-meta-data act-meta/record-realm-meta-key)
-        fields-meta-data (get all-meta-data act-meta/fields-realm-map-meta-key)
+(clojure.core/defn get-decompiled-active-data [raw-meta]
+  (let [base-meta (structure-schema raw-meta)
+        active-fun-meta (get raw-meta fn-realm-meta-key {})
+        parsed-active-meta     (pactd/decompile-active-rec active-fun-meta)
+        ]
+
+    {base-meta parsed-active-meta}
+    ))
+(clojure.core/defn get-schema-active-meta [all-meta-data gen-meta-data] ;; FIXME metadata have to be overviewed
+  (let [active-fun-meta (get all-meta-data fn-realm-meta-key {})
         schema-meta-data (get all-meta-data :schema)
-        result-meta (conj {:schema                            schema-meta-data act-meta/record-realm-meta-key record-meta-data
-                           act-meta/fields-realm-map-meta-key fields-meta-data} gen-meta-data)]
+        result-meta (conj {:schema schema-meta-data fn-realm-meta-key active-fun-meta}  gen-meta-data)]
     (println result-meta)
     result-meta
 
@@ -44,8 +51,8 @@
   [generated-fun orig-fun]
   `(do (alter-meta! (var ~generated-fun)
                     (constantly
-                      (assoc (get-active-meta (meta (var ~orig-fun))
-                                              (meta (var ~generated-fun)))
+                      (assoc (get-schema-active-meta (meta (var ~orig-fun))
+                                                     (meta (var ~generated-fun)))
                         :mock-type :fun)))
        (var ~generated-fun)))
 
@@ -59,7 +66,7 @@
        (var ~fun-name)))
 
 (defmacro add-meta-spy
-  "Macro to set the Meta of the mocked function to a mock"
+  "Macro to set the Meta of the mocked function to a spy"
   [fun-name]
   `(do (alter-meta! (var ~fun-name)
                     (constantly
@@ -156,7 +163,7 @@
        ]
     (let [schema-val (parse-base-schema the-schema)]
       (pprint fun-meta)
-      {:recording {:base-data {:ns            the-ns
+      {:structured-meta {:base-data {:ns            the-ns
                                :name          the-name
                                :line          the-line
                                :column        the-column
