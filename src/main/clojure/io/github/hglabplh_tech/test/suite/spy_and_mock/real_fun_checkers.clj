@@ -19,17 +19,16 @@
 (def to-spy :spy-key)
 (def to-mock :mock-key)
 
-(declare structure-schema)
+
 (defmacro get-fun-meta [funname]
   `(meta (var ~funname)))
 
 (clojure.core/defn get-decompiled-active-data [raw-meta]
-  (let [base-meta (structure-schema raw-meta)
-        active-fun-meta (get raw-meta fn-realm-meta-key {})
+  (let [active-fun-meta (get raw-meta fn-realm-meta-key {})
         parsed-active-meta     (pactd/decompile-active-rec active-fun-meta)
         ]
 
-    {base-meta parsed-active-meta}
+    parsed-active-meta
     ))
 (clojure.core/defn get-schema-active-meta [all-meta-data gen-meta-data] ;; FIXME metadata have to be overviewed
   (let [active-fun-meta (get all-meta-data fn-realm-meta-key {})
@@ -153,7 +152,7 @@
     ))
 
 
-(clojure.core/defn structure-schema [fun-meta]
+(clojure.core/defn get-structured-meta-data [fun-meta]
   (let [the-schema (get fun-meta :schema)
         the-ns (get fun-meta :ns)
         the-name (get fun-meta :name)
@@ -169,6 +168,7 @@
                                :column        the-column
                                :argument-list argument-list
                                }
-       :add-on    [{:schema (parse-meta-to-map schema-val)}]}}
+       :add-on    [{:schema (parse-meta-to-map schema-val)
+                   :active-data-realm (get-decompiled-active-data fun-meta)}]}}
 
       )))

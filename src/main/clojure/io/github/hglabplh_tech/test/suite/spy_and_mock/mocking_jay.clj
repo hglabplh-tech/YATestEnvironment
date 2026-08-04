@@ -404,7 +404,7 @@
         stack-trace-data# (get-processed-stackdata stack-trace-data fun-meta)
         ]
     (let [fun-meta# fun-meta
-          struct-meta (structure-schema fun-meta#)]
+          struct-meta (get-structured-meta-data fun-meta#)]
       (println "I am a spy and I see you: " `~fun#)
       (pprint struct-meta)
       struct-meta
