@@ -47,6 +47,7 @@
                  [jdk.tools/jdk.tools "1.7"]
                  ;; Source: https://mvnrepository.com/artifact/org.ninia/jep
                  [org.ninia/jep "4.3.1"]
+                 [cheshire/cheshire "6.2.0"]
                 ]
 
 

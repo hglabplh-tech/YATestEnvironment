@@ -7,6 +7,7 @@
             [active.data.realm.attach :refer :all]
             [active.data.realm.schema :refer :all]
             [clojure.pprint :refer :all]
+            [cheshire.core :as json]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :refer :all]
             )
@@ -49,7 +50,10 @@
 (deftest function_my_complex_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / complex enum
                                                        set of and function and scalar"
                                               (try
-                                                (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns my-complex-test)]
+                                                (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns my-complex-test)
+
+                                                      ]
+
                                                   (println "================================ the decompile result======================")
                                                   (pprint m-data)))
                                               (catch Exception e
