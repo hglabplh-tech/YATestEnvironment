@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.test.suite.temp
+(ns io.github.hglabplh_tech.reflect.clojure.general.temp
   (:require [clojure.test :refer :all]))
 (def myfun  '(fun-mock [i-am-a-fake] [12 9 3]
                        (fn [& arguments]

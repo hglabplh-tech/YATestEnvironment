@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.core_test
+(ns io.github.hglabplh_tech.reflect.clojure.general.clojure-test
   (:require [cljito.core :refer :all]
             [clojure.test :refer [deftest]]
             [testit.core :refer [fact facts]])
