@@ -1,34 +1,6 @@
-(ns io.github.hglabplh_tech.reflect.code.generate.json.jsongenerator
-  (:require [clojure.data.json :as json]))
+(ns io.github.hglabplh_tech.reflect.code.java.generate.json.jsongenerator
+  (:require [io.github.hglabplh-tech.reflect.code.json-util :refer :all]))
 
-(declare json-safe)
-
-(defn- key-safe [value]
-  (cond
-    (keyword? value) (name value)
-    (symbol? value) (str value)
-    :else (str value)))
-
-(defn- json-safe-map [data]
-  (into {}
-        (map (fn [[k v]]
-               [(key-safe k) (json-safe v)])
-             data)))
-
-(defn json-safe [data]
-  (cond
-    (nil? data) nil
-    (or (string? data) (number? data) (true? data) (false? data)) data
-    (keyword? data) (name data)
-    (symbol? data) (str data)
-    (class? data) (.getName ^Class data)
-    (map? data) (json-safe-map data)
-    (or (sequential? data) (set? data)) (vec (map json-safe data))
-    (.isArray (class data)) (vec (map json-safe (seq data)))
-    :else (str data)))
-
-(defn- write-json [data]
-  (json/write-str (json-safe data) :escape-slash false))
 
 (defn class-def-gen-hook [class-data]
   {:type "class-definition"

@@ -11,7 +11,11 @@
   (println (.getMessage excp))
   (.printStackTrace excp))
 
-
+(clojure.core/defn load-namespace
+      [ns-name]
+      (let [ns-sym (symbol ns-name)]
+        (require ns-sym)
+             true))
 
 (clojure.core/defn structure-out-meta [meta-data]
   "do it think about a well formed struct "
@@ -27,9 +31,10 @@
       (let [meta-data (meta fun)]
         (structure-out-meta meta-data)))))
 
-(clojure.core/defn really-get-meta [namespace-sym record-sym]
+(clojure.core/defn really-get-meta [namespace-sym fun-sym]
+  (load-namespace namespace-sym)
   (let [ns-intern-map (ns-interns namespace-sym)
-        rec (get ns-intern-map record-sym)]
+        rec (get ns-intern-map fun-sym)]
     (if-not (or (nil? ns-intern-map)
                 (empty? ns-intern-map))
       (let [meta-data (meta rec)]
@@ -66,5 +71,5 @@
                         )]
      (analyze-fun result#)))
 
-(defmacro decompile-meta [ns-in obj]
+(clojure.core/defmacro decompile-meta [ns-in obj]
   `(do ~@(really-get-meta ns-in obj)))

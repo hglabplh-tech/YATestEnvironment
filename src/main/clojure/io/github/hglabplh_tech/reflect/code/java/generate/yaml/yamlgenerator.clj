@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.code.generate.yaml.yamlgenerator
+(ns io.github.hglabplh_tech.reflect.code.java.generate.yaml.yamlgenerator
   (:require [clojure.string :as str]))
 
 (declare value->yaml)

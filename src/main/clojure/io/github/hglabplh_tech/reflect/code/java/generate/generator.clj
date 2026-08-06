@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.code.generate.generator)
+(ns io.github.hglabplh_tech.reflect.code.java.generate.generator)
 
 (declare class-def-gen-hook
          class-body-gen-hook

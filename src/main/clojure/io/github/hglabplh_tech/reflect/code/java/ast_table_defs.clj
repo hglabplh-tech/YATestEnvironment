@@ -1,4 +1,4 @@
-(ns io.github.hglabplh-tech.reflect.code.ast-table-defs
+(ns io.github.hglabplh-tech.reflect.code.java.ast-table-defs
   (:import (java.lang.reflect Type
                               TypeVariable
                               GenericArrayType

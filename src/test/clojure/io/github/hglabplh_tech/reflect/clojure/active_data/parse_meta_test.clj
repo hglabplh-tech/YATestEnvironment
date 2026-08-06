@@ -9,6 +9,7 @@
             [clojure.pprint :refer :all]
             [cheshire.core :as json]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
+            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :refer :all]
             )
   )

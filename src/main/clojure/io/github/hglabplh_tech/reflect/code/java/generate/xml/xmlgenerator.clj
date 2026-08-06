@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.code.generate.xml.xmlgenerator
+(ns io.github.hglabplh_tech.reflect.code.java.generate.xml.xmlgenerator
   (:require [clojure.string :as str]))
 
 (declare value->xml)

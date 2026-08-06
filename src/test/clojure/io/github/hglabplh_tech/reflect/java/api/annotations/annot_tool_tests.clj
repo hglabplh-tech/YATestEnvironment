@@ -1,12 +1,12 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
-(ns io.github.hglabplh-tech.reflect.clojure.api.annotations.annot-tool-tests
+(ns io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool-tests
   (:require [clojure.test :refer :all]
             [clojure.pprint :as pp]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as cls]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-annotation :as refla]
-            [io.github.hglabplh-tech.reflect.clojure.api.annotations.annot-tool :as tool])
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as cls]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-annotation :as refla]
+            [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as tool])
   (:import (java.lang Deprecated)))
 
 (def smoke-result {:annotation-type "java.lang.Deprecated",
