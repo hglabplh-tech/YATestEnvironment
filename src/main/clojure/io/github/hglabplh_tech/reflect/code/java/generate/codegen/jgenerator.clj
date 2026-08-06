@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.reflect.code.generate.codegen.jgenerator
+(ns io.github.hglabplh_tech.reflect.code.java.generate.codegen.jgenerator
   (:require [clojure.string :as str]))
 
 (defn- class-name [class-data]
