@@ -1,3 +1,4 @@
+;;(c) Harald Glab-Plhak, 2026
 (ns io.github.hglabplh_tech.reflect.code.java.generate.json.jsongenerator
   (:require [io.github.hglabplh-tech.reflect.code.json-util :refer :all]))
 

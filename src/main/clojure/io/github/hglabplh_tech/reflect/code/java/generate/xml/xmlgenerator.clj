@@ -1,3 +1,4 @@
+;;(c) Harald Glab-Plhak, 2026
 (ns io.github.hglabplh_tech.reflect.code.java.generate.xml.xmlgenerator
   (:require [clojure.string :as str]))
 

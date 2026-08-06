@@ -1,3 +1,4 @@
+;; This code here has to be rewritten completely (c) Harald Glab-Plhak
 (ns io.github.hglabplh_tech.reflect.code.java.generate.codegen.jgenerator
   (:require [clojure.string :as str]))
 

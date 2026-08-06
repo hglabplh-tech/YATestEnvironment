@@ -1,3 +1,4 @@
+;;(c) Harald Glab-Plhak, 2026
 (ns io.github.hglabplh-tech.reflect.code.json-util
   (:require [clojure.data.json :as json]))
 
@@ -28,3 +29,6 @@
 
 (defn write-json [data]
   (json/write-str (json-safe data) :escape-slash false))
+
+(defn print-pretty [json-str]
+  (json/write-str json-str :indent true))
