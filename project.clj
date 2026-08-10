@@ -1,4 +1,4 @@
-(defproject org.clojars.hglabplh/YATestEnvironment "1.4-SNAPSHOT"
+(defproject org.clojars.hglabplh/YATestEnvironment "1.4.0-SNAPSHOT"
   :description "Clojure project to have a test Environment "
   :url "https://github.com/hglabplh-tech/YATestEnvironment.git"
   :license {:name "MIT License"

@@ -3,13 +3,11 @@
   (:require [active.data.realm :as realm]
     [clojure.pprint :refer [pprint]]
             [clojure.test :refer :all]
-            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all]
             [active.data.realm.attach :refer :all]
             [active.data.realm.schema :refer :all]
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.code.clojure.json-gen :as json]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
-            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :refer :all]
             )
   )

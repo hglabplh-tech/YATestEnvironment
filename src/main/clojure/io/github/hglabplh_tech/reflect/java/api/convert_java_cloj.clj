@@ -126,7 +126,7 @@
     ))
 
 
-(defn retrive-class-info [clazz-util]
+(defn retrieve-class-info [clazz-util]
   (let [class-def (retrieve-direct-class-parameters clazz-util)
         class-body (retrieve-class-body (rcl/get-all-ctors clazz-util)
                                         (rcl/get-all-fields clazz-util)
@@ -137,8 +137,3 @@
       :cl-body
       class-body}})
   )
-
-(defn retrieve-class-info
-  "Compatibility alias for the original misspelled retrive-class-info function."
-  [clazz-util]
-  (retrive-class-info clazz-util))

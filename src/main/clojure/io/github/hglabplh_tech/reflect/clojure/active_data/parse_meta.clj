@@ -11,24 +11,25 @@
   (let [output (schema/schema ad-record)]
     output))
 
-(clojure.core/defn walk-through [fun the-list]
-  (loop [the-rest the-list
-         result []]
-    (if (empty? the-rest)
-      result
-      (let [the-result (fun (doall (first the-rest)))]
-        (recur (rest the-rest) (conj result the-result)))
-      )
-    ))
 
-(clojure.core/defn realm-base-schema [value]
+(clojure.core/defn realm-base-schema
+  "read and store the base fields common in each realm
+  @param : the realm"
+  {:added  "1.4.0"
+   :static true}
+  [value]
   (if (rinspect/realm? value)
     {:description   (rinspect/description value)
      ;;:predicate-fun (rinspect/predicate value)
      :meta-data     (rinspect/metadata value)}
     {}))
 
-(clojure.core/defn record-field-schema [realm-value]
+(clojure.core/defn record-field-schema
+  "read and store the values and the realm for a record field
+   @param : the definition for a record field"
+  {:added  "1.4.0"
+   :static true}
+  [realm-value]
   (let [realm-base (realm-base-schema realm-value)
         field-name-raw (rinspect/record-realm-field-name realm-value)
         field-realm-raw (rinspect/record-realm-field-realm realm-value)
@@ -42,7 +43,12 @@
     )
   )
 
-(clojure.core/defn fun-case-output-input-schema [fun-case]
+(clojure.core/defn fun-case-output-input-schema
+  "read and store the definitions of a function case
+   @param : the definition for a function case"
+  {:added  "1.4.0"
+   :static true}
+  [fun-case]
   (println "function case entered ->")
   (let [position-args-raw (rinspect/function-case-positional-argument-realms fun-case)
         pos-args-def (mapv decompile-active-rec  position-args-raw)
@@ -61,7 +67,12 @@
     [cooked]                                     ;; FIXME have to introduce realm-base again
     ))
 
-(clojure.core/defn decompile-active-rec [st-value]
+(clojure.core/defn decompile-active-rec
+  "read and decompile a realm in our case the root realm of a function/record (stored in metadata)
+   @param : the realm stored in the function or record metadata"
+  {:added  "1.4.0"
+   :static true}
+  [st-value]
   (let [value st-value]
     (println "Funtion select-meta-rec ->")
     (pprint value)
@@ -103,7 +114,7 @@
 
           (rinspect/union? value)
           (let [the-rec (rinspect/union-realm-realms value)
-                cooked {:union-realm-def (walk-through decompile-active-rec the-rec)}]
+                cooked {:union-realm-def (mapv decompile-active-rec the-rec)}]
             (println "realm union")
             [realm-base cooked])
 
@@ -218,13 +229,3 @@
           [value]
           ;;(throw (IllegalArgumentException. (str "invalid realm member " value)))
           ) )))))
-
-
-(clojure.core/defn get-data-active-meta [meta-data]
-  (let [active-meta (get meta-data attach/fn-realm-meta-key)
-        a-meta (decompile-active-rec active-meta)
-        stripped-meta-desc (first a-meta)
-        the-value (first (rest (first stripped-meta-desc)))]
-    (pprint active-meta)
-    the-value
-    ))

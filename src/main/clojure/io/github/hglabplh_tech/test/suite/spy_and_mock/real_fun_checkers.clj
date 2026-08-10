@@ -1,3 +1,5 @@
+;; (c) Harald Glab-Plhak
+;; TODO: look for a better place for each function here some functions are really for mock / spy but some are reflective. Refacture this later
 (ns io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers
   (:refer-clojure :exclude [defn fn])
   (:require [clojure.walk :refer :all]

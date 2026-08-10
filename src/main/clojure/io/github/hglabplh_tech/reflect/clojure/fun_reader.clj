@@ -72,4 +72,5 @@
      (analyze-fun result#)))
 
 (clojure.core/defmacro decompile-meta [ns-in obj]
-  `(do ~@(really-get-meta ns-in obj)))
+  `(do  ~@(require [ns-in :refer :all])
+     ~@(really-get-meta ns-in obj)))
