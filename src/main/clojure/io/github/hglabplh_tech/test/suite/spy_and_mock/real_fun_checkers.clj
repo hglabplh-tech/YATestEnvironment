@@ -163,7 +163,6 @@
         argument-list (get fun-meta :argument-list)
        ]
     (let [schema-val (parse-base-schema the-schema)]
-      (pprint fun-meta)
       {:structured-meta {:base-data {:ns            the-ns
                                :name          the-name
                                :line          the-line

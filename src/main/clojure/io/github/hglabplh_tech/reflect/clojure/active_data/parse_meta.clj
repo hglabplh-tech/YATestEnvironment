@@ -1,16 +1,9 @@
 (ns io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta
-  (:require [active.data.raw-record :as rrec :refer [is-a?]]
-            [active.data.realm.attach :as attach]
-            [active.data.realm.inspection :as rinspect]
-            [active.data.realm.schema :as schema]
+  (:require [active.data.realm.inspection :as rinspect]
             [active.data.struct.internal.key :refer :all]
             [clojure.pprint :refer :all]))
 
 (declare decompile-active-rec)
-(defn active-rec-to-schema [ad-record]
-  (let [output (schema/schema ad-record)]
-    output))
-
 
 (clojure.core/defn realm-base-schema
   "read and store the base fields common in each realm
@@ -75,8 +68,6 @@
   [st-value]
   (let [value st-value]
     (println "Funtion select-meta-rec ->")
-    (pprint value)
-
     (if (rinspect/realm? value) ;; FIXME normally only have to ask for realm :-(
       (let [realm-base (realm-base-schema value)]
         (cond
@@ -163,7 +154,6 @@
           (let [raw (rinspect/optional-realm-realm value)
                 cooked (decompile-active-rec raw)]
             (println "optional realm found: ")
-            (pprint cooked)
             [realm-base cooked]
             )
 
@@ -189,7 +179,7 @@
                 cooked {:record-name name-raw
                         :record-ctor ctor-raw
                         :rec-fields
-                        (mapv (fn [v] (println "rec-field ->") (pprint v) (record-field-schema v))
+                        (mapv (fn [v] (println "rec-field ->")(record-field-schema v))
                                       fields-raw)}]
             (println "record  realm")
             [realm-base cooked]
@@ -201,7 +191,6 @@
           (let [the-cases (rinspect/function-realm-cases value)
                 cooked {:function-cases-def (mapv (fn [val]
                                                     (println "fun-case-realm -> ")
-                                                    (pprint val)
                                                     (fun-case-output-input-schema val)) the-cases)}]
             (println "here is the function realm")
             [realm-base cooked]
@@ -219,13 +208,11 @@
                 cooked {:named-realm-def
                         {:name       name-raw
                          :name-realm (decompile-active-rec realm-raw)}}]
-            (pprint cooked)
             (println "named realm")
             [realm-base cooked])
         :else
         (do
           (println " This case should never happen")        ;; FIXME: here we have a gap
-          (pprint value)
           [value]
           ;;(throw (IllegalArgumentException. (str "invalid realm member " value)))
           ) )))))

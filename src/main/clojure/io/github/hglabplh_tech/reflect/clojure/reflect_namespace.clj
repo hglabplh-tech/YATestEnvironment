@@ -1,15 +1,46 @@
 (ns io.github.hglabplh-tech.reflect.clojure.reflect-namespace
-  (:require  [clojure.pprint :refer :all]))
+  (:require [clojure.pprint :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.fun-reader :as fr]))
 
-(clojure.core/defn get-ns-interns [namespace-sym]
+(clojure.core/defn create-meta-entry [namespace-sym keyval decompiled?]
+  {(keyword (str (key keyval)))
+   (if decompiled?
+     (fr/get-decompiled-meta (meta (val keyval)))
+     (meta (val keyval)))})
 
-  (let [search-space (find-ns namespace-sym)
-        ns-intern-map (ns-interns search-space)
+(clojure.core/defn get-ns-interns [namespace-sym decompiled?]
+  (let [ns-intern-meta-map (mapv (fn [entry]
+                                   (create-meta-entry namespace-sym entry decompiled?))
+                                 (ns-interns namespace-sym))]
+    (println "NS INTERN")
+    (pprint ns-intern-meta-map)
+    ns-intern-meta-map))
+
+(clojure.core/defn get-ns-publics [namespace-sym decompiled?]
+  (let [the-namespace (the-ns namespace-sym)
+        ns-public-meta-map (mapv (fn [entry]
+                                   (create-meta-entry namespace-sym entry decompiled?))
+                                 (ns-publics the-namespace))
         ]
-    (pprint ns-intern-map)))
 
-(clojure.core/defmacro get-all-defs [namespace-sym]
-  `(do  ~@(require [namespace-sym :refer :all])
-     ~@(get-ns-interns namespace-sym)))
+    (println "Namespace object: ")
+    (println the-namespace)
+    (println "Namespace meta ??: ->")
+    (println (ns-aliases the-namespace))
+    (println (ns-refers the-namespace))
+    (println "NS PUBLICS")
+    (pprint ns-public-meta-map)
+    ns-public-meta-map))
 
-(get-all-defs io.github.hglabplh-tech.reflect.clojure.fun-reader)
+
+
+(clojure.core/defmacro get-intern-defs [namespace-sym decompiled?]
+  (require [namespace-sym :refer :all] :use)
+  `(do
+     ~@(get-ns-interns namespace-sym decompiled?)))
+
+(clojure.core/defmacro get-public-defs [namespace-sym decompiled?]
+  (require [namespace-sym :refer :all] :use)
+  `(do
+     ~@(get-ns-publics namespace-sym decompiled?)))
+

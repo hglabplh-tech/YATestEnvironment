@@ -11,12 +11,6 @@
   (println (.getMessage excp))
   (.printStackTrace excp))
 
-(clojure.core/defn load-namespace
-      [ns-name]
-      (let [ns-sym (symbol ns-name)]
-        (require ns-sym)
-             true))
-
 (clojure.core/defn structure-out-meta [meta-data]
   "do it think about a well formed struct "
   (let [schema-data-part (fc/get-structured-meta-data meta-data)]
@@ -32,12 +26,11 @@
         (structure-out-meta meta-data)))))
 
 (clojure.core/defn really-get-meta [namespace-sym fun-sym]
-  (load-namespace namespace-sym)
   (let [ns-intern-map (ns-interns namespace-sym)
-        rec (get ns-intern-map fun-sym)]
+        the-fun (get ns-intern-map fun-sym)]
     (if-not (or (nil? ns-intern-map)
                 (empty? ns-intern-map))
-      (let [meta-data (meta rec)]
+      (let [meta-data (meta the-fun)]
         (try
           (let [decompiled (fc/get-structured-meta-data meta-data)]
             decompiled)
@@ -46,6 +39,16 @@
             ))
         ;;(get-rec-meta meta-data)
         ))))
+
+(clojure.core/defn get-decompiled-meta [meta-data]
+  (try
+    (let [decompiled (fc/get-structured-meta-data meta-data)]
+      decompiled)
+    (catch Throwable excp
+      (printout_excp excp)
+      ))
+  ;;(get-rec-meta meta-data)
+  )
 
 
 (clojure.core/defn get-meta-full [namespace-sym record-sym]
@@ -66,11 +69,12 @@
 
 (defmacro analyze-struct [ns-in & objects]
   `(let [result# ~@(map (clojure.core/fn [obj]
+                          (require [ns-in :refer :all])
                           (get-schema-structured ns-in obj))
                         objects
                         )]
      (analyze-fun result#)))
 
 (clojure.core/defmacro decompile-meta [ns-in obj]
-  `(do  ~@(require [ns-in :refer :all])
-     ~@(really-get-meta ns-in obj)))
+  `(do ~@(require [ns-in :refer :all])
+       ~@(really-get-meta ns-in obj)))

@@ -5,12 +5,13 @@
             [active.data.record :as sut]
             [clojure.pprint :refer :all]
             [io.github.hglabplh_tech.reflect.examples.clojure.the-data :as data]
+    ;;TODO: look how to load the ns with all ns things required and think about exclude
             [schema.core :as s]))
 (s/set-fn-validation! (boolean 1))
 
 (def all-users (atom {}))
 
-(def all-bills (atom {}))
+
 
 
 (defn log-thing :- realm/boolean
@@ -22,47 +23,6 @@
       (println "Content Logged :")
       (log-thing to-write))
 
-(defn add-user :- (realm/record->record-realm data/user)
-      [acc-no :- realm/uuid
-       gen :- realm/string
-       lastn :- realm/string
-       nickn :- realm/string
-       addr1 :- realm/string
-       addr2 :- realm/string
-       co :- realm/string]
-      (let [the-user (data/user data/account-no acc-no
-                                data/gender gen
-                                data/lastname lastn
-                                data/nickname nickn
-                                data/address1 addr1
-                                data/address2 addr2
-                                data/county co)]
-        (logit the-user)
-        (swap! all-users conj {acc-no the-user})
-        the-user))
-
-
-
-(defn add-bill :- (realm/record->record-realm data/bill)
-      [user-id :- realm/uuid
-       bill-no :- realm/integer
-       article-list :- (realm/set-of realm/string)
-       total-price :- realm/number]
-      (let [the-bill (data/bill data/account-no user-id data/billing-no bill-no
-                                data/billing-articles article-list
-                                data/total total-price)]
-        (logit the-bill)
-        (swap! all-bills conj {bill-no the-bill})
-        the-bill))
-
-(sut/def-record the-rec [return-val :- realm/symbol
-                         parm-list :- (realm/set-of realm/symbol)
-                         line :- (realm/integer-from 7)
-                         factor :- (realm/real-range :ex 7.7 100.8 :in)
-                         ])
-
-(def test-the-rec (the-rec return-val 'k parm-list (set '(p o k f))
-                           line 8 factor 56.9))
 
 (defn my-easy-test :- realm/number
       [description :- realm/string
@@ -75,50 +35,40 @@
         (println (str print-text result))
         result))
 
-(defn my-set-test :- realm/any                              ;;(realm/record->record-realm the-rec)
-      [first-val :- realm/number
-       set-val :- (realm/set-of realm/number)]
-      (let [print-text (str " set " set-val)]
+(defn my-set-test :- realm/any
+      [firstval :- realm/number
+       setval :- (realm/set-of realm/number)]
+      (let [print-text (str " set " setval)]
         print-text
         ))
 
-(defn my-enum-test :- realm/any                             ;;(realm/record->record-realm the-rec)
-      [first-val :- realm/number
-       enum-val :- (realm/enum :one :two :three :four :five :six :seven 2 4 6 8 0)]
-      (let [print-text (str "found  two params number is: " first-val " enum value is: " enum-val)]
+(defn my-enum-test :- realm/any
+      [firstval :- realm/number
+       enumval :- (realm/enum :one :two :three :four :five :six :seven 2 4 6 8 0)]
+      (let [print-text (str "found  two params number is: " firstval " enum value is: " enumval)]
         print-text
         ))
 
-(defn my_op_fun :- realm/number
-      [label :- realm/string
+(defn operator-fun :- realm/number
+      [my-msg :- realm/string
        op1 :- realm/number
        op2 :- realm/number]
       (* op1 op1))
 
 (defn my-complex-test :- realm/any                          ;;(realm/record->record-realm the-rec)
-      [first-val :- realm/number
-       second-val :- realm/number
-       third-val :- (realm/set-of realm/symbol)
-       ;;int-range-param :- (realm/integer-from 5)
-       ;;                       real-range-param :- (realm/real-range :ex 7 10 :in)
+      [firstval :- realm/number
+       secondval :- realm/number
+       thirdval :- (realm/set-of realm/symbol)
+       int-range-param :- (realm/integer-from 5)
+       real-range-param :- (realm/real-range :ex 7 10 :in)
        enum-val :- (realm/enum 4 5 6 7)
        operator-fun :- (realm/function
                          realm/string realm/number realm/number
                          -> realm/number)]
-      (pprint third-val)
-      (- (+ first-val second-val)
-         (+ second-val first-val (operator-fun "mul" 8.78 9.5)))
-
-      )
-
-(clojure.core/defn string->integer
-  ([s] (string->integer s 10))
-  ([s base] (Integer/parseInt s base)))
+      (pprint thirdval)
+      (- (+ firstval secondval)
+         (+ secondval firstval (operator-fun "mul" 8.78 9.5))))
 
 (defn string->integer-with-contract :- realm/integer
       [s :- realm/string
-       base :- (realm/optional [realm/integer])]
-      (if-let [radix base]
-        (string->integer s radix)
-        (string->integer s 10))
-      )
+       base :- (realm/optional [realm/integer])]  [s base])
