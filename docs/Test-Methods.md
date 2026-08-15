@@ -263,10 +263,4 @@ This leads us to the next part of this article. The Test data generator
 
 #### APENDIX II
 
-Here the additional stuff takes place 
-
-
- 
-
-
-
+Here the additional stuff takes place

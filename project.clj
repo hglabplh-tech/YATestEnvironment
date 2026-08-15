@@ -16,7 +16,7 @@
                     [:role "maintainer"]]]])
   :repositories [["java.net" "https://download.java.net/maven/2"]
                  ["jitpack" "https://jitpack.io"]
-                 [ "UniHildes"  "https://projects.sse.uni-hildesheim.de/qm/maven"]
+                 ["UniHildes"  "https://projects.sse.uni-hildesheim.de/qm/maven"]
                  ["sonatype" {:url "https://oss.sonatype.org/content/repositories/releases"
                               ;; If a repository contains releases only setting
                               ;; :snapshots to false will speed up dependencies.
@@ -119,14 +119,4 @@
   :deploy-repositories [["clojars" {:url "https://repo.clojars.org/"
                                     :username :env/clojars_username
                                     :password :env/clojars_password}]]
-  ;;:deploy-repositories
-  ;  [["releases" :clojars]
-  ;["snapshots" :clojars]]
-  ;;:deploy-repositories
-  ;;[["releases" {:url   "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-  ;;            :creds :gpg}
-  ;;"snapshots"
-  ;;  {:url   "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-  ;; :creds :gpg}]]
-
   )

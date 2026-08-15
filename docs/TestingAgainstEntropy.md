@@ -214,10 +214,10 @@ For I like to be honest since I was for over twenty years in
 each role regarding testing a product 
 and I know what I am talking about.
 
-- Harald G.P. IT-Consulting / Project Support
-- 03.05.1966 Computer Sience since 1992
+- Harald Glab Plhak
+- Computer Sience since 1992
 
-- &copy; Harald Glab-Plhak (2024)
+- &copy; Harald Glab-Plhak (2024 - 2026)
 
 
 

@@ -20,22 +20,20 @@ class.
 Information about the interfaces and methods in the project:
 [Project Documentation](https://hglabplh-tech.github.io/IE.New.Clojure-reflect/clojdoc/index.html)
 
-**_REMARK_** This API is inspired by the API for reflection in Clojure and by the API's 
+**_REMARK:_** This API is inspired by the API for reflection in Clojure and by the API's 
 in [Java Classpath](https://github.com/clojure/java.classpath) but I needed reflection in another way and I also liked to support Java 17 
 which is not natively supported by Clojure up to now. If possible and if the developers are interested I like to contribute it. 
 I just d´started this process.
 
-The classpath.clj is developed by
-;; by Stuart Sierra, [Stuart Sierry Web](http://stuartsierra.com/)
-;; April 19, 2009
+The classpath.clj is developed by Stuart Sierra, [Stuart Sierry Web](http://stuartsierra.com/) April 19, 2009
 
 
 The hooks for the generator call-backs are:
-:class-def-hook
-:class-body-gen-hook
-:ctor-gen-hook
-:method-gen-hook
-:field-gen-hook
-:enum-gen-hook
-:record-gen-hook
-:lambda-gen-hook
+- :class-def-hook
+- :class-body-gen-hook
+- :ctor-gen-hook
+- :method-gen-hook
+- :field-gen-hook
+- :enum-gen-hook
+- :record-gen-hook
+- :lambda-gen-hook
