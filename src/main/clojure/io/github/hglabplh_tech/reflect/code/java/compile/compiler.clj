@@ -2,11 +2,11 @@
   (:require [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
             [io.github.hglabplh-tech.reflect.java.api.reflect-class :refer :all]
             [io.github.hglabplh-tech.reflect.java.api.convert-java-cloj :as conv]
-            [io.github.hglabplh_tech.reflect.code.generate.generator :as gen]
-            [io.github.hglabplh_tech.reflect.code.generate.yaml.yamlgenerator :as ygen]
-            [io.github.hglabplh_tech.reflect.code.generate.xml.xmlgenerator :as xgen]
-            [io.github.hglabplh_tech.reflect.code.generate.json.jsongenerator :as jgen]
-            [io.github.hglabplh_tech.reflect.code.generate.codegen.jgenerator :as cgen])
+            [io.github.hglabplh_tech.reflect.code.java.generate.generator :as gen]
+            [io.github.hglabplh_tech.reflect.code.java.generate.yaml.yamlgenerator :as ygen]
+            [io.github.hglabplh_tech.reflect.code.java.generate.xml.xmlgenerator :as xgen]
+            [io.github.hglabplh_tech.reflect.code.java.generate.json.jsongenerator :as jgen]
+            [io.github.hglabplh_tech.reflect.code.java.generate.codegen.jgenerator :as cgen])
   (:import (clojure.lang Symbol)
            (java.lang Class)
            (io.github.hglabplh_tech.reflect.java.api.utils ClassUtil)))

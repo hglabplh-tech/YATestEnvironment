@@ -34,6 +34,8 @@
                               :releases {:checksum :fail :update :always}}]]
   :dependencies [[org.clojure/clojure "1.12.3"]
                  [org.clojure/clojure-contrib "1.2.0"]
+                 [org.scala-lang/scala-library "2.13.12"]
+                 [org.jetbrains.kotlin/kotlin-stdlib "1.9.22"]
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
