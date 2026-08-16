@@ -218,7 +218,3 @@ and I know what I am talking about.
 - Computer Sience since 1992
 
 - &copy; Harald Glab-Plhak (2024 - 2026)
-
-
-
-
