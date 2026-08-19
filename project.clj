@@ -34,8 +34,12 @@
                               :releases {:checksum :fail :update :always}}]]
   :dependencies [[org.clojure/clojure "1.12.3"]
                  [org.clojure/clojure-contrib "1.2.0"]
-                 [org.scala-lang/scala-library "2.13.12"]
+                 [org.scala-lang/scala3-library_3 "3.8.4"]
+                 [org.scala-lang/scala-reflect "2.13.18"]
+                 [org.scala-lang/tasty-core_3 "3.8.4"]
+                 [org.scala-lang/scala3-tasty-inspector_3 "3.8.4"]
                  [org.jetbrains.kotlin/kotlin-stdlib "1.9.22"]
+                 [org.jetbrains.kotlin/kotlin-metadata-jvm "2.4.20-RC"]
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
@@ -59,9 +63,12 @@
 
 
   :plugins [[lein-codox "0.10.8"]
+            [lein-shell "0.5.0"]
             [lein-cljsbuild "1.0.1"]
             [lein-ubersource "0.1.1"]
             [lein-javadoc "0.3.0"]
+            [kotlinc-lein "0.1.2"]
+
             [lein-javac-resources "0.1.1"]]
   :omit-source true  ; excludes .java and .clj files from the generated JAR file
             ; you may not want to set this unless all code is AOT-compiled
@@ -87,9 +94,12 @@
              }
   :aliases {"java-tests" ["do" "compile," "with-profile"
                           "java-tests-compile" "javac," "codox.main/generate-docs"]
-            "all-tests"  ["test," "java-tests"]}
+            "all-tests"  ["test," "java-tests"]
+            "comp-sc3-kotlin" ["shell" "./sc_kotlin_comp.sh" "./src/scala" "./src/kotlin" "target/classes"]
 
-  :uberjar {:prep-tasks ["clean" "javac" "codox" "compile" "javadoc"]
+            }
+
+  :uberjar {:prep-tasks ["clean" "javac" "codox" "compile" "javadoc" "comp-sc3-kotlin" ]
             :aot        :all}
   :classifiers [["sources" {:source-paths      ^:replace ["src/main/clojure"]
                             :java-source-paths ^:replace ["src/main/java"]
