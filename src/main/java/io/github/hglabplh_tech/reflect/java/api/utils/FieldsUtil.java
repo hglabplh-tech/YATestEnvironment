@@ -6,7 +6,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
 
 
 /**

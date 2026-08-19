@@ -8,7 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
 /**
  * This is a utility class for getting the Annotations belonging to a
  * class method field

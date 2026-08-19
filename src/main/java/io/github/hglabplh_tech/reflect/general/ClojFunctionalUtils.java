@@ -1,4 +1,4 @@
-package io.github.hglabplh_tech.reflect.java.api.utils;
+package io.github.hglabplh_tech.reflect.general;
 
 import clojure.lang.*;
 

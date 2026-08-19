@@ -1,14 +1,15 @@
-package io.github.hglabplh_tech.reflect.java.api.utils;
+package io.github.hglabplh_tech.reflect.general;
 
 import clojure.lang.IPersistentMap;
 import clojure.lang.PersistentArrayMap;
+import io.github.hglabplh_tech.reflect.java.api.utils.SpecialFormsUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.ObjType;
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.retrieveKeywordForJavaID;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.ObjType;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
 
 /**
  * This s a utility class for transforming data from Java to a well readable

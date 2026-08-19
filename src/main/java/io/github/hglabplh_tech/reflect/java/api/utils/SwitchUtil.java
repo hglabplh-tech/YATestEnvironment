@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.*;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
 /**
  * This is a utility class for getting reflection information about switch

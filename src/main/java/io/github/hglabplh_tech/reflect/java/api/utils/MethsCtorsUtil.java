@@ -7,7 +7,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
 
 /**
  * This s a utility class for getting the definition data of

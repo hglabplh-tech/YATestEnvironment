@@ -9,7 +9,7 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.*;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
 /**
  * This s a utility class for the types enum, records and 'lambda'

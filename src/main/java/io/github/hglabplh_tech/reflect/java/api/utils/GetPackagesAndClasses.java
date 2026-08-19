@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.getListAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getListAsLazyVector;
 
 
 /**

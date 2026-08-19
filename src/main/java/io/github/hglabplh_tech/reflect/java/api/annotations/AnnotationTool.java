@@ -10,10 +10,10 @@ import java.lang.annotation.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.ObjType;
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.retrieveKeywordForJavaID;
-import static io.github.hglabplh_tech.reflect.java.api.utils.DataTypeTransformer.*;
-import static io.github.hglabplh_tech.reflect.java.api.utils.DataTypeTransformer.transformTypeValuesFromMethods;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.ObjType;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
+import static io.github.hglabplh_tech.reflect.general.DataTypeTransformer.*;
+import static io.github.hglabplh_tech.reflect.general.DataTypeTransformer.transformTypeValuesFromMethods;
 
 /**
  * This class is a utility class for analyzing the content and the attributes of

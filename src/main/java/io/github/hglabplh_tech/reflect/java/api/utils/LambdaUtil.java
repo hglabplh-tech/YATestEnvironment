@@ -11,7 +11,7 @@ import clojure.lang.PersistentArrayMap;
 import javax.annotation.Nonnull;
 import java.lang.reflect.*;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.*;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
 /**
  * This is a utility class for getting reflection information about lambda

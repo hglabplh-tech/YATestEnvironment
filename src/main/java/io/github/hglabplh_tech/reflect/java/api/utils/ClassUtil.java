@@ -3,6 +3,7 @@ package io.github.hglabplh_tech.reflect.java.api.utils;
 import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 import clojure.lang.PersistentArrayMap;
+import io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils;
 
 
 import java.lang.annotation.Annotation;
@@ -12,8 +13,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.getArrayAsLazyVector;
-import static io.github.hglabplh_tech.reflect.java.api.utils.ClojFunctionalUtils.retrieveKeywordForJavaID;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
 
 /**
  * This utility class is for getting the reflection on a specific class
