@@ -9,19 +9,22 @@ import kotlin.reflect.*
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
 
-object CompleteKTFileReflector {
+class CompleteKTFileReflector {
+
+    constructor() {
+    }
 
     // ------------------------------------------------------------
     // Public API
     // ------------------------------------------------------------
 
-    @JvmStatic
+
     fun inspectClass(className: String): Map<String, Any?> {
         val clazz = Class.forName(className)
         return inspectClass(clazz)
     }
 
-    @JvmStatic
+
     fun inspectClass(clazz: Class<*>): Map<String, Any?> {
 
         val result = HashMap<String, Any?>()

@@ -12,6 +12,8 @@ OUTPUT_PATH_BOTH=$3
 COMPILE_CLASS_PATH=$(lein classpath | tail -n 1)
 RET=$?
 
+mkdir -pv $OUTPUT_PATH_BOTH
+
 # 2. Check if Leiningen successfully resolved the classpath
 if [ $RET -ne 0 ] || [ -z "$COMPILE_CLASS_PATH" ]; then
     echo "Error: Failed to retrieve project.clj classpath."

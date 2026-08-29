@@ -1,5 +1,5 @@
 (ns io.github.hglabplh-tech.reflect.general.cloj-java-represent
-  (:import (io.github.hglabplh_tech.reflect.java.api.utils ClojFunctionalUtils)
+  (:import (io.github.hglabplh_tech.reflect.general ClojFunctionalUtils)
            (java.lang.reflect AnnotatedType
                               GenericArrayType
                               ParameterizedType

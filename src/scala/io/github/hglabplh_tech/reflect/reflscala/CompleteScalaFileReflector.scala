@@ -1,10 +1,10 @@
 package io.github.hglabplh_tech.reflect.reflscala
-
+class CompleteScalaFileReflector
 import java.lang.Class
 import java.lang.reflect.{Constructor, Method, Field, AnnotatedType, AnnotatedElement, Parameter, Modifier}
 import java.util.{ArrayList, HashMap, List as JList, Map as JMap}
-import scala.annotation.static
 import scala.jdk.CollectionConverters.*
+import scala.annotation.static
 
 object CompleteScalaFileReflector {
 
@@ -23,8 +23,7 @@ object CompleteScalaFileReflector {
    *
    * Damit direkt aus Java, Clojure, Kotlin etc. verwendbar.
    */
-
-  def  inspectClass(className: String): JMap[String, Object] = {
+  @static def  inspectClass(className: String): JMap[String, Object] = {
     val clazz = Class.forName(className)
     inspectClass(clazz)
   }

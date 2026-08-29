@@ -5,7 +5,10 @@ import kotlin.metadata.jvm.KotlinClassMetadata
 class ScalaTastyLikeKTReflect {
     /*TODO: rewrite to real object*/
 
-
+    fun inspectMetadata(className: String): Any? {
+        val clazz = Class.forName(className)
+        return inspectMetadata(clazz)
+    }
     public fun inspectMetadata(
         clazz: Class<*>
     ): Any? {

@@ -38,8 +38,9 @@
                  [org.scala-lang/scala-reflect "2.13.18"]
                  [org.scala-lang/tasty-core_3 "3.8.4"]
                  [org.scala-lang/scala3-tasty-inspector_3 "3.8.4"]
-                 [org.jetbrains.kotlin/kotlin-stdlib "1.9.22"]
-                 [org.jetbrains.kotlin/kotlin-metadata-jvm "2.4.20-RC"]
+                 [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
+                 [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
+                 [org.jetbrains.kotlin/kotlin-reflect "2.1.20"]
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
@@ -83,11 +84,13 @@
 
 
   :source-paths ["src/main/clojure"]
-  :java-source-paths ["src/main/java"]                      ; Java source is stored separately.
+  :java-source-paths ["src/main/java"]  ; Java source is stored separately.
+  ;;:scala-source-path ["src/scala"]
+  ;;:kotlin-source-path ["src/kotlin"]
   :test-paths ["src/test/clojure" "src/test/java"]
   :resource-paths ["src/test/resources" "lib/tools.jar"]
 
-  :aot :all
+
 
   :profiles {:java-tests-compile
              {:java-source-paths ["src/test/java"]}
@@ -99,8 +102,8 @@
 
             }
 
-  :uberjar {:prep-tasks ["clean" "javac" "codox" "compile" "javadoc" "comp-sc3-kotlin" ]
-            :aot        :all}
+  :uberjar {:prep-tasks ["clean" "comp-sc3-kotlin" "javac" "codox" "compile" "javadoc"  ]
+            }
   :classifiers [["sources" {:source-paths      ^:replace ["src/main/clojure"]
                             :java-source-paths ^:replace ["src/main/java"]
                             :resource-paths    ^:replace ["javadoc"]}]
