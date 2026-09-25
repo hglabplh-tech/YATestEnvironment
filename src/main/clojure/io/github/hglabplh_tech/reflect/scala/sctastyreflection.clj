@@ -1,4 +1,5 @@
-(ns io.github.hglabplh-tech.reflect.scala.sctastyreflection)
+(ns io.github.hglabplh-tech.reflect.scala.sctastyreflection
+  (:require [io.github.hglabplh-tech.reflect.scala.tasty-context-holder :as tasty-ctx]))
 
 (defn safe-call
   [f default]
@@ -272,7 +273,7 @@
     []))
 
 
-(defn reflect-class [class-symbol]
+(defn reflect-scala-class [class-symbol]
   {:name
    (safe-call #(str (.fullName class-symbol)) "##none##")
 
@@ -362,3 +363,15 @@
      :final?
      (boolean
        (safe-call #(.isFinal class-symbol) false))}}})
+
+(defn reflect-scala-class-by-name
+  [^String class-name]
+  (let [class-symbol (tasty-ctx/get-class-symbol class-name)]
+
+    (when-not class-symbol
+      (throw
+        (ex-info
+          (str "Scala class not found: " class-name)
+          {:class-name class-name})))
+
+    (reflect-scala-class class-symbol)))

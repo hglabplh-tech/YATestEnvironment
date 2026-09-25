@@ -37,6 +37,7 @@
                  [org.scala-lang/scala3-library_3 "3.8.4"]
                  [org.scala-lang/scala-reflect "2.13.18"]
                  [org.scala-lang/tasty-core_3 "3.8.4"]
+                 [ch.epfl.scala/tasty-query_3 "1.8.0"]
                  [org.scala-lang/scala3-tasty-inspector_3 "3.8.4"]
                  [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
                  [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
@@ -48,6 +49,8 @@
                  [com.github.technomancy/leiningen "2.11.2"]
                  [org.reflections/reflections "0.10.2"]
                  [org.clojure/data.json "2.5.1"]
+                 [com.github.seancorfield/next.jdbc "1.3.1118"]
+                 [org.mariadb.jdbc/mariadb-java-client "3.5.0"]
                  [org.junit.jupiter/junit-jupiter-engine "5.9.1"]
                  [lein-asciidoctorj/lein-asciidoctorj "0.0.5"]
                  ;; https://mvnrepository.com/artifact/jdk.tools/jdk.tools
@@ -69,7 +72,7 @@
             [lein-ubersource "0.1.1"]
             [lein-javadoc "0.3.0"]
             [kotlinc-lein "0.1.2"]
-
+            [lein-scalac "0.1.0"]
             [lein-javac-resources "0.1.1"]]
   :omit-source true  ; excludes .java and .clj files from the generated JAR file
             ; you may not want to set this unless all code is AOT-compiled
@@ -84,9 +87,7 @@
 
 
   :source-paths ["src/main/clojure"]
-  :java-source-paths ["src/main/java"]  ; Java source is stored separately.
-  ;;:scala-source-path ["src/scala"]
-  ;;:kotlin-source-path ["src/kotlin"]
+  :java-source-paths ["src/main/java"]  ; Java source is stored separately. :scala-source-path ["src/scala"]
   :test-paths ["src/test/clojure" "src/test/java"]
   :resource-paths ["src/test/resources" "lib/tools.jar"]
 

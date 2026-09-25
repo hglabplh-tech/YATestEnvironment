@@ -9,12 +9,18 @@ public enum TestCategory {
     ;
 
     private final String categoryName;
+    private final String userDef;
 
-    TestCategory(String name) {
+    TestCategory(String name, String userDef) {
         this.categoryName = name;
+        this.userDef = userDef;
     }
 
-    public String categoryName() {
-        return this.categoryName;
+    public TestCategory categoryName() {
+        return TestCategory.valueOf(this.categoryName);
+    }
+
+    public String userDef() {
+        return this.userDef;
     }
 }

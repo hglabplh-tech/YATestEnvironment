@@ -1,325 +1,132 @@
 (ns io.github.hglabplh-tech.reflect.scala.screflection
-  (:require [clojure.string :as str]))
-
-(defn enum->keyword [x]
-  (when x
-    (-> x
-        str
-        str/lower-case
-        (str/replace "_" "-")
-        keyword)))
-
-(defn transform-annotation [annotation]
-  {:type
-   (str (.tpe annotation))
-
-   :arguments
-   (try
-     (vec (.arguments annotation))
-     (catch Throwable _
-       []))})
-
-(defn transform-type [t]
-  (when t
-    {:display-name
-     (str t)
-
-     :type-class
-     (-> t class .getName)
-
-     :addon
-     {:scala
-      {:raw-representation
-       (str t)}}}))
-
-(defn transform-type-param [param]
-  {:name
-   (str (.name param))
-
-   :variance
-   (cond
-     (try (.isCovariant param)
-          (catch Throwable _ false))
-     :covariant
-
-     (try (.isContravariant param)
-          (catch Throwable _ false))
-     :contravariant
-
-     :else
-     :invariant)
-
-   :bounds
-   {:lower
-    (try
-      (transform-type (.lowerBound param))
-      (catch Throwable _ nil))
-
-    :upper
-    (try
-      (transform-type (.upperBound param))
-      (catch Throwable _ nil))}})
-
-(defn transform-parameter [param]
-  {:name
-   (str (.name param))
-
-   :type
-   (try
-     (transform-type (.declaredType param))
-     (catch Throwable _
-       nil))
-
-   :modifiers
-   {:implicit?
-    (try (.isImplicit param)
-         (catch Throwable _ false))
-
-    :using?
-    (try (.isGivenOrUsing param)
-         (catch Throwable _ false))
-
-    :repeated?
-    (try (.isRepeated param)
-         (catch Throwable _ false))
-
-    :by-name?
-    (try (.isByName param)
-         (catch Throwable _ false))}})
-
-(defn transform-method [method]
-  {:name
-   (str (.name method))
-
-   :kind
-   :method
-
-   :owner
-   (try
-     (str (.owner method))
-     (catch Throwable _
-       nil))
-
-   :visibility
-   (try
-     (enum->keyword (.visibility method))
-     (catch Throwable _
-       nil))
-
-   :type-parameters
-   (try
-     (mapv transform-type-param
-           (.typeParams method))
-     (catch Throwable _
-       []))
-
-   :parameter-lists
-   (try
-     (mapv
-       (fn [plist]
-         (mapv transform-parameter plist))
-       (.paramSymss method))
-     (catch Throwable _
-       []))
-
-   :return-type
-   (try
-     (transform-type (.declaredType method))
-     (catch Throwable _
-       nil))
-
-   :annotations
-   (try
-     (mapv transform-annotation
-           (.annotations method))
-     (catch Throwable _
-       []))
-
-   :modifiers
-   {:abstract?
-    (try (.isAbstract method)
-         (catch Throwable _ false))
-
-    :final?
-    (try (.isFinal method)
-         (catch Throwable _ false))
-
-    :private?
-    (try (.isPrivate method)
-         (catch Throwable _ false))
-
-    :protected?
-    (try (.isProtected method)
-         (catch Throwable _ false))}
-
-   :addon
-   {:scala
-    {:inline?
-     (try (.isInline method)
-          (catch Throwable _ false))
-
-     :transparent?
-     (try (.isTransparent method)
-          (catch Throwable _ false))
-
-     :extension?
-     (try (.isExtensionMethod method)
-          (catch Throwable _ false))
-
-     :given?
-     (try (.isGiven method)
-          (catch Throwable _ false))}}})
-
-(defn transform-field [field]
-  {:name
-   (str (.name field))
-
-   :kind
-   :field
-
-   :type
-   (try
-     (transform-type (.declaredType field))
-     (catch Throwable _
-       nil))
-
-   :visibility
-   (try
-     (enum->keyword (.visibility field))
-     (catch Throwable _
-       nil))
-
-   :annotations
-   (try
-     (mapv transform-annotation
-           (.annotations field))
-     (catch Throwable _
-       []))
-
-   :modifiers
-   {:mutable?
-    (try (.isMutable field)
-         (catch Throwable _ false))
-
-    :final?
-    (try (.isFinal field)
-         (catch Throwable _ false))
-
-    :lazy?
-    (try (.isLazy field)
-         (catch Throwable _ false))}})
-
-(defn transform-class [cls]
-  {:name
-   (str (.fullName cls))
-
-   :simple-name
-   (str (.name cls))
-
-   :kind
-   (cond
-     (try (.isTrait cls)
-          (catch Throwable _ false))
-     :trait
-
-     (try (.isModuleClass cls)
-          (catch Throwable _ false))
-     :object
-
-     (try (.isEnum cls)
-          (catch Throwable _ false))
-     :enum
-
-     :else
-     :class)
-
-   :owner
-   (try
-     (str (.owner cls))
-     (catch Throwable _
-       nil))
-
-   :visibility
-   (try
-     (enum->keyword (.visibility cls))
-     (catch Throwable _
-       nil))
-
-   :type-parameters
-   (try
-     (mapv transform-type-param
-           (.typeParams cls))
-     (catch Throwable _
-       []))
-
-   :parents
-   (try
-     (mapv transform-type
-           (.parents cls))
-     (catch Throwable _
-       []))
-
-   :annotations
-   (try
-     (mapv transform-annotation
-           (.annotations cls))
-     (catch Throwable _
-       []))
-
-   :constructors
-   (try
-     (->> (.declaredMethods cls)
-          (filter #(= "<init>" (str (.name %))))
-          (mapv transform-method))
-     (catch Throwable _
-       []))
-
-   :methods
-   (try
-     (->> (.declaredMethods cls)
-          (remove #(= "<init>" (str (.name %))))
-          (mapv transform-method))
-     (catch Throwable _
-       []))
-
-   :fields
-   (try
-     (mapv transform-field
-           (.declaredFields cls))
-     (catch Throwable _
-       []))
-
-   :modifiers
-   {:abstract?
-    (try (.isAbstract cls)
-         (catch Throwable _ false))
-
-    :final?
-    (try (.isFinal cls)
-         (catch Throwable _ false))
-
-    :sealed?
-    (try (.isSealed cls)
-         (catch Throwable _ false))}
-
-   :addon
-   {:scala
-    {:trait?
-     (try (.isTrait cls)
-          (catch Throwable _ false))
-
-     :object?
-     (try (.isModuleClass cls)
-          (catch Throwable _ false))
-
-     :enum?
-     (try (.isEnum cls)
-          (catch Throwable _ false))
-
-     :case?
-     (try (.isCase cls)
-          (catch Throwable _ false))
-
-     :sealed?
-     (try (.isSealed cls)
-          (catch Throwable _ false))}}})
+  (:import
+    [io.github.hglabplh_tech.reflect.reflscala.bridge ScalaTastyBridge]
+    [java.util Map List ArrayList]))
+
+(declare java->clj)
+
+(defn- java-map->clj
+  "Convert a java.util.Map recursively into a Clojure map.
+   String keys are converted to keywords."
+  [^Map m]
+  (into {}
+        (map (fn [[k v]]
+               [(if (string? k) (keyword k) k)
+                (java->clj v)]))
+        m))
+
+(defn java->clj
+  "Recursively converts Java collections returned by the Scala bridge
+   into ordinary Clojure data structures."
+  [x]
+  (cond
+    (instance? java.util.Map x)
+    (java-map->clj x)
+
+    (instance? java.util.List x)
+    (mapv java->clj x)
+
+    :else
+    x))
+
+(defn inspect-tasty-file
+  "Inspect one Scala 3 .tasty file.
+   Returns normalized Clojure data."
+  [filename]
+  (->> (ScalaTastyBridge/inspectTastyFile (str filename))
+       (mapv java->clj)))
+
+(defn inspect-tasty-files
+  "Inspect several Scala 3 .tasty files."
+  [files]
+  (let [paths (ArrayList.)]
+    (doseq [f files]
+      (.add paths (str f)))
+    (->> (ScalaTastyBridge/inspectTastyFiles paths)
+         (mapv java->clj))))
+
+(defn normalize-scala-element
+  "Normalize Scala-specific reflection entries into the unified model."
+  [m]
+  (case (:kind m)
+    "top-level-function"
+    (assoc m
+      :kind :function
+      :function-kind :top-level
+      :language :scala)
+
+    "method"
+    (assoc m
+      :kind :function
+      :function-kind :method
+      :language :scala)
+
+    "lambda"
+    (assoc m
+      :kind :function
+      :function-kind :lambda
+      :language :scala)
+
+    "class"
+    (assoc m
+      :kind :type
+      :type-kind :class
+      :language :scala)
+
+    "trait"
+    (assoc m
+      :kind :type
+      :type-kind :trait
+      :language :scala)
+
+    "enum"
+    (assoc m
+      :kind :type
+      :type-kind :enum
+      :language :scala)
+
+    "val"
+    (assoc m
+      :kind :variable
+      :variable-kind :val
+      :language :scala)
+
+    "var"
+    (assoc m
+      :kind :variable
+      :variable-kind :var
+      :language :scala)
+
+    (assoc m :language :scala)))
+
+(defn inspect-scala-file
+  "Inspect one TASTy file and normalize all returned elements."
+  [filename]
+  (mapv normalize-scala-element
+        (inspect-tasty-file filename)))
+
+(defn inspect-scala-files
+  "Inspect several TASTy files and normalize all returned elements."
+  [files]
+  (mapv normalize-scala-element
+        (inspect-tasty-files files)))
+
+(defn only-functions
+  "Return all methods, top-level functions and lambdas."
+  [elements]
+  (filterv #(= :function (:kind %)) elements))
+
+(defn only-types
+  "Return reflected classes, traits and enums."
+  [elements]
+  (filterv #(= :type (:kind %)) elements))
+
+(defn only-lambdas
+  "Return only lambda expressions."
+  [elements]
+  (filterv #(= :lambda (:function-kind %)) elements))
+
+(defn only-top-level-functions
+  "Return only Scala top-level functions."
+  [elements]
+  (filterv #(= :top-level (:function-kind %)) elements))

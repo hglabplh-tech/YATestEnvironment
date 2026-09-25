@@ -19,10 +19,10 @@ if [ $RET -ne 0 ] || [ -z "$COMPILE_CLASS_PATH" ]; then
     echo "Error: Failed to retrieve project.clj classpath."
     exit 1
 fi
-echo "Called $0 with scala in: $INPUT_PATH_SCALA\n //
-kotlin in: $INPUT_PATH_KOTLIN\n//
-output dir:  $OUTPUT_PATH_BOTH\n //
-class path: $COMPILE_CLASS_PATH\n"
+echo "Called $0 with scala in: $INPUT_PATH_SCALA"
+echo "kotlin in: $INPUT_PATH_KOTLIN"
+echo "output dir:  $OUTPUT_PATH_BOTH"
+echo "class path: $COMPILE_CLASS_PATH"
 pwd
 echo "compile scala....";
 echo "get files....";
@@ -34,7 +34,7 @@ echo "Scala compiled with exit code was: $RET"
 
 if [ $RET = 0 ]; then
   echo "Compile Kotlin..."
-  kotlinc $INPUT_PATH_KOTLIN -d $OUTPUT_PATH_BOTH -cp $COMPILE_CLASS_PATH;
+  kotlinc $INPUT_PATH_KOTLIN -d $OUTPUT_PATH_BOTH -cp "$COMPILE_CLASS_PATH";
   RET=$?
   echo "Kotlin compiled with exit code was: $RET"
 fi
