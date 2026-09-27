@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.ANNOTATION_TYPE, ElementType.PARAMETER})
+@Target({ElementType.ANNOTATION_TYPE, ElementType.PARAMETER, ElementType.FIELD, ElementType.CONSTRUCTOR })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DoubleRange {
     double from() default Double.MIN_VALUE;
