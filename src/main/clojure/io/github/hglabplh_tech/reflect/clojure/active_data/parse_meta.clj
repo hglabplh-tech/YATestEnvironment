@@ -178,7 +178,7 @@
 
           (rinspect/real-range? value)
           (let [realm-clusive-left (rinspect/real-range-realm-clusive-left value)
-                realm-left (rinspect/real-range-realm-clusive-left value)
+                realm-left (rinspect/real-range-realm-left value)
                 realm-clusive-right (rinspect/real-range-realm-clusive-right value)
                 realm-right (rinspect/real-range-realm-right value)
                 cooked (conj realm-base {:predicate-fun (real-range-pred realm-left
