@@ -3,11 +3,12 @@
   (:require [clojure.test :refer :all]
             [active.data.realm :as realm]
             [active.data.realm.attach :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]
             [io.github.hglabplh_tech.reflect.clojure.spy-and-mock.mocking-jay :refer :all]
-            [active.data.realm.schema :as realm-schema]
-            [schema.core :as schema]))
+            [schema.core :as s]))
 
-(schema/set-fn-validation! (boolean 1))
+(s/set-fn-validation! (boolean 1))
 
 ;; :schema (=> Bool Str Num Num),
 ;; :active.data.realm.attach/realm #active.data.reaBBBlm.internal.records/function-realm

@@ -1,0 +1,4 @@
+./src/scala/io/github/hglabplh_tech/reflect/reflscala/TastyReflection.scala
+./src/scala/io/github/hglabplh_tech/reflect/reflscala/bridge/ScalaReflectionInspector.scala
+./src/scala/io/github/hglabplh_tech/reflect/reflscala/bridge/ScalaTastyBridge.scala
+./src/scala/io/github/hglabplh_tech/reflect/reflscala/CompleteScalaFileReflector.scala

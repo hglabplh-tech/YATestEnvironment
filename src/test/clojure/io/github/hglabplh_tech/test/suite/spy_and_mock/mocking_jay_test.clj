@@ -6,7 +6,7 @@
             [active.data.realm :as realm]
             [active.data.realm.attach :refer :all]
             [schema.core :as s]
-            [io.github.hglabplh_tech.reflect.clojure.example.the-funs-ns :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]
             [io.github.hglabplh_tech.reflect.clojure.spy-and-mock.mocking-jay :refer :all])
   (:import (clojure.lang Symbol Namespace)))
@@ -78,7 +78,7 @@
 
 (deftest test-example-spy
   (testing "A simple test for spy functionality"
-    (spy io.github.hglabplh_tech.test.suite.example.the-funs-ns)
+    (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
     (pprint (add-bill (random-uuid) 8757
                             (set (list "dishwasher" "pump-gun" "plate"))
                             678.96))

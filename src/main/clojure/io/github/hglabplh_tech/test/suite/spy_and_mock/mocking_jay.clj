@@ -3,6 +3,7 @@
   (:require [clojure.pprint :refer :all]
             [clojure.string :as str]
             [clojure.walk :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all])
 
   )
