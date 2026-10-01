@@ -8,6 +8,7 @@
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.code.clojure.json-gen :as json]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
+
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :refer :all]
             )
   )
@@ -15,20 +16,16 @@
 
 (deftest function_easy_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / easy test"
                                            (try
-                                              (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns my-easy-test)]
-                                                (println "test the fun call ->")
-                                                (my-easy-test "Hallo " (gensym "any") 68 98)
+                                              (let [m-data (really-get-meta 'io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns 'my-easy-test)]
                                                 (println "================================ the decompile result======================")
-                                                (println (json/to-json m-data))))
+                                                (pprint m-data))
                                               (catch Exception e
                                                 (.printStackTrace e)
-                                                )))
+                                                ))))
 
 (deftest function_my_set_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / set realm"
                                            (try
-                                             (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns my-set-test)]
-                                               (println "test the fun call ->")
-                                               (println (my-set-test 22 #{1 2 3}))
+                                             (let [m-data (really-get-meta 'io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns 'my-set-test)]
                                                (println "================================ the decompile result======================")
                                                (pprint m-data)))
                                            (catch Exception e
@@ -37,34 +34,21 @@
 
 (deftest function_my_enum_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / enum realm"
                                              (try
-                                               (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns my-enum-test)]
-                                                 (println "test the fun call ->")
-                                                 (println (my-enum-test 22 :five))
+                                               (let [m-data (really-get-meta 'io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns 'my-enum-test)]
                                                  (println "================================ the decompile result======================")
-                                                 (pprint m-data)))
+                                                 (pprint m-data)
+                                                 ))
                                              (catch Exception e
                                                (.printStackTrace e)
                                                )))
 
-(deftest function_my_complex_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / complex enum
-                                                       set of and function and scalar"
+(deftest function_my_complex_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / complex  realms"
                                               (try
-                                                (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns
-                                                                             my-complex-test)]
+                                                (let [m-data (really-get-meta 'io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns 'my-complex-test)]
                                                   (println "================================ the decompile result======================")
-                                                  (println (json/to-json m-data))))
+                                                  (pprint m-data)
+                                                  ))
                                               (catch Exception e
                                                 (.printStackTrace e)
                                                 )))
-
-(deftest function_my_optional_compile_ad_schema (testing "The conversion of the active data - meta-schema records to structured output / optional argument"
-                                                 (try
-                                                   (let [m-data (decompile-meta io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns
-                                                                                string->integer-with-contract)]
-                                                     (println "================================ the decompile result======================")
-                                                     (println (json/to-json m-data))))
-                                                 (catch Exception e
-                                                   (.printStackTrace e)
-                                                   )))
-
 (run-tests)

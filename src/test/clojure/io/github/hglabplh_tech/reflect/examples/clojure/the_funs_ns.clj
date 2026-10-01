@@ -44,7 +44,7 @@
 
 (defn my-enum-test :- realm/any
       [value :- realm/number
-       enumval :- (realm/enum :one :two :three :four :five :six :seven 2 4 6 8 0)]
+       enumval :- (realm/enum :one :two :three :four :five :six :seven)]
       (let [print-text (str "found  two params number is: " value " enum value is: " enumval)]
         print-text
         ))

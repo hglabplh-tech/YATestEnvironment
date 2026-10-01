@@ -1,6 +1,7 @@
 (ns io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers-test
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
             [io.github.hglabplh_tech.reflect.clojure.spy-and-mock.real-fun-checkers :refer :all])
   (:import (clojure.lang Symbol Namespace))
   )
