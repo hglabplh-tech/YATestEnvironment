@@ -1,4 +1,4 @@
-(ns io.github.hglabplh_tech.test.suite.static-code.analysis.reflect-code
+(ns io.github.hglabplh_tech.reflect.clojure.static-code.analysis.reflect-code
   (:refer-clojure :exclude [defn fn])
   (:require [clojure.walk :refer :all]
             [clojure.reflect :as refl]
@@ -8,10 +8,10 @@
             [active.data.realm.attach :refer :all]
             [active.data.realm.internal.record-meta :as act-meta]
             [schema.spec.core :refer :all]
-            [schema.core :as schema]))
+            [schema.core :as s]))
 
 
-(schema/set-fn-validation! (boolean 1))
+(s/set-fn-validation! (boolean 1))
 
 (ad-rec/def-record ns-reflect [imports :- (realm/map-of realm/symbol realm/any)
                                interns :- (realm/map-of realm/symbol realm/any)

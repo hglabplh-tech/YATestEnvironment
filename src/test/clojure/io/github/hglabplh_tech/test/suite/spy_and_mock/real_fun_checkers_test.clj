@@ -2,29 +2,22 @@
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
-            [io.github.hglabplh_tech.reflect.clojure.spy-and-mock.real-fun-checkers :refer :all])
-  (:import (clojure.lang Symbol Namespace))
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all])
   )
 
 (defn testit [i o p l]
   (+ i o p l))
 
 
-(deftest test-meta-of-fun
-
-  (testing "the meta values of a function defn / fn"
-    (is (= (.toString (get-fun-meta-ns testit))
-           "io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers-test"))
-    (is (= (get-fun-meta-ns-sym testit)
-           'io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers-test))
-    (is (= (get-fun-meta-name testit) 'testit))
-    (is (= (type (first (first (get-fun-meta-args testit)))) Symbol))
-    (is (= (first (get-fun-meta-args testit)) (list 'i 'o 'p 'l)))
-    (is (= (get-fun-meta-args-count testit) 4))
-    (is (= (get-fun-meta-line testit) 8))
-    (is (= (get-fun-meta-col testit) 1))))
-
-
-
-
-
+(deftest test-meta-of-fun (testing "the meta values of a function defn / fn"
+                            (is (= (str (get-fun-meta-ns testit))
+                                   "io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers-test"))
+                            (is (= (get-fun-meta-ns-sym testit)
+                                   'io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers-test))
+                            (is (= (get-fun-meta-name testit) 'testit))
+                            (is (symbol? (first (first (get-fun-meta-args testit)))))
+                            (is (= (first (get-fun-meta-args testit)) (list 'i 'o 'p 'l)))
+                            (is (= (get-fun-meta-args-count testit) 4))
+                            (is (= (get-fun-meta-line testit) 8))
+                            (is (= (get-fun-meta-col testit) 1))
+                            ))

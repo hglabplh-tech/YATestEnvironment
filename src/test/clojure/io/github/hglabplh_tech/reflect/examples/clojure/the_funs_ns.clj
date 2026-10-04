@@ -11,9 +11,6 @@
 
 (def all-users (atom {}))
 
-
-
-
 (defn log-thing :- realm/boolean
       [the-output :- realm/any]
       (pprint the-output)

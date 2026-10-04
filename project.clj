@@ -45,7 +45,7 @@
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
-                 [de.active-group/active-data "0.3.3"]
+                 [de.active-group/active-data "0.4.0"]
                  [com.github.technomancy/leiningen "2.11.2"]
                  [org.reflections/reflections "0.10.2"]
                  [org.clojure/data.json "2.5.1"]

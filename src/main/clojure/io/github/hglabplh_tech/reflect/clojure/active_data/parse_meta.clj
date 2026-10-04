@@ -16,6 +16,11 @@
      :meta-data   (rinspect/metadata realm-value)}
     {}))
 
+(defn- map-with-tag-predicate [key value]
+  (fn [x]
+    (and (map? x)
+         (= (get x key nil) value))))
+
 (clojure.core/defn make-base-predicate-fun [type-id]
   (println type-id)
   (cond
@@ -270,6 +275,13 @@
             (println "enum realm")
             cooked)
 
+          (rinspect/map-with-tag? value)
+          (let [the-key (realm-records/map-with-tag-realm-key value)
+                the-value (realm-records/map-with-tag-realm-value value)
+                cooked (conj realm-base {:predicate-fun (map-with-tag-predicate the-key the-value)
+                                         :map-key the-key
+                                         :map-value the-value})]
+            cooked)
           (rinspect/tuple? value)
           (let [tuple-realms (rinspect/tuple-realm-realms value)
                 cooked (conj realm-base {:predicate-fun (let [size (count tuple-realms)]
@@ -324,6 +336,14 @@
                                          {:name       name-raw
                                           :name-realm (decompile-active-rec realm-raw)}})]
             (println "named realm")
+            cooked)
+          (rinspect/regex? value)
+          (let [regular-expr (rinspect/regular-expression)
+            cooked (conj relam-base {:predicate-fun (clojure.core/fn  [str-to-check]
+                                                      (and (string? str-to-check)
+                                                           (re-matches (re-pattern regular-expr) str-to-check)))
+                                     :regular-expression regular-expr})]
+            (println "regular expression realm")
             cooked)
           :else
           (do
