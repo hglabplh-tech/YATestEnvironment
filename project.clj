@@ -32,7 +32,7 @@
                               :update :always
                               ;; You can also apply them to releases only:
                               :releases {:checksum :fail :update :always}}]]
-  :dependencies [[org.clojure/clojure "1.12.3"]
+  :dependencies [[org.clojure/clojure "1.13.0-alpha5"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [org.scala-lang/scala3-library_3 "3.8.4"]
                  [org.scala-lang/scala-reflect "2.13.18"]
