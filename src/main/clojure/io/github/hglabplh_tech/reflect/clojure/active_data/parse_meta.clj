@@ -227,6 +227,11 @@
             cooked
             )
 
+          (rinspect/from-predicate? value)
+          (let [pred-key (rinspect/pred-key value)
+                pred-base-realm (rinspect/pred-base-realm value)
+                cooked (conj realm-base {:predicate-fun })]
+            )
           (rinspect/set-of? value)
           (let [realm-realm-raw (rinspect/set-of-realm-realm value)
                 cooked (conj realm-base {:predicate-fun set?

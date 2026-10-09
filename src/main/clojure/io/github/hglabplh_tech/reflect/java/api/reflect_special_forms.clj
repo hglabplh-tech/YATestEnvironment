@@ -13,6 +13,7 @@
 
 (defn analyze-enum
   "Analyze enum type"
+
   {:added "1.1.0"
    :static true}
   [clazz]
@@ -47,7 +48,7 @@
 
 (defn analyze-switch
   "Analyze switch statements and switch expressions"
-  {:added "1.1.0"
+  {:added "1.4.0"
    :static true}
   [clazz]
   (let [switch-spec

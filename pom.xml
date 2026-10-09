@@ -18,7 +18,7 @@
     <url>https://github.com/hglabplh-tech/YATestEnvironment</url>
     <connection>scm:git:git://github.com/hglabplh-tech/YATestEnvironment.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/hglabplh-tech/YATestEnvironment.git</developerConnection>
-    <tag>11c6c5aba5cad375094a9241d0fb2b498c615a2b</tag>
+    <tag>4829a36d3286a04263abe7404247d9c76e1e13fb</tag>
   </scm>
   <build>
     <sourceDirectory>src/main/clojure</sourceDirectory>
@@ -148,7 +148,7 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.12.3</version>
+      <version>1.13.0-alpha5</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -213,7 +213,7 @@
     <dependency>
       <groupId>de.active-group</groupId>
       <artifactId>active-data</artifactId>
-      <version>0.3.3</version>
+      <version>0.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.technomancy</groupId>

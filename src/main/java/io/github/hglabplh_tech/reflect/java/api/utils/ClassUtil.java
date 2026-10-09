@@ -20,7 +20,7 @@ import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrie
  * This utility class is for getting the reflection on a specific class
  * which is given by the parameter of the constructor it is for getting the
  * class members via reflective calls
- *
+ * (c) Harald Glab-Plhak
  * @author Harald Glab-Plhak
  */
 
@@ -35,6 +35,7 @@ public class ClassUtil {
      * Ctor for this utility class
      *
      * @param theClass the class we work on
+     * @since  1.3
      */
     public ClassUtil( Class<?> theClass) {
         this.theClass = theClass;
@@ -44,6 +45,7 @@ public class ClassUtil {
      * Get the class name of the class we defined for work with
      *
      * @return the canonical class name
+     * @since 1.3
      */
     public String getClassName() {
         return this.theClass.getCanonicalName();
