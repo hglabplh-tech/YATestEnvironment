@@ -16,12 +16,20 @@
   (println hex-str)
   true)
 
+(defn test-fun-ip :- realm/boolean
+      [hex-str :- contract/ip-format-check]
+      (println hex-str)
+      true)
+
 (defn test-fun-urls :- realm/boolean
-  [param :- contract/email-check
-   param2 :- contract/http-url-check]
+  [param :- contract/http-url-check]
   (println param)
-  (println param2)
   true)
+
+(defn test-fun-email :- realm/boolean
+      [param :- contract/email-check]
+      (println param)
+      true)
 
 (defn test-fun-clutil :- realm/boolean
       [param :- (contract/build-java-type-realm :class-util ClassUtil)]
@@ -31,15 +39,22 @@
 (deftest simple-regex-test (testing "the hex regex / the email regex and the url regex")
                            (is (some? (s/validate (schema contract/hex-check)  "ACDEFbcda567832")))
                            (is (thrown? Exception (s/validate (schema contract/hex-check)  "ACDEFbcda567832ZK")))
-                           (test-fun-hex "AABBeeff0768D")
-                           (test-fun-urls "hglabplhak@gmail.com" "https://www.ibm.com")
-                           (test-fun-urls "hglabplhak@icloud.com" "http://www.ibm.com")
+                           (is (utils/call-with-schema-check test-fun-hex "AABBeeff0768D") true)
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-hex "ACDEFbcda567832ZK")))
+                           (is (utils/call-with-schema-check test-fun-urls  "https://www.ibm.com") true)
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-urls  "htt?~ps://www.ibm.com")))
+                           (is (utils/call-with-schema-check test-fun-email "hglabplhak@gmail.com") true)
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-email "hglabplha??=k@gmail.com!!" )))
+                           (is (utils/call-with-schema-check test-fun-ip "127.0.0.1") true)
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-ip "259.0.0.1")))
+                           (is (utils/call-with-schema-check test-fun-ip "2a00:1450:4001:831::2004") true)
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-ip "2h00:145T:4001:831::2004")))
                            )
 (deftest simple-java-type-test (testing "UUID instance? realm")
                                (is (s/validate (schema (contract/build-java-type-realm :uuid java.util.UUID))
-                                                           (java.util.UUID/randomUUID)), true)
+                                                           (java.util.UUID/randomUUID)) true)
                                (is (thrown? Exception (s/validate (schema (contract/build-java-type-realm :uuid java.util.UUID))  "test")))
                                (is (thrown? Exception (utils/call-with-schema-check test-fun-clutil java.util.Date)))
-                               (is (utils/call-with-schema-check test-fun-clutil (ClassUtil. java.util.UUID)), true)
+                               (is (utils/call-with-schema-check test-fun-clutil (ClassUtil. java.util.UUID)) true)
                                )
 (run-tests)
