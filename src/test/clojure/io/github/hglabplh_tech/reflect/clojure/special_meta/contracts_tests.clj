@@ -36,7 +36,12 @@
       (pprint param)
       true)
 
-(deftest simple-regex-test (testing "the hex regex / the email regex and the url regex")
+(defn test-fun-blocksize-mult :- realm/boolean
+      [param :- (contract/block-size-checker 1024)]
+      (pprint param)
+      true)
+
+(deftest simple-regex-test (testing "the hex regex / the email regex and the url regex"
                            (is (some? (s/validate (schema contract/hex-check)  "ACDEFbcda567832")))
                            (is (thrown? Exception (s/validate (schema contract/hex-check)  "ACDEFbcda567832ZK")))
                            (is (utils/call-with-schema-check test-fun-hex "AABBeeff0768D") true)
@@ -48,13 +53,23 @@
                            (is (utils/call-with-schema-check test-fun-ip "127.0.0.1") true)
                            (is (thrown? Exception (utils/call-with-schema-check test-fun-ip "259.0.0.1")))
                            (is (utils/call-with-schema-check test-fun-ip "2a00:1450:4001:831::2004") true)
-                           (is (thrown? Exception (utils/call-with-schema-check test-fun-ip "2h00:145T:4001:831::2004")))
+                           (is (thrown? Exception (utils/call-with-schema-check test-fun-ip "2h00:145T:4001:831::2004"))))
                            )
-(deftest simple-java-type-test (testing "UUID instance? realm")
+(deftest simple-java-type-test (testing "Class type instance? realm"
                                (is (s/validate (schema (contract/build-java-type-realm :uuid java.util.UUID))
                                                            (java.util.UUID/randomUUID)) true)
                                (is (thrown? Exception (s/validate (schema (contract/build-java-type-realm :uuid java.util.UUID))  "test")))
                                (is (thrown? Exception (utils/call-with-schema-check test-fun-clutil java.util.Date)))
                                (is (utils/call-with-schema-check test-fun-clutil (ClassUtil. java.util.UUID)) true)
-                               )
+                               ))
+
+(deftest simple-miscelaneous-realm-test (testing "Test of realms like block size is a multiple of and more"
+                                          (is (s/validate (schema (contract/block-size-checker 1024))
+                                                          4096) true)
+                                          (is (thrown? Exception  (s/validate (schema (contract/block-size-checker 1024))
+                                                                              4099) true))
+                                          (is (thrown? Exception (utils/call-with-schema-check test-fun-blocksize-mult 4099)))
+                                          (is (utils/call-with-schema-check test-fun-blocksize-mult 8192 ) true)
+
+                                          ))
 (run-tests)

@@ -1,7 +1,6 @@
 (ns io.github.hglabplh-tech.reflect.clojure.special-meta.contracts
-  (:require [active.data.struct.internal.key :refer :all]
-            [active.data.realm :as realm]
-            [active.data.record :as sut]
+  (:require [active.data.realm :as realm]
+            [active.data.struct.internal.key :refer :all]
             [clojure.pprint :refer :all]
             )
   )
@@ -35,16 +34,16 @@
         descr-bind description
         ]
     (realm/restricted pred-key
-      realm/string
-      (fn [to-check] (re-matches regexp-bind to-check))
-      descr-bind)))
+                      realm/string
+                      (fn [to-check] (re-matches regexp-bind to-check))
+                      descr-bind)))
 
-(def hex-check (build-regex-realm :hexstring hex-regexp "hexstring"))
-(def email-check (build-regex-realm :emailstring email-regexp "emailstring"))
-(def http-url-check (build-regex-realm :urlstring http-url-regexp "urlstring"))
+(def hex-check (build-regex-realm :hexstring hex-regexp "hexstring - check for hexadecimal number"))
+(def email-check (build-regex-realm :emailstring email-regexp "emailstring - check for a correct email string"))
+(def http-url-check (build-regex-realm :urlstring http-url-regexp "urlstring - check for a correct url http / https"))
 
-(def ipv4-format-check (build-regex-realm :ipv4string ipv4-regexp "ipv4string"))
-(def ipv6-format-check (build-regex-realm :ipv6string ipv6-regexp "ipv6string"))
+(def ipv4-format-check (build-regex-realm :ipv4string ipv4-regexp "ipv4string - check for a valid ipv4 address string"))
+(def ipv6-format-check (build-regex-realm :ipv6string ipv6-regexp "ipv6string - check for a valid ipv6 address string"))
 (def ip-format-check (realm/union ipv4-format-check ipv6-format-check))
 
 (clojure.core/defn build-java-type-realm [pred-key java-type]
@@ -57,3 +56,19 @@
                           (instance? java-type-bind to-check)
                           false))
                       descr-bind)))
+
+(defn check-for-block-size-int [block-div]
+  (let [division block-div]
+    (fn [val]
+      (zero? (mod val division)))))
+
+(defn build-integer-restrictor
+  [pred-key pred-gen-fun description & criterion]
+  (let [the-fun (apply pred-gen-fun criterion)]
+    (realm/restricted pred-key realm/integer the-fun description)
+    ))
+(defn block-size-checker
+  [block-size-div]
+  (build-integer-restrictor :block-size-mult-check check-for-block-size-int
+                            (str "Check for BlockSize is multiple of: " block-size-div)
+                                                                block-size-div))
