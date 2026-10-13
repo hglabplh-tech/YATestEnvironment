@@ -85,6 +85,11 @@
   `(get-fun-meta-val-by-key ~the-fun-name
                             :line))
 
+(defmacro get-fun-meta-doc [the-fun-name]
+  `(get-fun-meta-val-by-key ~the-fun-name
+                            :doc))
+
+
 (defmacro get-fun-meta-col [the-fun-name]
   `(get-fun-meta-val-by-key ~the-fun-name
                             :column))
@@ -163,12 +168,14 @@
         the-ns (get fun-meta :ns)
         the-name (get fun-meta :name)
         the-line (get fun-meta :line)
+        the-doc  (get fun-meta :doc)
         the-column (get fun-meta :column)
         argument-list (get fun-meta :argument-list)
         ]
     (let [schema-val (parse-base-schema the-schema)]
       {:structured-meta {:base-data {:ns            the-ns
                                      :name          the-name
+                                     :doc           the-doc
                                      :line          the-line
                                      :column        the-column
                                      :argument-list argument-list
