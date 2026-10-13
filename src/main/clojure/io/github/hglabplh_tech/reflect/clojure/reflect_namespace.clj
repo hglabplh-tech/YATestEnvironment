@@ -9,12 +9,18 @@
      (meta (val keyval)))})
 
 (clojure.core/defn get-ns-interns [namespace-sym decompiled?]
-  (let [ns-intern-meta-map (mapv (fn [entry]
+  (let [the-namespace (the-ns namespace-sym)
+        ns-intern-meta-map (mapv (fn [entry]
                                    (create-meta-entry namespace-sym entry decompiled?))
                                  (ns-interns namespace-sym))]
+    (println "Namespace object: ")
+    (println namespace-sym)
+    (println the-namespace)
+    (println "Namespace meta ??: ->")
+    (println (ns-aliases the-namespace))
+    (println (ns-refers the-namespace))
     (println "NS INTERN")
-    (pprint ns-intern-meta-map)
-    ns-intern-meta-map))
+    {(keyword (str namespace-sym))  ns-intern-meta-map} ))
 
 (clojure.core/defn get-ns-publics [namespace-sym decompiled?]
   (let [the-namespace (the-ns namespace-sym)
@@ -24,13 +30,13 @@
         ]
 
     (println "Namespace object: ")
+    (println namespace-sym)
     (println the-namespace)
     (println "Namespace meta ??: ->")
     (println (ns-aliases the-namespace))
     (println (ns-refers the-namespace))
     (println "NS PUBLICS")
-    (pprint ns-public-meta-map)
-    ns-public-meta-map))
+    {(keyword (str namespace-sym))   ns-public-meta-map} ))
 
 
 

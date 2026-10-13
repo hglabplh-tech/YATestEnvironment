@@ -230,7 +230,12 @@
           (rinspect/from-predicate? value)
           (let [pred-key (rinspect/pred-key value)
                 pred-base-realm (rinspect/pred-base-realm value)
-                cooked (conj realm-base {:predicate-fun })]
+                cooked (conj realm-base {:predicate-fun (fn [param]
+                                                          ((rinspect/predicate value) param))
+                                         :pred-key pred-key
+                                         :pred-base-realm pred-base-realm
+                                         })]
+            cooked
             )
           (rinspect/set-of? value)
           (let [realm-realm-raw (rinspect/set-of-realm-realm value)
@@ -281,8 +286,8 @@
             cooked)
 
           (rinspect/map-with-tag? value)
-          (let [the-key (realm-records/map-with-tag-realm-key value)
-                the-value (realm-records/map-with-tag-realm-value value)
+          (let [the-key (rinspect/map-with-tag-realm-key value)
+                the-value (rinspect/map-with-tag-realm-value value)
                 cooked (conj realm-base {:predicate-fun (map-with-tag-predicate the-key the-value)
                                          :map-key the-key
                                          :map-value the-value})]
@@ -344,7 +349,7 @@
             cooked)
           (rinspect/regex? value)
           (let [regular-expr (rinspect/regular-expression)
-            cooked (conj relam-base {:predicate-fun (clojure.core/fn  [str-to-check]
+            cooked (conj realm-base {:predicate-fun (clojure.core/fn  [str-to-check]
                                                       (and (string? str-to-check)
                                                            (re-matches (re-pattern regular-expr) str-to-check)))
                                      :regular-expression regular-expr})]

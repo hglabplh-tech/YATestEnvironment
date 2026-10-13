@@ -1,4 +1,4 @@
-(ns io.github.hglabplh-tech.reflect.code.unified-struct-def
+(ns io.github.hglabplh-tech.reflect.general.unified-struct-def
   (:import (java.lang.reflect Type
                               TypeVariable
                               GenericArrayType

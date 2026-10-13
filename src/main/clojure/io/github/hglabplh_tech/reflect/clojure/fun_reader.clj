@@ -5,7 +5,7 @@
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
             [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]
-            [io.github.hglabplh_tech.test.suite.static-code.analysis.reflect-code]))
+            ))
 
 (declare get-structured-meta-data)
 (clojure.core/defn printout_excp [excp]

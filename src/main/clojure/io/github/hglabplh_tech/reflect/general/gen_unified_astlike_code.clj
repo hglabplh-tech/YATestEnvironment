@@ -1,10 +1,11 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
-(ns io.github.hglabplh-tech.reflect.code.general.gen-unified-astlike-code
+(ns io.github.hglabplh-tech.reflect.general.gen-unified-astlike-code
   (:refer-clojure :exclude [defn fn])
   (:require [active.data.realm :as realm]
             [active.data.record :as rec]
-            [clojure.pprint :refer [pprint]])
+            [clojure.pprint :refer [pprint]]
+            [io.github.hglabplh-tech.reflect.general.unified-struct-def :as usdef])
   )
 
 (def transform-keys
@@ -43,8 +44,4 @@
                                                       scope :- (realm/enum :global :local :method)
                                                       access-def :- (realm/enum :global :namespace :public :protected :private)])
 
-(def my-base (class-type-def extends-type "" implements-types [] abstract? false class-type
-                             :record static? false access-def
-                             :public class-fields [] class-methods []
-                             the-type :integer init-value 5  immutable? true final? false))
-(pprint my-base)
+
