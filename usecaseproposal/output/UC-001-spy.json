@@ -1,0 +1,126 @@
+{
+  "configVersion": "1.0",
+  "language": "clojure",
+  "useCases": [
+    {
+      "id": "UC-001",
+      "headline": "Confirm a two-item order with 19 percent tax",
+      "requirement": "Two items at 1000 cents each must produce a confirmed order totaling 2380 cents.",
+      "funcalls": [
+        {
+          "id": "create",
+          "call-id": 1,
+          "function-name": "example.app\/create-order",
+          "argument-sources": [
+            "customer-A",
+            [
+              {
+                "product-id": "P-100",
+                "quantity": 2,
+                "unit-price-cents": 1000
+              }
+            ]
+          ],
+          "arguments": [
+            "customer-A",
+            [
+              {
+                "product-id": "P-100",
+                "quantity": 2,
+                "unit-price-cents": 1000
+              }
+            ]
+          ],
+          "outcome": "returned",
+          "return": {
+            "customer-id": "customer-A",
+            "items": [
+              {
+                "product-id": "P-100",
+                "quantity": 2,
+                "unit-price-cents": 1000
+              }
+            ]
+          }
+        },
+        {
+          "id": "subtotal",
+          "call-id": 2,
+          "function-name": "example.app\/calculate-subtotal",
+          "argument-sources": [
+            {
+              "fromStep": "create",
+              "path": []
+            }
+          ],
+          "arguments": [
+            {
+              "customer-id": "customer-A",
+              "items": [
+                {
+                  "product-id": "P-100",
+                  "quantity": 2,
+                  "unit-price-cents": 1000
+                }
+              ]
+            }
+          ],
+          "outcome": "returned",
+          "return": 2000
+        },
+        {
+          "id": "tax",
+          "call-id": 3,
+          "function-name": "example.app\/add-tax",
+          "argument-sources": [
+            {
+              "fromStep": "subtotal",
+              "path": []
+            },
+            1900
+          ],
+          "arguments": [
+            2000,
+            1900
+          ],
+          "outcome": "returned",
+          "return": 2380
+        },
+        {
+          "id": "confirm",
+          "call-id": 4,
+          "function-name": "example.app\/confirm-order",
+          "argument-sources": [
+            {
+              "fromStep": "create",
+              "path": []
+            },
+            {
+              "fromStep": "tax",
+              "path": []
+            }
+          ],
+          "arguments": [
+            {
+              "customer-id": "customer-A",
+              "items": [
+                {
+                  "product-id": "P-100",
+                  "quantity": 2,
+                  "unit-price-cents": 1000
+                }
+              ]
+            },
+            2380
+          ],
+          "outcome": "returned",
+          "return": {
+            "customer-id": "customer-A",
+            "status": "confirmed",
+            "total-cents": 2380
+          }
+        }
+      ]
+    }
+  ]
+}

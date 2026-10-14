@@ -1,0 +1,37 @@
+{
+  "configVersion": "1.0",
+  "language": "clojure",
+  "useCases": [
+    {
+      "id": "UC-001",
+      "headline": "Confirm a two-item order with 19 percent tax",
+      "requirement": "Two items at 1000 cents each must produce a confirmed order totaling 2380 cents.",
+      "funcalls": [
+        {
+          "id": "create",
+          "function-name": "example.app/create-order",
+          "arguments": ["customer-A", [{"product-id": "P-100", "quantity": 2, "unit-price-cents": 1000}]],
+          "return": {"customer-id": "customer-A", "items": [{"product-id": "P-100", "quantity": 2, "unit-price-cents": 1000}]}
+        },
+        {
+          "id": "subtotal",
+          "function-name": "example.app/calculate-subtotal",
+          "arguments": [{"fromStep": "create", "path": []}],
+          "return": 2000
+        },
+        {
+          "id": "tax",
+          "function-name": "example.app/add-tax",
+          "arguments": [{"fromStep": "subtotal", "path": []}, 1900],
+          "return": 2380
+        },
+        {
+          "id": "confirm",
+          "function-name": "example.app/confirm-order",
+          "arguments": [{"fromStep": "create", "path": []}, {"fromStep": "tax", "path": []}],
+          "return": {"customer-id": "customer-A", "status": "confirmed", "total-cents": 2380}
+        }
+      ]
+    }
+  ]
+}

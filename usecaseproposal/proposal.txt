@@ -1,0 +1,26 @@
+Use case: Confirm a two-item order with 19 percent tax
+
+Reflection is the first input: callable identity and function parameter layout.
+User JSON is the second input: headline, requirement, ordered calls,
+user-defined arguments, references to earlier results, and expected returns.
+
+Sequence:
+1. create-order: create an order for customer-A with two items at 1000 cents.
+2. calculate-subtotal: consume the order and return 2000 cents.
+3. add-tax: consume the subtotal, apply 1900 basis points, and return 2380 cents.
+4. confirm-order: consume the order and total and return its confirmed summary.
+
+The generator emits ordered let bindings inside a deftest. Each call binds its
+step ID and argument sources for the spy. The generated test checks four returns,
+function order, and step IDs. Spy wrappers are restored after execution.
+
+Both user configuration and spy output use language/useCases/funcalls.
+Use-case ID and step ID connect expected and actual values. Spy arguments contain
+resolved values; argument-sources retains the user's fromStep references.
+
+This is an isolated proposal using an example spy adapter, not a modification of
+the production mocking-jay implementation. Reflection validation currently checks
+callable identity and argument count. Realm/type validation, Java/Mockito adapters,
+mutable-object snapshots, and concurrent spy sessions are future integration work.
+Expected exceptions can be recorded by the adapter, but this generator currently
+supports expected successful returns only.

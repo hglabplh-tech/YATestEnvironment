@@ -1,0 +1,26 @@
+Temporary use-case proposal for YATestEnvironment
+
+From this directory:
+  clojure -M:generate
+    Generate the deftest without executing application functions.
+  clojure -M:run
+    Generate and execute the deftest; store linked spy observations.
+  clojure -M verification.clj
+    Verify success, failed expectations, invalid references and arity,
+    exception recording, and restoration of original functions.
+
+Files:
+  user-definitions.json                  User-defined use case and expected returns
+  output/reflection.json                 Example reflected function layouts
+  src/example/app.clj                    Four application functions
+  src/example/test_generator.clj         Reflection + JSON -> generated deftest
+  src/example/spy.clj                    Spy adapter and JSON recording
+  src/example/runner.clj                 Generate and execute tests
+  generated/example/generated_test.clj   Generated executable test
+  output/UC-001-spy.json                 Actual calls linked to user definitions
+  deps.edn                              Dependencies and command aliases
+  run.sh                                Convenience launcher
+  verification.clj                      Runtime verification checks
+  proposal.txt                          Design and scope
+
+Requires a Java runtime and Clojure CLI. Dependencies are declared in deps.edn.

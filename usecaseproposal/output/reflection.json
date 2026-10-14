@@ -1,0 +1,57 @@
+{
+  "language": "clojure",
+  "functions": [
+    {
+      "function-name": "example.app\/add-tax",
+      "doc": "Add tax in basis points; 1900 basis points means 19 percent. Round half up.",
+      "parameters": [
+        {
+          "position": 0,
+          "name": "subtotal-cents"
+        },
+        {
+          "position": 1,
+          "name": "tax-basis-points"
+        }
+      ]
+    },
+    {
+      "function-name": "example.app\/calculate-subtotal",
+      "doc": "Calculate the subtotal in integer cents.",
+      "parameters": [
+        {
+          "position": 0,
+          "name": "order"
+        }
+      ]
+    },
+    {
+      "function-name": "example.app\/confirm-order",
+      "doc": "Return the confirmed order summary.",
+      "parameters": [
+        {
+          "position": 0,
+          "name": "order"
+        },
+        {
+          "position": 1,
+          "name": "total-cents"
+        }
+      ]
+    },
+    {
+      "function-name": "example.app\/create-order",
+      "doc": "Create an order from a customer ID and item maps.",
+      "parameters": [
+        {
+          "position": 0,
+          "name": "customer-id"
+        },
+        {
+          "position": 1,
+          "name": "items"
+        }
+      ]
+    }
+  ]
+}
