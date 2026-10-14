@@ -20,7 +20,7 @@
     (println (ns-aliases the-namespace))
     (println (ns-refers the-namespace))
     (println "NS INTERN")
-    {(keyword (str namespace-sym))  ns-intern-meta-map} ))
+    {:language :clojure :ns-name (str namespace-sym) :reflect-data ns-intern-meta-map} ))
 
 (clojure.core/defn get-ns-publics [namespace-sym decompiled?]
   (let [the-namespace (the-ns namespace-sym)
@@ -36,7 +36,7 @@
     (println (ns-aliases the-namespace))
     (println (ns-refers the-namespace))
     (println "NS PUBLICS")
-    {(keyword (str namespace-sym))   ns-public-meta-map} ))
+    {:language :clojure :ns-name (str namespace-sym) :reflect-data ns-public-meta-map}))
 
 
 

@@ -10,12 +10,13 @@
 (deftest simple-public-ns-reflect
   (testing "Reflect a namespace without decompile"
     (let [result (reflns/get-ns-publics 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering false)  the-keys (keys result)
-          the-vals (vals result)
+          the-reflect-data (get result :reflect-data )
           content-keys (mapv (clojure.core/fn [value]
-                               (first (keys value))) (first the-vals))
+                               (first (keys value))) the-reflect-data)
           content-vals (mapv (clojure.core/fn [value]
-                               (first (vals value))) (first the-vals))]
-      (is (first the-keys) 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
+                               (first (vals value))) the-reflect-data)]
+      (is (get result :language) :clojure)
+      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
       (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
       (pprint content-keys)
       (pprint content-vals))
@@ -24,13 +25,13 @@
 (deftest simple-intern-ns-reflect
   (testing "Reflect a namespace without decompile"
     (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering false)
-          the-keys (keys result)
-          the-vals (vals result)
+          the-reflect-data (get result :reflect-data )
           content-keys (mapv (clojure.core/fn [value]
-                               (first (keys value))) (first the-vals))
+                               (first (keys value))) the-reflect-data)
           content-vals (mapv (clojure.core/fn [value]
-                               (first (vals value))) (first the-vals))]
-      (is (first the-keys) 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
+                               (first (vals value))) the-reflect-data)]
+      (is (get result :language) :clojure)
+      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
       (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
       (pprint content-keys)
       (pprint content-vals))
@@ -39,33 +40,31 @@
 (deftest decomp-public-ns-reflect
   (testing "Reflect a namespace without decompile"
     (let [result (reflns/get-ns-publics 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering true)
-          the-keys (keys result)
-          the-vals (vals result)
-          val-content-keys (mapv (clojure.core/fn [value]
-                                   (first (keys value))) (first the-vals))
-          val-content-vals (mapv (clojure.core/fn [value]
-                                   (first (vals value))) (first the-vals))
-          ]
-      (is (first the-keys) 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
-      (is val-content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
-      (pprint val-content-keys)
-      (pprint val-content-vals))
+          the-reflect-data (get result :reflect-data )
+          content-keys (mapv (clojure.core/fn [value]
+                               (first (keys value))) the-reflect-data)
+          content-vals (mapv (clojure.core/fn [value]
+                               (first (vals value))) the-reflect-data)]
+      (is (get result :language) :clojure)
+      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
+      (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
+      (pprint content-keys)
+      (pprint content-vals))
     ))
 
 (deftest decomp-intern-ns-reflect
   (testing "Reflect a namespace without decompile"
     (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering true)
-          the-keys (keys result)
-          the-vals (vals result)
-          val-content-keys (mapv (clojure.core/fn [value]
-                                   (first (keys value))) (first the-vals))
-          val-content-vals (mapv (clojure.core/fn [value]
-                                   (first (vals value))) (first the-vals))
-          ]
-      (is (first the-keys) 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
-      (is val-content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
-      (pprint val-content-keys)
-      (pprint val-content-vals))
+          the-reflect-data (get result :reflect-data )
+          content-keys (mapv (clojure.core/fn [value]
+                               (first (keys value))) the-reflect-data)
+          content-vals (mapv (clojure.core/fn [value]
+                               (first (vals value))) the-reflect-data)]
+      (is (get result :language) :clojure)
+      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
+      (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
+      (pprint content-keys)
+      (pprint content-vals))
     ))
 
 
