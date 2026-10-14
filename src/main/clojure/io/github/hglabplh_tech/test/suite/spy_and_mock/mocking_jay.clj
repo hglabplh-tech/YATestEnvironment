@@ -92,7 +92,7 @@
 (def mock-meta (atom []))
 
 (def ns-f-meta-atom (atom []))
-(def mock-control-flow (atom []))
+(def mock-control-flow (atom [{:language :clojure}]))
 
 (def rule-vect (atom []))
 
@@ -217,10 +217,12 @@
 
 (clojure.core/defn collect-flow-calls [func-name ret-value & args]
   (do
-    (swap! mock-control-flow conj (FunCalls. func-name
-                                             args
-                                             ret-value))
-    ))
+    (swap! mock-control-flow conj
+           {
+            :function-name func-name
+            :arguments args
+            :return ret-value} ))
+    )
 
 
 (clojure.core/defn- rule-args-match? [rule args]
@@ -424,7 +426,8 @@
   "This hook adds spy functionality to get data for profiling and
   test data generation and more"
   [sut]
-  (let [sut-intern (vals (ns-publics sut))]
+  (let [sut-intern (vals (ns-publics sut))
+        sut-name (ns-name sut)]
     (println sut-intern)
     (doseq [curf sut-intern]
       (when (some? (:spy-key (meta curf)))
