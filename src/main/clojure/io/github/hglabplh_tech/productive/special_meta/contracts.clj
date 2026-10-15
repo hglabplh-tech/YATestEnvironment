@@ -1,4 +1,4 @@
-(ns io.github.hglabplh-tech.reflect.clojure.special-meta.contracts
+(ns io.github.hglabplh-tech.productive.special-meta.contracts
   (:require [active.data.realm :as realm]
             [active.data.struct.internal.key :refer :all]
             [clojure.pprint :refer :all]

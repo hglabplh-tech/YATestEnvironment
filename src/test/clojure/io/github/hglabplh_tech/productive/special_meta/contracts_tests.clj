@@ -1,4 +1,4 @@
-(ns io.github.hglabplh-tech.reflect.clojure.special-meta.contracts-tests
+(ns io.github.hglabplh-tech.productive.special-meta.contracts-tests
   (:refer-clojure :exclude [def defn fn])
   (:require [clojure.pprint :refer [pprint]]
             [clojure.test :refer :all]
@@ -6,7 +6,7 @@
             [active.data.realm :as realm]
             [active.data.realm.schema :refer :all]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.special-meta.contracts :as contract]
+            [io.github.hglabplh-tech.productive.special-meta.contracts :as contract]
             [io.github.hglabplh-tech.tests.utils.general-utils :as utils]
             [schema.core :as s])
   (:import  (io.github.hglabplh_tech.reflect.java.api.utils ClassUtil)))
