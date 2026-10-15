@@ -8,7 +8,8 @@
             [schema.core :as s]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]
-            [io.github.hglabplh_tech.reflect.clojure.spy-and-mock.mocking-jay :refer :all])
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
+            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all])
   (:import (clojure.lang Symbol Namespace)))
 
 (s/set-fn-validation! (boolean 1))
@@ -29,10 +30,11 @@
   (let [res (* a b)]
     (println msg res)
     (boolean res)))
+
 (clojure.core/defn try-it [a b c]
   (println "Ups I am here" (+ a b c)))
 
-(prolog to-spy add-user add-bill log-thing try-it fun-store-being-spyed)
+(prolog to-spy  my-enum-test try-it fun-store-being-spyed)
 (prolog to-mock  i-am-a-fake-fun )
 (deftest test-extended-mock
   (testing "the extended mock"
@@ -79,9 +81,7 @@
 (deftest test-example-spy
   (testing "A simple test for spy functionality"
     (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
-    (pprint (add-bill (random-uuid) 8757
-                            (set (list "dishwasher" "pump-gun" "plate"))
-                            678.96))
+    (pprint (my-enum-test  64.5 :two))
 
     ))
 (run-tests)

@@ -89,10 +89,10 @@
      (eval
        (cons '~m args#))))
 
-(def mock-meta (atom []))
+(def mock-meta (atom {}))
 
 (def ns-f-meta-atom (atom []))
-(def mock-control-flow (atom [{:language :clojure}]))
+(def mock-control-flow (atom {:language :clojure :funcalls {}}))
 
 (def rule-vect (atom []))
 
@@ -184,46 +184,28 @@
                    (= func-name (:function-name element)))
                  @redirected-bindings)))
 
-
+(defn qualified-fun-name [fun-meta]
+  (str (get fun-meta :ns) "/" (get fun-meta :name)))
 
 (clojure.core/defn collect-meta-active-data [func-name func-meta]
   (if (= (find-meta-for-fun func-name) nil)
-    (let [schema-val# (get func-meta
-                           :schema)
-          schema-val-map# (if (not (seq? schema-val#))
-                            (parse-meta-to-map (parse-base-schema
-                                                 schema-val#))
-                            [])]
-
-      (swap! mock-meta conj (FunMetata. func-name
-                                        (get (first schema-val-map#)
-                                             :return-type)
-                                        (get (get (second schema-val-map#)
-                                                  :arg-info-map)
-                                             :scheme-types)
-                                        (ActiveDataCustom.
-                                          (get (get (second schema-val-map#)
-                                                    :arg-info-map)
-                                               :names-vect)
-                                          (get (get (second schema-val-map#)
-                                                    :arg-info-map)
-                                               :types-vect)
-                                          (get (get (second schema-val-map#)
-                                                    :arg-info-map)
-                                               :optional?-vect))))
-      )))
+      (swap! mock-meta assoc
+             (qualified-fun-name func-meta)
+             (get-structured-meta-data func-meta)))
+      )
 
 
 
 (clojure.core/defn collect-flow-calls [func-name ret-value & args]
-  (do
-    (swap! mock-control-flow conj
-           {
-            :function-name func-name
-            :arguments args
-            :return ret-value} ))
+    (swap! mock-control-flow update :funcalls conj
+           {:function-name func-name
+            :arguments (vec args)
+            :return ret-value})
+
     )
 
+(defn find-meta-for-fun [function-id]
+  (get @mock-meta function-id))
 
 (clojure.core/defn- rule-args-match? [rule args]
   (let [predicates (:param-cond (:when-clauses rule))]
@@ -297,7 +279,10 @@
             (fn [f]
               (fn [& args#]
                 (let [result# (apply filter-action f fun-name# args#)]
-                  (apply collect-flow-calls f result# args#)
+                  (apply collect-flow-calls
+                         (qualified-fun-name fun-meta#)
+                         result#
+                         args#)
                   ))))
 
           )))))
@@ -443,7 +428,10 @@
                           stack-trc-data (.getStackTrace throwable)]
                       (fun-spy-call f fun-meta# stack-trc-data)
                       (let [result# (apply f args#)]
-                        (apply collect-flow-calls f result# args#)
+                        (apply collect-flow-calls
+                               (qualified-fun-name fun-meta#)
+                               result#
+                               args#)
                         result#)))
                   )))
 
