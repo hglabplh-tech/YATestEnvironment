@@ -169,19 +169,23 @@
         the-name (get fun-meta :name)
         the-line (get fun-meta :line)
         the-doc  (get fun-meta :doc)
+        priv     (get fun-meta :private)
+        tag       (get fun-meta :tag)
         the-column (get fun-meta :column)
-        argument-list (get fun-meta :argument-list)
+        argument-list (get fun-meta :arglists)
         ]
     (let [schema-val (parse-base-schema the-schema)]
       {:structured-meta {:base-data {:ns            the-ns
                                      :name          the-name
                                      :doc           the-doc
+                                     :private       priv
+                                     :tag           tag
                                      :line          the-line
                                      :column        the-column
-                                     :argument-list argument-list
+                                     :arguments-list argument-list
                                      }
                          :add-on    (conj {:schema (parse-meta-to-map schema-val)
-                                           :active-data-realm (get-decompiled-active-data fun-meta)})}}
+                                           :active-data (get-decompiled-active-data fun-meta)})}}
 
       )))
 

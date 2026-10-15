@@ -7,7 +7,7 @@
 
 (def languages [:clojure :java :kotlin :scala :python])
 (def assoc-file-definition
-  "The definition o the file either class definition or namespace functions classes in compound"
+  "The definition of the file either class definition or namespace functions classes in compound"
   [:namespace-class
    :function-class-catalog
    :language
