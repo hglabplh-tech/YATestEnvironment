@@ -8,6 +8,7 @@
 (def hex-regexp #"\p{XDigit}+")
 (def email-regexp #"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 (def http-url-regexp #"^(https?)://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]*)?$")
+(def ger-zip-code #"^\d{5}$")
 ;; Strict IPv4 regex: 4 octets from 0-255 without unneeded leading zeros
 (def ipv4-regexp
   #"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
@@ -41,6 +42,7 @@
 (def hex-check (build-regex-realm :hexstring hex-regexp "hexstring - check for hexadecimal number"))
 (def email-check (build-regex-realm :emailstring email-regexp "emailstring - check for a correct email string"))
 (def http-url-check (build-regex-realm :urlstring http-url-regexp "urlstring - check for a correct url http / https"))
+(def ger-zip-code-check (build-regex-realm :ger-zip-code ger-zip-code "check for the german zipcode format"))
 
 (def ipv4-format-check (build-regex-realm :ipv4string ipv4-regexp "ipv4string - check for a valid ipv4 address string"))
 (def ipv6-format-check (build-regex-realm :ipv6string ipv6-regexp "ipv6string - check for a valid ipv6 address string"))
