@@ -6,6 +6,14 @@
                               )))
 
 (def languages [:clojure :java :kotlin :scala :python])
+
+(def assoc-addon-def
+  "the definition of a parameter"
+  [:cloj-predicates
+   :java-annots
+   ]
+  )
+
 (def assoc-file-definition
   "The definition of the file either class definition or namespace functions classes in compound"
   [:namespace-class
@@ -23,6 +31,7 @@
      :member-var
      :record
      ])
+
 (def assoc-class-definition
   "here the class definition tags for the class header are defined"
   [:enclosing-method
@@ -41,7 +50,6 @@
   "the description of the constructor definition"
   [:obj-name
   :general
-  :parm-annot
   :annots
   :gen-exception-types
   :declaring-class])
@@ -50,6 +58,9 @@
   "here the class definition tags for the class body are defined"
   [:field-infos
    :ctor-infos
+   :inner-class-infos
+   :switch-infos
+   :anonymous-classes-info
    :method-infos])
 
 (def assoc-param-def
@@ -57,20 +68,17 @@
   [:name
    :position
    :type
+   :datatype
    :attributes
    :constraints
    :add-on])
 
-(def assoc-param-addon-def
-  "the definition of a parameter"
-  :cloj-predicate
-  :java-annot
-  )
+
 (def assoc-meth-fun-def
 "here the definition param keys for functions and methods"
 [:parameter-count
  :attributes
- :parameter-type                                            ;; positional / named
+ :return-type                                            ;; positional / named
  :parameter-definitions                                     ;; a sequence of parameter-def
  ])
 
