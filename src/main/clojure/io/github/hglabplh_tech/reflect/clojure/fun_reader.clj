@@ -126,8 +126,21 @@
                         )]
      (analyze-fun result#)))
 
+(clojure.core/defn decompile-if [act-data]
+  (if (pactd/active-data-realm? act-data)
+    (pactd/decompile-active-rec act-data)
+    act-data
+    ))
+
 (clojure.core/defn parse-arg-types [arg-type-defs]
   (let [descriptors (first (second (first arg-type-defs)))
+        the-schema-compiled (mapv (schema.core/fn [val] {:schema-type (get val :schema)                         ;;       (mapv (schema.core/fn [val]
+                ;;                                    {:schema-type (mapv (clojure.core/fn [inner-val]
+                ;;                    (update-vals inner-val decompile-if)) (get val :schema))
+                :name (get val :name)
+                :optional? (get val :optional?)
+                :types (get val :types-vect)})
+                                  descriptors)
         arg-type-seq (vec (map (clojure.core/fn [val]
                                  (get val :schema))
                                descriptors))
@@ -139,20 +152,21 @@
                                  descriptors))
         arg-name-seq  (vec  (map (clojure.core/fn [val]
                                    (name  (get val :name)))
-                                 descriptors) )]               ;; correct it
+                                 descriptors) )]              ;; correct it
 
     (let [fun-result {:names-vect     arg-name-seq
-                      :scheme-types   arg-type-seq
+                      :schema-types   arg-type-seq
                       :types-vect     arg-types-vect
                       :optional?-vect arg-opt?-seq}]
-      fun-result)
+      the-schema-compiled)
     ))
 
 (clojure.core/defn parse-meta-to-map [schema-val]
   (let [return-type (second (first schema-val))
         arg-info-map (parse-arg-types (rest schema-val))]
-    [{:return-type return-type
-      :arg-info-map arg-info-map}]
+    {:return-type return-type
+     :arg-infos arg-info-map}
+
     ))
 (clojure.core/defn get-decompiled-active-data [raw-meta]
   (let [active-fun-meta (get raw-meta fn-realm-meta-key {})

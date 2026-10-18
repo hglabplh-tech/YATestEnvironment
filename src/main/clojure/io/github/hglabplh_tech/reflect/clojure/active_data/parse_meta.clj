@@ -148,6 +148,14 @@
     cooked                                                  ;; FIXME have to introduce realm-base again
     ))
 
+(clojure.core/defn active-data-realm?
+  "returns true if 'thing' is a active-data realm"
+  {:added "1.4.0"
+   :static true}
+  [thing]
+  (rinspect/realm? thing)
+  )
+
 (clojure.core/defn decompile-active-rec
   "read and decompile a realm in our case the root realm of a function/record (stored in metadata)
    @param : the realm stored in the function or record metadata"

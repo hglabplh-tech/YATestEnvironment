@@ -3,6 +3,7 @@
   (:require [clojure.pprint :refer :all]
             [clojure.test :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.reflect-namespace :as reflns]
+            [io.github.hglabplh-tech.reflect.general.gen-unified-astlike-code :as uni]
             [io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering :refer :all]
             [io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs :refer :all]))
 
@@ -77,10 +78,11 @@
           content-vals (mapv (clojure.core/fn [value]
                                (first (vals value))) the-reflect-data)]
       (is (get result :language) :clojure)
-      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
+      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs")
       (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
       (pprint content-keys)
-      (pprint content-vals))
+      (pprint content-vals)
+      (pprint (uni/transform-to-unified result)))
     ))
 
 

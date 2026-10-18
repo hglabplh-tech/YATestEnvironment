@@ -9,7 +9,7 @@
             [active.data.realm.internal.record-meta :as act-meta]
             [schema.spec.core :refer :all]
             [schema.core :as s]))
-
+;; merge this together with actual ns-reflection
 
 (s/set-fn-validation! (boolean 1))
 
@@ -42,7 +42,7 @@
         ))
 
 (clojure.core/defn find-funs [in]
-      (loop [pubs (publics in)
+      (loop [pubs (ns-publics in)
              funs '()]
         (if (not (nil? (get (meta ~(first pubs)) :arglists)))
           (recur (next pubs) (conj! funs (first pubs)))
