@@ -1,7 +1,12 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
-(ns io.github.hglabplh-tech.reflect.general.gen-unified-astlike-code)
-
+(ns io.github.hglabplh-tech.reflect.general.gen-unified-astlike-code
+  (:require [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]))
+(clojure.core/defn decompile-if [act-data]
+  (if (pactd/active-data-realm? act-data)
+    (pactd/decompile-active-rec act-data)
+    act-data
+    ))
 (defn clj-parse-fun-specs [args-list pr-schema act-data]
   (let [arglist (first args-list)
         positional-args (take-while #(not= % '&) arglist)
@@ -16,11 +21,14 @@
       ;; Build Positional Maps
       {:parameter-types (mapv (clojure.core/fn [param-element]
                                 (let [s-type (get param-element :schema-type)
+                                      is-map? (map? s-type)
+                                      type (if is-map? :mapped :standalone)
+                                      datatype (if is-map? (update-vals s-type decompile-if) s-type)
                                       p-name (get param-element :name)
                                       optional? (get param-element :optional?)]
                                   {:name      p-name
-                                   :type      (if (map? s-type) :mapped :standalone)
-                                   :datatype  s-type        ;; has to be parsed before in fun_reader
+                                   :type      type
+                                   :datatype  datatype        ;; has to be parsed before in fun_reader
                                    :optional? optional?
                                    :add-on    nil}))
                               arg-infos)})

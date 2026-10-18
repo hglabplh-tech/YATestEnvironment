@@ -126,11 +126,7 @@
                         )]
      (analyze-fun result#)))
 
-(clojure.core/defn decompile-if [act-data]
-  (if (pactd/active-data-realm? act-data)
-    (pactd/decompile-active-rec act-data)
-    act-data
-    ))
+
 
 (clojure.core/defn parse-arg-types [arg-type-defs]
   (let [descriptors (first (second (first arg-type-defs)))
@@ -141,25 +137,10 @@
                 :optional? (get val :optional?)
                 :types (get val :types-vect)})
                                   descriptors)
-        arg-type-seq (vec (map (clojure.core/fn [val]
-                                 (get val :schema))
-                               descriptors))
-        arg-opt?-seq (vec (map (clojure.core/fn [val]
-                                 (get val :optional?))
-                               descriptors))
-        arg-types-vect (vec (map (clojure.core/fn [val]
-                                   (get val :types-vect))
-                                 descriptors))
-        arg-name-seq  (vec  (map (clojure.core/fn [val]
-                                   (name  (get val :name)))
-                                 descriptors) )]              ;; correct it
+     ]
 
-    (let [fun-result {:names-vect     arg-name-seq
-                      :schema-types   arg-type-seq
-                      :types-vect     arg-types-vect
-                      :optional?-vect arg-opt?-seq}]
-      the-schema-compiled)
-    ))
+    the-schema-compiled)
+    )
 
 (clojure.core/defn parse-meta-to-map [schema-val]
   (let [return-type (second (first schema-val))
