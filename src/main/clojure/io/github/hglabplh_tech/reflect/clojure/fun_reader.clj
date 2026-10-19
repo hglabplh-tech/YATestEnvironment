@@ -5,7 +5,7 @@
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
             [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]
-            ))
+            [schema.core :as s]))
 
 (declare get-structured-meta-data)
 (clojure.core/defn printout_excp [excp]
@@ -143,12 +143,12 @@
     )
 
 (clojure.core/defn parse-meta-to-map [schema-val]
+
   (let [return-type (second (first schema-val))
         arg-info-map (parse-arg-types (rest schema-val))]
     {:return-type return-type
-     :arg-infos arg-info-map}
+     :arg-infos arg-info-map}))
 
-    ))
 (clojure.core/defn get-decompiled-active-data [raw-meta]
   (let [active-fun-meta (get raw-meta fn-realm-meta-key {})
         parsed-active-meta     (pactd/decompile-active-rec active-fun-meta)
@@ -165,16 +165,18 @@
         the-line (get fun-meta :line)
         the-doc  (get fun-meta :doc)
         priv     (get fun-meta :private)
-        tag       (get fun-meta :tag)
         the-column (get fun-meta :column)
         argument-list (get fun-meta :arglists)
-        ]
+        param-defs    (map #(or (-> % meta :tag) :any) (first argument-list))
+        return-def   (or (:tag fun-meta)
+                                  (:tag (meta (first argument-list)))
+                                  :any)]
     (let [schema-val (parse-base-schema the-schema)]
       {:structured-meta {:base-data {:ns            the-ns
                                      :name          the-name
                                      :doc           the-doc
                                      :private       priv
-                                     :tag           tag
+                                     :tag           {:return-type return-def :param-types param-defs}
                                      :line          the-line
                                      :column        the-column
                                      :arguments-list argument-list

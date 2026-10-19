@@ -38,6 +38,7 @@
   (let [documentation (get base-data :doc)
         fun-name (get base-data :name)
         line-no (get base-data :line)
+        fun-hints (get base-data :tag)
         col-no (get base-data :column)
         args-list (get base-data :argument-list)
         pr-schema (get add-on :schema)
@@ -46,6 +47,7 @@
      :param-defs (clj-parse-fun-specs args-list pr-schema act-data)
      :cloj-addon
      {:line   line-no
+      :fun-hints fun-hints
       :column col-no
       :doc    documentation}
      })

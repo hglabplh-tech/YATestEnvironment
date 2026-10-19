@@ -2,7 +2,7 @@
   (:require [active.data.realm :as realm]
             [schema.core :as s]))
 
-(defn valid-zip? [z] (and (string? z) (re-matches #"^\d{5}$" z)))
+(defn valid-zip? ^Boolean [^String z] (and (string? z) (re-matches #"^\d{5}$" z)))
 
 
 ;; Varargs are also supported in the higher-order function argument specifications.
