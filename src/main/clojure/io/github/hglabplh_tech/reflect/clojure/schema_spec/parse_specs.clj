@@ -33,15 +33,7 @@
         pos-spec-lookup (into {} (mapv vec (partition 2 spec-args-flat)))
         flat-spec-lookup  (apply hash-map spec-vect-flat)
         ]
-    (pprint (spec/describe (spec/get-spec func-name)))
-    (println "Next")
-    (pprint  positional-arg-symbols )
-    (println "Next 2")
-    (pprint  destructured-map )
-    (println "Next 3")
-    (pprint  spec-args-flat)
-    (println "Next 4")
-    (pprint  pos-spec-lookup)
+
 
 
     {:function-name func-name

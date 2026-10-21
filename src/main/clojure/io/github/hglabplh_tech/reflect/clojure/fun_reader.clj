@@ -5,6 +5,7 @@
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
             [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]
             [schema.core :as s]))
 
 (declare get-structured-meta-data)
@@ -158,6 +159,26 @@
     parsed-active-meta
     ))
 
+(clojure.core/defn extract-arg-types [arg-list]
+  (let [        ;; 2. Map through the argument list to find parameter types
+        param-types (mapv (clojure.core/fn [arg]
+                                       (cond
+                                         ;; Symbol check (Positional params)
+                                         (symbol? arg)
+                                         (or (-> arg meta :tag) :any)
+
+                                         ;; Map check (Named params / destructuring)
+                                         (map? arg)
+                                         (let [keys-list (or (:keys arg) (:syms arg) (:strs arg))
+                                               keys-tags (into {} (map (clojure.core/fn [k] [k (or (-> k meta :tag) :any)]) keys-list))]
+                                           {:type :map :keys keys-tags})
+
+                                         :else :any))
+                                     (first arg-list) )]
+
+    ;; Return a consolidated map of the specification
+    param-types))
+
 (clojure.core/defn get-structured-meta-data [fun-meta]
   (let [the-schema (get fun-meta :schema)
         the-ns (get fun-meta :ns)
@@ -167,13 +188,13 @@
         priv     (get fun-meta :private)
         the-column (get fun-meta :column)
         argument-list (get fun-meta :arglists)
-        param-defs    (map #(or (-> % meta :tag) :any) (first argument-list))
+        param-defs   (extract-arg-types argument-list)                                       ;;(map #(or (-> % meta :tag) :any) (first argument-list))
         return-def   (or (:tag fun-meta)
                                   (:tag (meta (first argument-list)))
                                   :any)]
     (let [schema-val (parse-base-schema the-schema)]
       {:structured-meta {:base-data {:ns            the-ns
-                                     :name          the-name
+                                     :name          (symbol (str the-ns "/" the-name))
                                      :doc           the-doc
                                      :private       priv
                                      :tag           {:return-type return-def :param-types param-defs}
@@ -181,7 +202,8 @@
                                      :column        the-column
                                      :arguments-list argument-list
                                      }
-                         :add-on    (conj {:schema (parse-meta-to-map schema-val)
+                         :add-on    (conj {:cloj-specs (pspecs/reflect-mixed-params fun-meta)
+                                           :schema (parse-meta-to-map schema-val)
                                            :active-data (get-decompiled-active-data fun-meta)})}}
 
       )))

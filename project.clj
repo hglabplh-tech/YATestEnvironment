@@ -42,6 +42,7 @@
                  [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
                  [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
                  [org.jetbrains.kotlin/kotlin-reflect "2.1.20"]
+                 [org.clojure/spec.alpha "0.6.249"]
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
