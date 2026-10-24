@@ -3,7 +3,7 @@
 (ns io.github.hglabplh-tech.reflect.java.api.packages-test
   (:require [clojure.pprint :refer :all]
             [clojure.test :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.packages :as pkgs]))
+            [io.github.hglabplh-tech.reflect.java.api.packages :as pkgs]))
 
 
 

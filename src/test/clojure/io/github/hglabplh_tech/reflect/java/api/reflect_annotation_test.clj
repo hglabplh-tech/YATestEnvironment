@@ -3,8 +3,8 @@
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-annotation-test
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as rcl]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-annotation :as annot])
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as rcl]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-annotation :as annot])
 
   )
 

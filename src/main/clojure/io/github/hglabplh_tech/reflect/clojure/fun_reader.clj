@@ -225,26 +225,6 @@
     parsed-active-meta
     ))
 
-(clojure.core/defn extract-arg-types [arg-list]
-  (let [        ;; 2. Map through the argument list to find parameter types
-        param-types (mapv (clojure.core/fn [arg]
-                                       (cond
-                                         ;; Symbol check (Positional params)
-                                         (symbol? arg)
-                                         (or (-> arg meta :tag) :any)
-
-                                         ;; Map check (Named params / destructuring)
-                                         (map? arg)
-                                         (let [keys-list (or (:keys arg) (:syms arg) (:strs arg))
-                                               keys-tags (into {} (map (clojure.core/fn [k] [k (or (-> k meta :tag) :any)]) keys-list))]
-                                           {:type :map :keys keys-tags})
-
-                                         :else :any))
-                                     (first arg-list) )]
-
-    ;; Return a consolidated map of the specification
-    param-types))
-
 (clojure.core/defn get-structured-meta-data [fun-meta]
   (let [the-schema (get fun-meta :schema)
         the-ns (get fun-meta :ns)
@@ -252,12 +232,7 @@
         the-line (get fun-meta :line)
         the-doc  (get fun-meta :doc)
         priv     (get fun-meta :private)
-        the-column (get fun-meta :column)
-        argument-list (get fun-meta :arglists)
-        param-defs   (extract-arg-types argument-list)                                       ;;(map #(or (-> % meta :tag) :any) (first argument-list))
-        return-def   (or (:tag fun-meta)
-                                  (:tag (meta (first argument-list)))
-                                  :any)]
+        the-column (get fun-meta :column)]
     (let [schema-val (parse-base-schema the-schema)]
       {:structured-meta {:base-data {:ns            the-ns
                                      :name          (symbol (str the-ns "/" the-name))
@@ -267,7 +242,7 @@
                                      :column        the-column
                                      :args-types-list (parse-arglist-with-hints fun-meta)
                                      }
-                         :add-on    (conj {:cloj-specs (pspecs/reflect-mixed-params fun-meta)
+                         :add-on    (conj {:cloj-specs (parse-arglist-with-hints fun-meta)
                                            :schema (parse-meta-to-map schema-val)
                                            :active-data (get-decompiled-active-data fun-meta)})}}
 

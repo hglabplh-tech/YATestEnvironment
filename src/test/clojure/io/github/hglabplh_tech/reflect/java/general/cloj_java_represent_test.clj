@@ -3,9 +3,9 @@
 (ns io.github.hglabplh-tech.reflect.java.general.cloj-java-represent-test
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as rcl]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-meths-ctors :as mctor]
-            [io.github.hglabplh-tech.reflect.clojure.general.cloj-java-represent :as present]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as rcl]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as mctor]
+
             )
   (:import (java.util Optional)))
 

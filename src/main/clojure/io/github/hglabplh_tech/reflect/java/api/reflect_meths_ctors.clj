@@ -2,7 +2,7 @@
 
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors
   (:require [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes]
-            [io.github.hglabplh-tech.reflect.general.cloj-java-represent :as represent])
+            [io.github.hglabplh-tech.reflect.java.api.java-representation :as represent])
   (:import (io.github.hglabplh_tech.reflect.java.api.utils MethsCtorsUtil)))
 
 (defn get-ctor-name

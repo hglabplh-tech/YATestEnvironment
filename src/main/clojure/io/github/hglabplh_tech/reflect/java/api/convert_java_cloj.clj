@@ -6,7 +6,7 @@
             [io.github.hglabplh-tech.reflect.java.api.reflect-field :as fields]
             [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as meths]
             [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as er-refl]
-            [io.github.hglabplh-tech.reflect.general.cloj-java-represent :as represent]))
+            [io.github.hglabplh-tech.reflect.java.api.java-representation :as represent]))
 
 (declare retrive-class-info)
 
@@ -96,7 +96,7 @@
         lambda-specs (er-refl/analyze-lambda (rcl/get-the-class clazz-util))
         switch-specs (er-refl/analyze-switch (rcl/get-the-class clazz-util))]
     {:class
-     {:obj-name              class-name
+     {:class-name            class-name
       :attributes            attributes
       :super                 super-class
       :interface             interfaces

@@ -3,9 +3,9 @@
 (ns io.github.hglabplh-tech.reflect.java.api.convert-java-cloj-tests
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as rcl]
-            [io.github.hglabplh-tech.reflect.clojure.api.convert-java-cloj :as cjc]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-special-forms :as enrecla]))
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as rcl]
+            [io.github.hglabplh-tech.reflect.java.api.java-representation :as cjc]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as enrecla]))
 
 (deftest java-cloj.convert.enum.test
   (testing "base test for the different functions to convert from java

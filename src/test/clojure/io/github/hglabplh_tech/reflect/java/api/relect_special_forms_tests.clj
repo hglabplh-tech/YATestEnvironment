@@ -3,8 +3,8 @@
 (ns io.github.hglabplh-tech.reflect.java.api.relect-special-forms-tests
   (:require [clojure.pprint :as pp]
             [clojure.test :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-class :as rcl]
-            [io.github.hglabplh-tech.reflect.clojure.api.reflect-special-forms :as sform]))
+            [io.github.hglabplh-tech.reflect.java.api.reflect-class :as rcl]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as sform]))
 (def enum-check-map {:enum-spec
                       {"HOST"
                        {:ordinal 0,
