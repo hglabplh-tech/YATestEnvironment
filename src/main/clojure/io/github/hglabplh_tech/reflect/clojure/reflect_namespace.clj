@@ -11,24 +11,22 @@
   [& ns-sym-list]
     (reset! registered-ns  ns-sym-list))
 
-(defn reflect-all-spaces [ns-public? decompiled?]
+(defn reflect-all-spaces [ns-public?]
   (let [namespace-syms @registered-ns
         reflect-fun (if ns-public?
                       get-ns-publics
                       get-ns-interns)]
     (mapv (fn [reflect-ns-sym]
-            (reflect-fun reflect-ns-sym decompiled?)) namespace-syms)))
+            (reflect-fun reflect-ns-sym)) namespace-syms)))
 
-(clojure.core/defn create-meta-entry [keyval decompiled?]
+(clojure.core/defn create-meta-entry [keyval]
   {(keyword (str (key keyval)))
-   (if decompiled?
-     (fr/get-decompiled-meta (meta (val keyval)))
-     (meta (val keyval)))})
+     (fr/get-decompiled-meta (meta (val keyval)))     })
 
-(clojure.core/defn get-ns-interns [namespace-sym decompiled?]
+(clojure.core/defn get-ns-interns [namespace-sym]
   (let [the-namespace (the-ns namespace-sym)
         ns-intern-meta-map (mapv (fn [entry]
-                                   (create-meta-entry entry decompiled?))
+                                   (create-meta-entry entry))
                                  (ns-interns namespace-sym))]
     (println "Namespace object: ")
     (println namespace-sym)
@@ -39,10 +37,10 @@
     (println "NS INTERN")
     {:language :clojure :ns-name (str namespace-sym) :reflect-data ns-intern-meta-map} ))
 
-(clojure.core/defn get-ns-publics [namespace-sym decompiled?]
+(clojure.core/defn get-ns-publics [namespace-sym]
   (let [the-namespace (the-ns namespace-sym)
         ns-public-meta-map (mapv (fn [entry]
-                                   (create-meta-entry entry decompiled?))
+                                   (create-meta-entry entry))
                                  (ns-publics the-namespace))
         ]
 
@@ -55,15 +53,13 @@
     (println "NS PUBLICS")
     {:language :clojure :ns-name (str namespace-sym) :reflect-data ns-public-meta-map}))
 
-
-
-(clojure.core/defmacro get-intern-defs [namespace-sym decompiled?]
+(clojure.core/defmacro get-intern-defs [namespace-sym]
   (require [namespace-sym :refer :all] :use)
   `(do
-     ~@(get-ns-interns namespace-sym decompiled?)))
+     ~@(get-ns-interns namespace-sym)))
 
-(clojure.core/defmacro get-public-defs [namespace-sym decompiled?]
+(clojure.core/defmacro get-public-defs [namespace-sym]
   (require [namespace-sym :refer :all] :use)
   `(do
-     ~@(get-ns-publics namespace-sym decompiled?)))
+     ~@(get-ns-publics namespace-sym)))
 

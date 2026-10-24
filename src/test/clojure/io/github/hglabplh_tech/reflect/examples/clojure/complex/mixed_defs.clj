@@ -1,5 +1,6 @@
 (ns io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs
   (:require [active.data.realm :as realm]
+            [active.data.realm.schema :as realm-schema]
             [schema.core :as s]
             [clojure.spec.alpha :as spec] ))
 
@@ -7,6 +8,27 @@
 (spec/def ::tags (spec/coll-of string?))
 (spec/def ::visibility #{:public :private})
 (spec/def ::max-members int?)
+
+(def NumberSchema
+  (realm-schema/schema realm/number))
+
+(def IntegerSchema
+  (realm-schema/schema realm/integer))
+
+(defn typehint-more ^Long
+  [^Number blubb
+   ^Number blubber
+   ^String message
+   & more ]
+  (let [result (Math/round (double (* blubber (reduce + blubb  more))))]
+    (println (str message result))
+    ))
+
+
+(s/defn prschema-actd-more :- IntegerSchema
+  [blubb :- NumberSchema
+   & more :- [NumberSchema]]
+  (Math/round (double (reduce + blubb more))))
 
 ;; 2. Spec uses spec/cat for positionals, then matches the map argument
 (spec/fdef create-project

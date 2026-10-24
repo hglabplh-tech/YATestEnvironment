@@ -9,39 +9,9 @@
 
 ;;(reflns/get-intern-defs io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns true)
 
-(deftest simple-public-ns-reflect
-  (testing "Reflect a namespace without decompile"
-    (let [result (reflns/get-ns-publics 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering false)  the-keys (keys result)
-          the-reflect-data (get result :reflect-data )
-          content-keys (mapv (clojure.core/fn [value]
-                               (first (keys value))) the-reflect-data)
-          content-vals (mapv (clojure.core/fn [value]
-                               (first (vals value))) the-reflect-data)]
-      (is (get result :language) :clojure)
-      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
-      (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
-      (pprint content-keys)
-      (pprint content-vals))
-    ))
-
-(deftest simple-intern-ns-reflect
-  (testing "Reflect a namespace without decompile"
-    (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering false)
-          the-reflect-data (get result :reflect-data )
-          content-keys (mapv (clojure.core/fn [value]
-                               (first (keys value))) the-reflect-data)
-          content-vals (mapv (clojure.core/fn [value]
-                               (first (vals value))) the-reflect-data)]
-      (is (get result :language) :clojure)
-      (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
-      (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
-      (pprint content-keys)
-      (pprint content-vals))
-    ))
-
 (deftest decomp-public-ns-reflect
   (testing "Reflect a namespace with decompile"
-    (let [result (reflns/get-ns-publics 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering true)
+    (let [result (reflns/get-ns-publics 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
           the-reflect-data (get result :reflect-data )
           content-keys (mapv (clojure.core/fn [value]
                                (first (keys value))) the-reflect-data)
@@ -51,12 +21,13 @@
       (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
       (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
       (pprint content-keys)
-      (pprint content-vals))
+      (pprint content-vals)
+      (pprint (uni/transform-to-unified result)))
     ))
 
 (deftest decomp-intern-ns-reflect
   (testing "Reflect a namespace with decompile"
-    (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering true)
+    (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering)
           the-reflect-data (get result :reflect-data )
           content-keys (mapv (clojure.core/fn [value]
                                (first (keys value))) the-reflect-data)
@@ -66,12 +37,13 @@
       (is (get result :ns-name) "io.github.hglabplh-tech.reflect.examples.clojure.app.little-answering")
       (is content-keys [:chat-send :status :wait-for-atom-match :chat-loop])
       (pprint content-keys)
-      (pprint content-vals))
+      (pprint content-vals)
+      (pprint (uni/transform-to-unified result)))
     ))
 
 (deftest decomp-mixed-ns-reflect
   (testing "Reflect a namespace with decompile - prismatic schema / active-data"
-    (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs true)
+    (let [result (reflns/get-ns-interns 'io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs)
           the-reflect-data (get result :reflect-data )
           content-keys (mapv (clojure.core/fn [value]
                                (first (keys value))) the-reflect-data)
