@@ -59,7 +59,12 @@ public class MethsCtorsUtil {
      * @return the parameter types of the constructor
      */
     public static  IPersistentVector getCtorParamTypes(Constructor<?> ctor) {
+        Type[] b = ctor.getGenericParameterTypes();
         return getArrayAsLazyVector(ctor.getParameterTypes());
+    }
+
+    public static  IPersistentVector getCtorGenericParmTypes(Constructor<?> ctor){
+        return getArrayAsLazyVector(ctor.getGenericParameterTypes());
     }
 
     /**
@@ -70,6 +75,17 @@ public class MethsCtorsUtil {
     public static Integer getCtorModifiers(Constructor<?> ctor) {
         return ctor.getModifiers();
     }
+
+    /**
+     * Get the methods parameter types
+     * @param ctor the constructor definition
+     * @return the methods parameter types
+     */
+    public static  IPersistentVector getCtorParamAnnots (
+            Constructor<?> ctor) {
+        return getArrayAsLazyVector(ctor.getParameterAnnotations());
+    }
+
 
     /**
      * Get the constructors declaring class
@@ -95,10 +111,20 @@ public class MethsCtorsUtil {
      * @param method the method definition
      * @return the methods parameter types
      */
-    public static  IPersistentVector getMethodParamTypes (
-             Method method) {
+    public static  IPersistentVector getMethodParamTypes (Method method) {
         return getArrayAsLazyVector(method.getParameterTypes());
     }
+
+    /**
+     * Get the methods parameter types
+     * @param method the method definition
+     * @return the methods parameter types
+     */
+    public static  IPersistentVector getMethodParamAnnots (
+            Method method) {
+        return getArrayAsLazyVector(method.getParameterAnnotations());
+    }
+
 
     /**
      * Get the methods return type

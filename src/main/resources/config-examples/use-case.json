@@ -1,0 +1,93 @@
+{
+  "format": "yate/use-case",
+  "formatVersion": "1.0",
+  "id": "UC-calculate-total",
+  "description": "Calculate an order total in cents.",
+  "resourcesRef": "./resources.json",
+  "interfaceResolution": {
+    "strategy": "triggerThenReflectThenFallback",
+    "onUnresolved": "failBeforeExecution",
+    "onContractConflict": "fail"
+  },
+  "testData": {
+    "definitionRef": "./resources.json#/dataDefinitions/orderCases",
+    "sourceRefs": [
+      "./resources.json#/sources/orderFile",
+      "./resources.json#/sources/orderDatabase"
+    ]
+  },
+  "steps": [
+    {
+      "id": "calculate",
+      "description": "Multiply quantity by unit price and verify the total or expected rejection.",
+      "function": {
+        "binding": {
+          "kind": "clojure-function",
+          "namespace": "example.orders",
+          "name": "calculate-total",
+          "arity": 2
+        },
+        "reflection": {
+          "triggerFile": "./reflection/available.flag",
+          "operationKey": "example.orders/calculate-total:2",
+          "attemptRuntimeReflection": true
+        },
+        "fallbackDefinition": {
+          "parameters": [
+            {
+              "name": "quantity",
+              "position": 0,
+              "type": "integer",
+              "attributes": {
+                "required": true,
+                "nullable": false,
+                "direction": "in",
+                "minimum": 1,
+                "maximum": 1000
+              }
+            },
+            {
+              "name": "unitPriceCents",
+              "position": 1,
+              "type": "integer",
+              "attributes": {
+                "required": true,
+                "nullable": false,
+                "direction": "in",
+                "minimum": 0,
+                "maximum": 1000000
+              }
+            }
+          ],
+          "returns": {
+            "type": "integer",
+            "attributes": {
+              "nullable": false,
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "arguments": [
+        {
+          "parameter": "quantity",
+          "value": {
+            "from": "case",
+            "pointer": "/input/quantity"
+          }
+        },
+        {
+          "parameter": "unitPriceCents",
+          "value": {
+            "from": "case",
+            "pointer": "/input/unitPriceCents"
+          }
+        }
+      ],
+      "expectedReturn": {
+        "from": "case",
+        "pointer": "/expected"
+      }
+    }
+  ]
+}

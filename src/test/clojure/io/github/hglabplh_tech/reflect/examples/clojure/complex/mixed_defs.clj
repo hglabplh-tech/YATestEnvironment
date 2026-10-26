@@ -24,6 +24,13 @@
     (println (str message result))
     ))
 
+(defn typehint-more-mult ^Long
+  ([] 7)
+  ([^String msg ^Number first-num] [msg first-num] (let [result (* first-num first-num)]
+                                                     (println (str msg result))))
+  ([^String msg  ^Number first-num ^Number sec-num] [msg first-num sec-num](let [result (* first-num sec-num)]
+                                                                             (println (str msg result)))))
+
 
 (s/defn prschema-actd-more :- IntegerSchema
   [blubb :- NumberSchema

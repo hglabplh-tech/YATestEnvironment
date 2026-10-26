@@ -1,0 +1,223 @@
+{
+  "format": "yate/resources",
+  "formatVersion": "1.0",
+  "dataDefinitions": {
+    "orderCases": {
+      "recordSchema": {
+        "type": "object",
+        "required": ["id", "classification", "input", "expected"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "classification": {
+            "enum": ["valid", "invalid"]
+          },
+          "input": {
+            "type": "object",
+            "required": ["quantity", "unitPriceCents"],
+            "properties": {
+              "quantity": {
+                "type": "integer"
+              },
+              "unitPriceCents": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "expected": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["kind", "value"],
+                "properties": {
+                  "kind": {
+                    "const": "return"
+                  },
+                  "value": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": ["kind", "errorCode"],
+                "properties": {
+                  "kind": {
+                    "const": "error"
+                  },
+                  "errorCode": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "generationProfileRef": "#/generationProfiles/orderMassData"
+    }
+  },
+  "sources": {
+    "orderFile": {
+      "definitionRef": "#/dataDefinitions/orderCases",
+      "location": {
+        "kind": "filesystem",
+        "path": "./test-data/orders.json"
+      },
+      "layout": {
+        "format": "json",
+        "encoding": "UTF-8",
+        "recordsPointer": "/cases",
+        "mapping": "identity"
+      },
+      "whenMissing": {
+        "action": "generate",
+        "profileRef": "#/generationProfiles/orderMassData"
+      },
+      "generationTarget": {
+        "kind": "filesystem",
+        "path": "./test-data/orders.json",
+        "format": "json",
+        "recordsPointer": "/cases",
+        "writeMode": "createOnly"
+      }
+    },
+    "orderDatabase": {
+      "definitionRef": "#/dataDefinitions/orderCases",
+      "location": {
+        "kind": "sql",
+        "dialect": "postgresql",
+        "connectionRef": "test-database",
+        "table": "yate.order_cases"
+      },
+      "layout": {
+        "columns": {
+          "case_id": "text",
+          "classification": "text",
+          "quantity": "integer",
+          "unit_price_cents": "integer",
+          "expected_kind": "text",
+          "expected_total_cents": "bigint",
+          "expected_error_code": "text"
+        },
+        "mapping": {
+          "/id": "case_id",
+          "/classification": "classification",
+          "/input/quantity": "quantity",
+          "/input/unitPriceCents": "unit_price_cents",
+          "/expected/kind": "expected_kind"
+        },
+        "conditionalMapping": [
+          {
+            "when": {
+              "column": "expected_kind",
+              "equals": "return"
+            },
+            "mapping": {
+              "/expected/value": "expected_total_cents"
+            }
+          },
+          {
+            "when": {
+              "column": "expected_kind",
+              "equals": "error"
+            },
+            "mapping": {
+              "/expected/errorCode": "expected_error_code"
+            }
+          }
+        ]
+      },
+      "whenMissing": {
+        "action": "generate",
+        "profileRef": "#/generationProfiles/orderMassData"
+      },
+      "whenEmpty": {
+        "action": "generate",
+        "profileRef": "#/generationProfiles/orderMassData"
+      },
+      "generationTarget": {
+        "kind": "sql",
+        "connectionRef": "test-database",
+        "table": "yate.order_cases",
+        "createTableIfMissing": true,
+        "writeMode": "insert",
+        "transactional": true,
+        "batchSize": 1000
+      }
+    }
+  },
+  "generationProfiles": {
+    "orderMassData": {
+      "mode": "mass",
+      "count": 100000,
+      "seed": 42,
+      "basis": {
+        "useCase": true,
+        "resolvedFunctionInterface": true,
+        "additionalCriteria": true
+      },
+      "distribution": {
+        "mode": "exactCounts",
+        "validPercent": 80,
+        "invalidPercent": 20,
+        "invalidCases": {
+          "violationsPerCase": 1,
+          "rules": [
+            {
+              "parameter": "quantity",
+              "violate": "minimum",
+              "value": 0,
+              "shareOfInvalidPercent": 50
+            },
+            {
+              "parameter": "unitPriceCents",
+              "violate": "minimum",
+              "value": -1,
+              "shareOfInvalidPercent": 50
+            }
+          ]
+        }
+      },
+      "validValues": {
+        "quantity": {
+          "strategy": "uniformInteger",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "unitPriceCents": {
+          "strategy": "uniformInteger",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      },
+      "expectedResults": {
+        "valid": {
+          "kind": "return",
+          "rule": {
+            "operator": "multiply",
+            "operands": [
+              {
+                "from": "case",
+                "pointer": "/input/quantity"
+              },
+              {
+                "from": "case",
+                "pointer": "/input/unitPriceCents"
+              }
+            ]
+          }
+        },
+        "invalid": {
+          "kind": "error",
+          "errorCode": "INVALID_ARGUMENT"
+        }
+      }
+    }
+  }
+}

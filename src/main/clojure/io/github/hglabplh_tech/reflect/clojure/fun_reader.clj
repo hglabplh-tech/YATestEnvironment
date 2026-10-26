@@ -153,10 +153,13 @@
        Preserve specs and defaults; include :type-hint only when declared."
       [fun-meta]
       (let [func-name (symbol (str (:ns fun-meta) "/" (:name fun-meta)))
-            raw-args (first (:arglists fun-meta))
-            fixed-args (take-while #(not= '& %) raw-args)
-            rest-arg (second (drop-while #(not= '& %) raw-args))
-            destructured-map (first (filter map? (concat fixed-args [rest-arg])))
+            raw-args-lists (:arglists fun-meta)            ;; parse more than one arg
+            fixed-args (mapv (clojure.core/fn [raw-args]
+                               (take-while #(not= '& %) raw-args)) raw-args-lists)
+            rest-args (mapv (clojure.core/fn [raw-args]
+                              (second (drop-while #(not= '& %) raw-args))) raw-args-lists)
+            destructured-map (mapv (clojure.core/fn [rest-arg]
+                                     (first (filter map? (concat fixed-args [rest-arg])))) rest-args)
             spec-form (when-let [sp (spec/get-spec func-name)]
                         (spec/describe sp))
             flat-spec-lookup (apply hash-map (rest spec-form))
@@ -175,7 +178,7 @@
                        (apply hash-map (rest keys-spec-form)))
             req-keys (set (map (comp symbol name) (:req-un keys-map)))
             opt-keys (set (map (comp symbol name) (:opt-un keys-map)))
-            return-hint (or (:tag fun-meta) (:tag (meta raw-args)))
+            return-hint (mapv (clojure.core/fn [raw-args] (or (:tag fun-meta) (:tag (meta raw-args)))) raw-args-lists)
             result
             {:function-name func-name
              :positional-parameters
@@ -202,11 +205,13 @@
                                      k)]))
                        (:keys destructured-map))))
              :return-spec (:ret flat-spec-lookup)}]
-        (cond-> result
+        (mapv (clojure.core/fn [rest-arg] (cond-> result
                 return-hint (assoc :return-type-hint return-hint)
-                (symbol? rest-arg)
-                (assoc :rest-parameter
-                       (with-type-hint {:param rest-arg :variadic? true} rest-arg)))))
+                          (symbol? rest-arg)
+                          (assoc :rest-parameter
+                            (with-type-hint {:param rest-arg :variadic? true} rest-arg)))) rest-args)
+
+                ))
 
 
 (clojure.core/defn parse-meta-to-map [schema-val]

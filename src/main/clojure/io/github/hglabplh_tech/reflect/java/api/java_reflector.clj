@@ -3,17 +3,25 @@
 (ns io.github.hglabplh-tech.reflect.java.api.java-reflector
   (:require [io.github.hglabplh-tech.reflect.java.api.reflect-class :as rcl]
             [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as mct]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-field :as rfld]
             ))
 
 (clojure.core/defn field-def [field-def]
-  (let []
+  (let [field-name (rfld/get-field-name field-def)
+        field-type {:field-type (rfld/get-annot-type field-def)
+                    :gen-field-type (rfld/get-generic-type field-def)
+                    :annot-field-type  (rfld/get-annot-type field-def)}
+        field-annotations (rfld/get-all-annots field-def)
+        ]
 
     ))
 (clojure.core/defn ctor-def [ctor-def]
   (let [ctor-name (mct/get-ctor-name ctor-def)
         ctor-parms {:parm-count (mct/get-ctor-param-count ctor-def)
                     :parm-types (mct/get-ctor-param-types ctor-def)}
-        ctor-exceptions {:exception-types (mct/get-ctor-exception-types ctor-def)}
+        ctor-exceptions {:exception-types (mct/get-ctor-exception-types ctor-def)
+                         :gen-excp-types (mct/get-ctor-gen-exception-types ctor-def)}
+        ann (mct/)
         ]
         {:ctor-def {:ctor-name ctor-name :params ctor-parms :ctor-exceptions ctor-exceptions}}
 
