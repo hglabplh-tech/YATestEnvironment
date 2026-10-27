@@ -21,7 +21,7 @@
                     :parm-types (mct/get-ctor-param-types ctor-def)}
         ctor-exceptions {:exception-types (mct/get-ctor-exception-types ctor-def)
                          :gen-excp-types (mct/get-ctor-gen-exception-types ctor-def)}
-        ann (mct/)
+        annotations (mct/get)
         ]
         {:ctor-def {:ctor-name ctor-name :params ctor-parms :ctor-exceptions ctor-exceptions}}
 

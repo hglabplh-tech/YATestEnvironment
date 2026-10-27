@@ -21,7 +21,7 @@ import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getLis
 public class GetPackagesAndClasses {
 
     public static IPersistentVector findAllClassesUsingClassLoader(String packageName) {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader(); // TODO: check this and check the correct classpath setting
         assert classLoader != null;
         String path = packageName.replace('.', '/');
         List<Class> classes = new ArrayList<>();

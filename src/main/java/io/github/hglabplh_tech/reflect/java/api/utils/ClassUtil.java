@@ -1,8 +1,6 @@
 package io.github.hglabplh_tech.reflect.java.api.utils;
 
-import clojure.lang.IPersistentMap;
-import clojure.lang.IPersistentVector;
-import clojure.lang.PersistentArrayMap;
+import clojure.lang.*;
 import io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils;
 
 
@@ -245,6 +243,23 @@ public class ClassUtil {
      */
     public  IPersistentVector getPublicSubClasses() {
         return getArrayAsLazyVector(this.theClass.getClasses());
+    }
+    public IPersistentCollection traversePublicSubClasses() {
+        return internTraversePublicSubClasses(this.theClass);
+    }
+
+
+    public IPersistentCollection internTraversePublicSubClasses(Class<?> parent) {
+        Class<?>[] vect = parent.getClasses();
+        IPersistentCollection theList = PersistentList.EMPTY;
+        for (Class<?> actClass :vect) {
+            theList = theList.cons(actClass);
+            Class<?>[] subVect = actClass.getClasses();
+            if (subVect.length > 0) {
+                theList = internTraversePublicSubClasses(actClass);
+            }
+        }
+        return theList;
     }
 
     /**

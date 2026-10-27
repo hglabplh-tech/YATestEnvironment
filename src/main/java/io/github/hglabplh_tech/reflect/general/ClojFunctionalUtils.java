@@ -1,8 +1,10 @@
 package io.github.hglabplh_tech.reflect.general;
 
 import clojure.lang.*;
+import scala.quoted.runtime.impl.QuotesImpl;
 
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -30,6 +32,16 @@ public class ClojFunctionalUtils {
     public static <T> IPersistentVector getArrayAsLazyVector(T [] arrayContent) {
         IPersistentVector newVector = LazilyPersistentVector.create(arrayContent);
         return newVector;
+    }
+
+    /**
+     *
+     * @param arrayContent the 2 DIM array  to transform
+     * @return the persistence Map with the array-content
+     */
+    public static <T> IPersistentMap getAsMap(T [][] arrayContent) {
+        IPersistentMap newMap = PersistentArrayMap.createAsIfByAssoc(arrayContent);
+        return newMap;
     }
 
     /**
@@ -109,6 +121,9 @@ public class ClojFunctionalUtils {
         METHOD("meth-"),
         ANNOTATION("annot-"),
         RECORD("rec-"),
+        FREENAME("name-"),
+        FREEVAL("val-"),
+        FREETYPE("typename-"),
         NONE(""),;
 
 

@@ -1,13 +1,16 @@
 package io.github.hglabplh_tech.reflect.java.api.utils;
 
+import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getAsMap;
 
 /**
  * This s a utility class for getting the definition data of
@@ -81,9 +84,9 @@ public class MethsCtorsUtil {
      * @param ctor the constructor definition
      * @return the methods parameter types
      */
-    public static  IPersistentVector getCtorParamAnnots (
+    public static  IPersistentMap getCtorParamAnnots (
             Constructor<?> ctor) {
-        return getArrayAsLazyVector(ctor.getParameterAnnotations());
+        return getAsMap(ctor.getParameterAnnotations());
     }
 
 
@@ -120,9 +123,9 @@ public class MethsCtorsUtil {
      * @param method the method definition
      * @return the methods parameter types
      */
-    public static  IPersistentVector getMethodParamAnnots (
+    public static IPersistentMap getMethodParamAnnots (
             Method method) {
-        return getArrayAsLazyVector(method.getParameterAnnotations());
+        return getAsMap(method.getParameterAnnotations());
     }
 
 
@@ -133,6 +136,15 @@ public class MethsCtorsUtil {
      */
     public static  Class<?> getMethodReturnType (Method method) {
         return method.getReturnType();
+    }
+
+    /**
+     * Get the methods annotated return type
+     * @param method the method definition
+     * @return the methods annotated return type
+     */
+    public static AnnotatedType getMethodAnnotReturnType(Method method) {
+        return method.getAnnotatedReturnType();
     }
 
     /**

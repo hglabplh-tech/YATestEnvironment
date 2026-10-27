@@ -1,16 +1,12 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
-
+;; has to be changed. The whole annot handling and transformation has to be changed
+;; this here will be pure for conversion / transformation
+;; the annotation getters for class fields and methods and ctors are placed in the reflect NS for these things
+;; the annotations are then transformed into a map by this tool here
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-annotation
   (:import (java.lang Class)
            (java.lang.reflect Constructor Field Method)
            (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil)))
-
-(defn get-class-annots
-  "Get te annotations of a class definition"
-  {:added "0.9.0"
-   :static true}
-  [^Class clazz]
-  (AnnotationsUtil/getClassAnnots clazz))
 
 (defn get-ctor-annots
   "Get te annotations of a constructor definition"

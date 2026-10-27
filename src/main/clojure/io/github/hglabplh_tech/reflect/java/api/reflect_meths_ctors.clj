@@ -3,7 +3,8 @@
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors
   (:require [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes]
             [io.github.hglabplh-tech.reflect.java.api.java-representation :as represent])
-  (:import (io.github.hglabplh_tech.reflect.java.api.utils MethsCtorsUtil)))
+  (:import (io.github.hglabplh_tech.reflect.java.api.utils MethsCtorsUtil)
+           (java.lang.reflect Constructor Method)))
 
 (defn get-ctor-name
   "Get the constructors name
@@ -77,6 +78,14 @@
   [ctor]
   (MethsCtorsUtil/getCtorParamAnnots ctor))
 
+(defn get-ctor-declaring-class
+  "Get the declaring class of the constructor
+  @param : the constructor we look for"
+  {:added  "1.1.0"
+   :static true}
+  [^Constructor ctor]
+  (MethsCtorsUtil/getCtorDeclaringClass ctor))
+
 (defn get-all-ctor-and-type-modifiers
   "Get all the constructors modifiers
   types attributes these values are translated partly in keywods
@@ -97,13 +106,7 @@
           :exception-types (get-ctor-exception-types ctor)})
        ctors))
 
-(defn get-ctor-declaring-class
-  "Get the declaring class of the constructor
-  @param : the constructor we look for"
-  {:added  "1.1.0"
-   :static true}
-  [ctor]
-  (MethsCtorsUtil/getCtorDeclaringClass ctor))
+
 
 
 
@@ -112,7 +115,7 @@
   @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodName meth))
 
 (defn get-meth-declaring-class
@@ -120,7 +123,7 @@
   @param : the method we look for"
   {:added  "1.1.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethDeclaringClass meth))
 
 (defn get-meth-param-count
@@ -128,7 +131,7 @@
    @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodParamCount meth))
 
 (defn get-meth-param-types
@@ -136,7 +139,7 @@
  @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodParamTypes meth))
 
 
@@ -145,7 +148,7 @@
  @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (map represent/type-def-representation (MethsCtorsUtil/getMethGenericParmTypes meth)))
 
 (defn get-meth-param-annots
@@ -153,7 +156,7 @@
   @param : the method we look for"
   {:added  "1.4.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodParamAnnots meth))
 
 
@@ -162,7 +165,7 @@
 @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodReturnType meth))
 
 (defn get-generic-method-return-type
@@ -170,7 +173,7 @@
 @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (represent/type-def-representation
     (MethsCtorsUtil/getMethGenericReturnType meth)))
 
@@ -179,7 +182,7 @@
 @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethodModifiers meth))
 
 (defn get-meth-declared-annotations
@@ -187,7 +190,7 @@
   @param : the method we look for"
   {:added "1.4.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getDeclAnnotsMethod meth))
 
 (defn get-meth-exception-types
@@ -195,9 +198,15 @@
   @param : the method we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
+  [^Method meth]
   (MethsCtorsUtil/getMethExceptionTypes meth))
 
+(defn get-meth-annot-return-type
+  "Get te annotations of a method return type definition"
+  {:added "0.9.0"
+   :static true}
+  [^Method meth]
+  (MethsCtorsUtil/getMethodAnnotReturnType meth))
 
 (defn get-all-meth-and-type-modifiers
   "Get all the methods modifiers
@@ -205,7 +214,7 @@
  especially for modifiers and attributes
  @param : the list of methods"
   [& meths]
-  (map (fn [meth]
+  (map (fn [^Method meth]
          {:meth-name  (get-meth-name meth)
           :all-parm-types {:param-types(get-meth-param-types meth)
                            :gen-param-types (get-generic-meth-param-types meth)}
@@ -216,7 +225,8 @@
           :exception-types (get-meth-exception-types meth)
           :annots   (get-meth-declared-annotations meth)
           :return-types {:return-type (get-method-return-type meth)
-                        :gen-return-type (get-generic-method-return-type meth)} }    ;; ???????????????
+                        :gen-return-type (get-generic-method-return-type meth)
+                         :annot-return-type (get-meth-annot-return-type meth)} }    ;; ???????????????
          )
        meths))
 

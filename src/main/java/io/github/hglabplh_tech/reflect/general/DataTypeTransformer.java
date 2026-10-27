@@ -143,9 +143,13 @@ public class DataTypeTransformer {
                 (PersistentArrayMap.EMPTY);
         for (Method method : methods) {
             Object result = null;
+            Object defaultVal = null;
+            String defaultValTypeName = null;
             if (method.getParameterCount() == 0) {
                 try {
                     result = method.invoke(instance);
+                    defaultVal = method.getDefaultValue();
+                    defaultValTypeName = defaultVal.getClass().getTypeName();
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
@@ -159,6 +163,8 @@ public class DataTypeTransformer {
                 nameValueMap = nameValueMap.assoc(
                         retrieveKeywordForJavaID(method.getName(), ObjType.METHOD),
                         result);
+                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID(defaultVal.toString(), ObjType.FREEVAL), defaultVal);
+                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID(defaultValTypeName, ObjType.FREETYPE), defaultValTypeName);
 
             }
 

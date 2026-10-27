@@ -4,7 +4,8 @@
   (:require [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
   (:import (java.lang.annotation Annotation)
-           (io.github.hglabplh_tech.reflect.java.api.utils ClassUtil)))
+           (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
+                                                           )))
 
 (defn get-class-util
   "get the class util by the canonical class-name with Class/forName"
@@ -57,6 +58,14 @@
   {:added "0.9.0"}
   [^ClassUtil util]
 (.getPublicMethods util))
+
+
+(defn get-class-annots
+  "Get te annotations of a class definition"
+  {:added "0.9.0"
+   :static true}
+  [^Class clazz]
+  (AnnotationsUtil/getClassAnnots clazz))
 
 (defn get-all-fields
   "Get all fields declared in the class if they are visible or not
