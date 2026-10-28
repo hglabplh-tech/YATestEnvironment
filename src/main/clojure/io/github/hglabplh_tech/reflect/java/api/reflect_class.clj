@@ -4,10 +4,11 @@
   (:require [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as atool]
             [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
             [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-field :as rfld]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
   (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
                                                            )))
-
+(declare get-all-class-attributes-and-values)
 (defn get-class-util
   "get the class util by the canonical class-name with Class/forName"
   {:added "1.1.0"}
@@ -195,6 +196,24 @@
   [^ClassUtil util]
   (.getEnclosingConstructor util))
 
+(defn get-inner-classes
+  "Get the top level subclasses
+  @param : ClassUtil instance with the class we analyze"
+  {:added "0.9.0"}
+  [^ClassUtil util]
+  (.getPublicSubClasses util))
+
+(defn traverse-public-inner-classes
+  "Get the top level subclasses
+  @param : ClassUtil instance with the class we analyze"
+  {:added "0.9.0"}
+  [^ClassUtil util]
+  (mapv (fn [^Class clazz]
+          (let [the-util (get-class-util-by-class clazz)]
+          (get-all-class-attributes-and-values the-util)))
+        (.traversePublicSubClasses util))
+  )
+
 (defn get-enclosing-class
   "Get the enclosing class of a subclass
   @param : ClassUtil instance with the class we analyze"
@@ -209,14 +228,16 @@
   [^ClassUtil util]
   (.getEnclosingMethod util))
 
-(defn get-all-class-attributes
+(defn get-all-class-attributes-and-values
   "Get the fields modifiers and types and
   attributes of one or more  field definition(s)
   @param : the field we look for"
   {:added  "1.1.0"
    :static true}
   [^ClassUtil util]
-  {:ckass-name      (get-class-name util)
+  {:class-name      (get-class-name util)
+   :super-class     (get-super-class util)
+   :pinner-classes  (traverse-public-inner-classes util)
    :annotations     (atool/get-annotations-infos (get-class-annots (get-the-class util))) ;; TODO: do this also for fields, methods and constructors
    :interfaces      (get-interfaces util)
    :enclosing-class (get-enclosing-class util)
