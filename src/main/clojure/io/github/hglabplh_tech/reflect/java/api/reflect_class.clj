@@ -1,10 +1,11 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-class
-  (:require [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
+  (:require [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as atool]
+            [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
-  (:import (java.lang.annotation Annotation)
-           (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
+  (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
                                                            )))
 
 (defn get-class-util
@@ -26,12 +27,12 @@
   {:added "0.9.0"}
   [clazz-name & pkg-names]
   (let [the-clazz (ClassUtil. (first (first (map (fn [pkg-list]
-                         (let [result (filter
-                                        (fn [member]
-                                          (.equals (.getCanonicalName member)
-                                                   clazz-name))
-                                        pkg-list)]
-                           result))  (apply pkg/list-packages pkg-names)))))]
+                                                   (let [result (filter
+                                                                  (fn [member]
+                                                                    (.equals (.getCanonicalName member)
+                                                                             clazz-name))
+                                                                  pkg-list)]
+                                                     result)) (apply pkg/list-packages pkg-names)))))]
     the-clazz))
 
 
@@ -41,7 +42,7 @@
   [& pkg-names]
   (let [the-clazz-vect (map
                          (fn [element]
-                         (ClassUtil. (first (first element))))
+                           (ClassUtil. (first (first element))))
                          (apply pkg/list-packages pkg-names))]
     the-clazz-vect))
 
@@ -57,12 +58,12 @@
   @param : ClassUtil instance with the class we analyze"
   {:added "0.9.0"}
   [^ClassUtil util]
-(.getPublicMethods util))
+  (.getPublicMethods util))
 
 
 (defn get-class-annots
   "Get te annotations of a class definition"
-  {:added "0.9.0"
+  {:added  "0.9.0"
    :static true}
   [^Class clazz]
   (AnnotationsUtil/getClassAnnots clazz))
@@ -181,11 +182,11 @@
   (.getTheClass util))
 
 (defn get-class-attributes
-    "Get the attributes of a class
-    @param : Class instance"
-    {:added "0.9.0"}
+  "Get the attributes of a class
+  @param : Class instance"
+  {:added "0.9.0"}
   [clazz]
-         (rtypes/get-class-attributes clazz))
+  (rtypes/get-class-attributes clazz))
 
 (defn get-enclosing-constructor
   "Get the enclosing constructor of a subclass
@@ -207,3 +208,19 @@
   {:added "0.9.0"}
   [^ClassUtil util]
   (.getEnclosingMethod util))
+
+(defn get-all-class-attributes
+  "Get the fields modifiers and types and
+  attributes of one or more  field definition(s)
+  @param : the field we look for"
+  {:added  "1.1.0"
+   :static true}
+  [^ClassUtil util]
+  {:ckass-name      (get-class-name util)
+   :annotations     (atool/get-annotations-infos (get-class-annots (get-the-class util))) ;; TODO: do this also for fields, methods and constructors
+   :interfaces      (get-interfaces util)
+   :enclosing-class (get-enclosing-class util)
+   :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
+   :methods         (rmct/get-all-meth-and-type-modifiers (get-all-ctors util))
+   :fields          (rfld/get-all-fields-and-type-modifiers (get-all-ctors util))
+   :attributes      (get-class-attributes (get-the-class util))})

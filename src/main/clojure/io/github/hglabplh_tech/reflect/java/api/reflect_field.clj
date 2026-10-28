@@ -28,21 +28,6 @@
   [field]
   (FieldsUtil/getFieldModifier field))
 
-(defn get-all-fields-and-type-modifiers
-  "Get the fields modifiers and types and
-  attributes of one or more  field definition(s)
-  @param : the field we look for"
-  {:added  "1.1.0"
-   :static true}
-  [& fields]
-  (map (fn [field] {:ctor-name  (get-field-name field)
-                    :types (get-field-type field)
-                    :modifiers  (rtypes/get-item-modifiers
-                                  (get-field-modifier field))
-                    :attribs    (rtypes/get-field-attributes field)}
-         )
-       fields))
-
 (defn get-all-annots
   "Get all annotations of a field definition
   @param : the field we look for"
@@ -66,5 +51,22 @@
    :static true}
   [field]
   (FieldsUtil/getGenericType field))
+
+(defn get-all-fields-and-type-modifiers
+  "Get the fields modifiers and types and
+  attributes of one or more  field definition(s)
+  @param : the field we look for"
+  {:added  "1.1.0"
+   :static true}
+  [& fields]
+  (map (fn [field] {:ctor-name  (get-field-name field)
+                    :type        (get-field-type field)
+                    :modifiers  (rtypes/get-item-modifiers
+                                  (get-field-modifier field))
+                    :attribs    (rtypes/get-field-attributes field)}
+         )
+       fields))
+
+
 
 

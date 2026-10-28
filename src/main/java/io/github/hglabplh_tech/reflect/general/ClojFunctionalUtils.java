@@ -120,6 +120,7 @@ public class ClojFunctionalUtils {
         FIELD("fld-"),
         METHOD("meth-"),
         ANNOTATION("annot-"),
+        ANNOTATION_POLICY("annot-policy"),
         RECORD("rec-"),
         FREENAME("name-"),
         FREEVAL("val-"),

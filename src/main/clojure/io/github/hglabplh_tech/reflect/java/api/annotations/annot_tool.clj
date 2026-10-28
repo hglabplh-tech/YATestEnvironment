@@ -10,21 +10,10 @@
    }
   [annot]
   (let [ tool  (AnnotationTool. annot)
-        annot-attrs (.getAnnotationAttributes ^AnnotationTool tool)]
+        annot-attrs (.getAllAnnotationInfos ^AnnotationTool tool)]
     annot-attrs
    )
   )
-
-(defn get-annotation-data-vals
-  "gets the values defined by an annotation "
-  {
-   :added "1.1.0"
-   :static true
-   }
-  [annot]
-  (let [annot-data  (AnnotationTool/retrieveAnnotationValues annot)]
-    annot-data
-    ))
 
 
 
@@ -40,23 +29,23 @@
                       (map (fn [annot]
                              (if (nil? annot)
                                'nil
-                               (get-annotation-data-vals annot)
+                               (get-annotation-info annot)
                                ))
                            annots)) annotations)]
     annot-as-cloj))
 
-(defn- get-vals-from-obj-vect-data
+(defn- get-annotations-infos
   "gets the annotation values of a method or field
   or fields which can have themselves more than one annotation"
   {
    :added "1.1.0"
    :static true
    }
-  [annotations]
+  [& annotations]
   (let [annot-as-cloj    (map (fn [annot]
                                      (if (nil? annot)
                                        'nil
-                                       (get-annotation-data-vals annot)
+                                       (get-annotation-info annot)
                                        ))
                                    annotations)]
     annot-as-cloj))
@@ -94,7 +83,7 @@
    }
   [meth]
   (let [annotations (refla/get-method-annots meth)]
-    (get-vals-from-obj-vect-data annotations)))
+    (get-annotations-infos annotations)))
 
 (defn get-annotation-values-from-field
   "gets the annotation values of a field
@@ -105,4 +94,4 @@
    }
   [field]
   (let [annotations (refla/get-field-annots field)]
-    (get-vals-from-obj-vect-data annotations)))
+    (get-annotations-infos annotations)))
