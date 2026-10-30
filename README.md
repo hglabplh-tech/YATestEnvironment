@@ -25,7 +25,7 @@ The project is usable as a library and as a research/workbench codebase. Some ar
 - Artifact storage backends for memory and filesystem output.
 - SQLite persistence for generated analysis and generated payloads.
 - Custom Java test annotation `@YATest` and test category enum.
-- Leiningen, Codox, Javadoc, source classifier, and javadoc classifier project configuration.
+- Independent Leiningen library packaging and a combined development project.
 
 ### In Progress
 
@@ -44,43 +44,105 @@ The project is usable as a library and as a research/workbench codebase. Some ar
 
 ## Project Layout
 
-- `src/main/clojure/io/github/hglabplh_tech/reflect`: Clojure wrappers and data conversion around Java reflection and code generation.
-- `src/main/clojure/io/github/hglabplh_tech/test/suite`: spying, mocking, generated test data, static analysis, and macro experiments.
-- `src/main/java/io/github/hglabplh_tech/reflect`: Java reflection utility classes used by the Clojure API.
-- `src/main/java/io/github/hglabplh_tech/tests/framework/annots`: custom Java test annotation support.
-- `src/main/java/io/github/hglabplh_tech/python`: Java bridge for Python inspection.
-- `src/main/resources`: XML schema and Python inspector resources.
-- `src/test/clojure` and `src/test/java`: Clojure and Java fixtures plus tests.
-- `docs`: testing-method and project design notes.
-- `refl_comp_gen`: notes for reflection compilation and generation.
+YATestEnvironment is the umbrella project. Each library has its own Leiningen
+`project.clj`, production sources/resources, and tests/resources:
+
+| Directory | Clojars artifact | Contents |
+| --- | --- | --- |
+| `modules/inspect` | `org.clojars.hglabplh/yatest-inspect` | Python inspection and JEP bridge |
+| `modules/reflect` | `org.clojars.hglabplh/yatest-reflect` | Java/Clojure reflection, code generation, Scala/Kotlin experiments |
+| `modules/productive` | `org.clojars.hglabplh/yatest-productive` | Contracts and production annotations |
+| `modules/test` | `org.clojars.hglabplh/yatest-test` | Spying, mocking, macros and test framework annotations |
+
+Each module uses `src/main/clojure`, `src/main/java`, `src/main/resources`,
+`src/test/clojure`, `src/test/java`, and `src/test/resources`. Java packages and
+Clojure namespaces retain their existing names. `production` Java annotations
+belong to the productive library. Test framework code in `modules/test/src/main`
+is published library code; its own tests live in `modules/test/src/test`.
+
+`test-support/clojure` holds shared fixtures used only in development and tests.
+The root `project.clj` supports a combined REPL/test classpath; its published
+umbrella artifact depends on all four libraries. It does not bundle their code.
+The test library depends on reflect. Productive uses reflect only for its tests.
 
 ## Requirements
 
-- Java 17.
+- Java 17 or newer; Java output targets Java 17.
 - Leiningen.
-- Clojure dependencies are resolved through `project.clj`.
-- Optional: PostgreSQL JDBC driver and a PostgreSQL database when using the PostgreSQL artifact storage backend.
-- Optional: working Python/JEP runtime when using Python inspection.
+- Python/JEP runtime when actually using Python inspection.
+- Optional Scala 3 and Kotlin compilers for the experimental polyglot sources.
 
 ## Build and Test
 
-Run the Clojure test suite:
+Install the sibling artifacts once, then run the whole project against local sources:
 
 ```sh
+lein modules install
 lein test
+lein repl
 ```
 
-Run the combined alias for Clojure tests, Java test compilation, Codox, and Javadoc generation:
+Build each independent JAR, installing siblings in dependency order:
 
 ```sh
-lein all-tests
+lein modules jar
 ```
 
-Build source and javadoc classifiers through the configured Leiningen tasks:
+Other whole-project tasks:
 
 ```sh
-lein jar
+lein modules test
+lein modules install
+lein modules pom
+lein modules clean
 ```
+
+`modules test` stops at the first failure. For an individual library, run
+`lein test` or `lein jar` inside its directory after installing siblings.
+Development Java fixtures compile into `target/dev-classes`; published JARs
+use `target/classes` and include only production resources and Clojure sources.
+Generated POMs come from the corresponding `project.clj`; the old root POM is
+not the source of truth. Run `lein pom` to regenerate the umbrella POM.
+
+Optional Scala/Kotlin compilation, from `modules/reflect`:
+
+```sh
+lein with-profile +polyglot comp-sc3-kotlin
+lein with-profile +polyglot jar
+```
+
+The polyglot profile adds the Scala/Kotlin runtime dependencies to the artifact.
+Run the compilation command again after cleaning its generated classes.
+
+## Clojars Packaging
+
+All artifacts currently use version `1.4.0-SNAPSHOT`. Consumers can select one:
+
+```clojure
+[org.clojars.hglabplh/yatest-reflect "1.4.0-SNAPSHOT"]
+```
+
+Or retain the umbrella dependency:
+
+```clojure
+[org.clojars.hglabplh/YATestEnvironment "1.4.0-SNAPSHOT"]
+```
+
+Deployment uses `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` (a Clojars deploy token,
+not an account password). See the [Clojars token documentation](https://github.com/clojars/clojars-web/wiki/Deploy-Tokens).
+The account must have permission to publish in `org.clojars.hglabplh`.
+
+After testing, publish the libraries in dependency order, then the umbrella:
+
+```sh
+lein modules deploy clojars
+lein deploy clojars
+```
+
+No publishing happens during normal builds. Before a release, update the four
+module versions and sibling references plus the root version and dependencies
+in their `project.clj` files together. Existing experimental tests may reference
+unimplemented namespaces; packaging does not implement those missing features.
 
 ## Artifact Test-Data Player
 
@@ -114,7 +176,7 @@ Example:
 A sample EDN configuration is available at:
 
 ```text
-src/test/resources/testdatagen/generator.edn
+modules/test/src/test/resources/testdatagen/generator.edn
 ```
 
 ## Generated Analysis Pipeline

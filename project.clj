@@ -1,140 +1,64 @@
 (defproject org.clojars.hglabplh/YATestEnvironment "1.4.0-SNAPSHOT"
-  :description "Clojure project to have a test Environment "
-  :url "https://github.com/hglabplh-tech/YATestEnvironment.git"
-  :license {:name "MIT License"
-            :url  "https://mit-license.org"}
-  :distribution :repo
-  :scm {:name "git"
-        :url  "https://github.com/hglabplh-tech/YATestEnvironment"}
-  :pom-addition ([:developers
-                  [:developer
-                   [:id "hglabplh-tech"]
-                   [:name "Harald Glab-Plhak"]
-                   [:url "https://hglabplh-tech.github.io"]
-                   [:roles
-                    [:role "developer"]
-                    [:role "maintainer"]]]])
-  :repositories [["java.net" "https://download.java.net/maven/2"]
-                 ["jitpack" "https://jitpack.io"]
-                 ["UniHildes"  "https://projects.sse.uni-hildesheim.de/qm/maven"]
-                 ["sonatype" {:url "https://oss.sonatype.org/content/repositories/releases"
-                              ;; If a repository contains releases only setting
-                              ;; :snapshots to false will speed up dependencies.
-                              :snapshots false
-                              ;; Disable signing releases deployed to this repo.
-                              ;; (Not recommended.)
-                              :sign-releases false
-                              ;; You can also set the policies for how to handle
-                              ;; :checksum failures to :fail, :warn, or :ignore.
-                              :checksum :fail
-                              ;; How often should this repository be checked for
-                              ;; snapshot updates? (:daily, :always, or :never)
-                              :update :always
-                              ;; You can also apply them to releases only:
-                              :releases {:checksum :fail :update :always}}]]
-  :dependencies [[org.clojure/clojure "1.12.6"]
-                 [org.clojure/clojure-contrib "1.2.0"]
-                 [org.scala-lang/scala3-library_3 "3.8.4"]
-                 [org.scala-lang/scala-reflect "2.13.18"]
-                 [org.scala-lang/tasty-core_3 "3.8.4"]
-                 [ch.epfl.scala/tasty-query_3 "1.8.0"]
-                 [org.scala-lang/scala3-tasty-inspector_3 "3.8.4"]
-                 [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
-                 [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
-                 [org.jetbrains.kotlin/kotlin-reflect "2.1.20"]
-                 [org.clojure/spec.alpha "0.5.238"]
-                 [org.clojure/core.specs.alpha "0.4.74"]
-                 [lein-javadoc "0.3.0"]
-                 [org.clojure/core.async "1.6.681"]
-                 [de.active-group/active-clojure "0.45.1"]
-                 [de.active-group/active-data "0.4.0"]
-                 [prismatic/schema "1.4.2"]
-                 [com.github.technomancy/leiningen "2.11.2"]
-                 [org.reflections/reflections "0.10.2"]
-                 [org.clojure/data.json "2.5.1"]
-                 [com.github.seancorfield/next.jdbc "1.3.1118"]
-                 [org.mariadb.jdbc/mariadb-java-client "3.5.0"]
-                 [org.junit.jupiter/junit-jupiter-engine "5.9.1"]
-                 [lein-asciidoctorj/lein-asciidoctorj "0.0.5"]
-                 ;; https://mvnrepository.com/artifact/jdk.tools/jdk.tools
-                 [jdk.tools/jdk.tools "1.7"]
-                 ;; Source: https://mvnrepository.com/artifact/org.ninia/jep
-                 [org.ninia/jep "4.3.1"]
-                 [cheshire/cheshire "6.2.0"]
-                ]
-
-
-  :user {:signing {:gpg-key true
-                   :ssh-key "~/.ssh/id_rsa"
-                    }}
-
-
-  :plugins [[lein-codox "0.10.8"]
-            [lein-shell "0.5.0"]
-            [lein-cljsbuild "1.0.1"]
-            [lein-ubersource "0.1.1"]
-            [lein-javadoc "0.3.0"]
-            [kotlinc-lein "0.1.2"]
-            [lein-scalac "0.1.0"]
-            [lein-javac-resources "0.1.1"]]
-  :omit-source true  ; excludes .java and .clj files from the generated JAR file
-            ; you may not want to set this unless all code is AOT-compiled
-  :hooks [leiningen.javac-resources]
-
-  :javac-options ["-target" "17" "-source" "17" "-Xlint:-options"]
-
-  :jvm-opts ["-Dclojure.compiler.disable-locals-clearing=false"
-             "-Dclojure.compiler.elide-meta=[:doc :file :line :added]"
-             ; notice the array is not quoted like it would be if you passed it directly on the command line.
-             "-Dclojure.compiler.direct-linking=true"]
-
-
-  :source-paths ["src/main/clojure"]
-  :java-source-paths ["src/main/java"]  ; Java source is stored separately. :scala-source-path ["src/scala"]
-  :test-paths ["src/test/clojure" "src/test/java"]
-  :resource-paths ["src/test/resources" "lib/tools.jar"]
-
-  ;;:aot :all
-
-  :profiles {:java-tests-compile
-             {:java-source-paths ["src/test/java"]}
-             }
-  :aliases {"java-tests" ["do" "compile," "with-profile"
-                          "java-tests-compile" "javac"]
-            "all-tests"  ["test," "java-tests"]
-            "comp-sc3-kotlin" ["shell" "./sc_kotlin_comp.sh" "./src/scala" "./src/kotlin" "target/classes"]
-
-            }
-
-  uberjar {:prep-tasks  ["clean" "javac" "codox" "compile" "javadoc"  ]  }
-
-
-  :classifiers [["sources" {:source-paths      ^:replace ["src/main/clojure"]
-                            :java-source-paths ^:replace ["src/main/java"]
-                            :resource-paths    ^:replace ["javadoc"]}]
-                ["javadoc" {:source-paths      ^:replace ["src/main/clojure"]
-                            :java-source-paths ^:replace ["src/main/java"]
-                            :resource-paths    ^:replace ["javadoc"]}]]
-
-  :codox {:extra-deps {codox/codox                         {:mvn/version "0.10.7" :exclusions [org.ow2.asm/asm-all]}
-                       codox-theme-rdash/codox-theme-rdash {:mvn/version "0.1.2"}
-                       hiccup/hiccup                       {:mvn/version "1.0.5"}
-                       enlive/enlive                       {:mvn/version "1.1.6"}
-                       org.pegdown/pegdown                 {:mvn/version "1.6.0"}
-                       org.ow2.asm/asm-all                 {:mvn/version "5.2"}}
-          :jvm-opts   ["--add-opens" "java.base/java.lang=ALL-UNNAMED"]
-          :exec-fn    codox.main/generate-docs
-          :exec-args  {:language    :clojure
-                       :metadata    {:doc/format :markdown}
-                       :themes      [:rdash]
-                       :output-path "docs"}}
-  :javadoc-opts {:package-names ["io.github.hglabplh_tech.reflect.clojure.api",
-                 "io.github.hglabplh-tech.tests"]
-
-                 }
-
-
+  :description "YATestEnvironment umbrella for inspect, reflect, productive and test libraries"
+  :url "https://github.com/hglabplh-tech/YATestEnvironment"
+  :license {:name "MIT License" :url "https://mit-license.org"}
+  :scm {:name "git" :url "https://github.com/hglabplh-tech/YATestEnvironment"}
+  :pom-addition [:developers
+                 [:developer [:id "hglabplh-tech"] [:name "Harald Glab-Plhak"]
+                  [:url "https://hglabplh-tech.github.io"]]]
   :deploy-repositories [["clojars" {:url "https://repo.clojars.org/"
                                     :username :env/clojars_username
                                     :password :env/clojars_password}]]
-  )
+  ;; The umbrella artifact depends on the four independently published libraries.
+  :dependencies [[org.clojure/clojure "1.12.6"]
+                 [org.clojars.hglabplh/yatest-inspect "1.4.0-SNAPSHOT"]
+                 [org.clojars.hglabplh/yatest-reflect "1.4.0-SNAPSHOT"]
+                 [org.clojars.hglabplh/yatest-productive "1.4.0-SNAPSHOT"]
+                 [org.clojars.hglabplh/yatest-test "1.4.0-SNAPSHOT"]]
+  :source-paths ["src/main/clojure"]
+  :java-source-paths []
+  :resource-paths []
+  :test-paths []
+  :compile-path "target/umbrella-classes"
+  :javac-options ["--release" "17"]
+  :omit-source false
+  :plugins [[lein-shell "0.5.0"]]
+  :aliases {"modules" ["shell" "bash" "scripts/modules.sh"]
+            "all-tests" ["test"]}
+  ;; Local development uses sibling sources after `lein modules install`.
+  ;; Development dependencies are test-scoped in the POM; fixtures stay out of JARs.
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.12.6"]
+                 [de.active-group/active-clojure "0.45.1"]
+                 [de.active-group/active-data "0.4.0"]
+                 [prismatic/schema "1.4.2"]
+                 [org.reflections/reflections "0.10.2"]
+                 [org.clojure/data.json "2.5.1"]
+                 [com.google.code.findbugs/jsr305 "3.0.2"]
+                 [org.ninia/jep "4.3.1"]
+                 [org.junit.platform/junit-platform-commons "1.9.1"]]
+                   :source-paths ["test-support/clojure"
+                 "modules/inspect/src/main/clojure"
+                 "modules/reflect/src/main/clojure"
+                 "modules/productive/src/main/clojure"
+                 "modules/test/src/main/clojure"]
+                   :java-source-paths ["modules/inspect/src/main/java"
+                 "modules/reflect/src/main/java"
+                 "modules/productive/src/main/java"
+                 "modules/test/src/main/java"
+                 "modules/inspect/src/test/java"
+                 "modules/reflect/src/test/java"
+                 "modules/productive/src/test/java"
+                 "modules/test/src/test/java"]
+                   :resource-paths ["modules/inspect/src/main/resources"
+                 "modules/reflect/src/main/resources"
+                 "modules/productive/src/main/resources"
+                 "modules/test/src/main/resources"
+                 "modules/inspect/src/test/resources"
+                 "modules/reflect/src/test/resources"
+                 "modules/productive/src/test/resources"
+                 "modules/test/src/test/resources"]
+                   :test-paths ["modules/inspect/src/test/clojure"
+                 "modules/reflect/src/test/clojure"
+                 "modules/productive/src/test/clojure"
+                 "modules/test/src/test/clojure"]
+                   :compile-path "target/dev-classes"}})

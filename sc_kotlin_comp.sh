@@ -1,42 +1,17 @@
-#!/bin/bash
-# Check if required arguments are missing
-if [ $# -lt 3 ]; then
-    echo "Error: Missing arguments."
-    echo "Usage: $0 <input_dir_scala> <input_dir_kotlin> <output_dir>"
-    exit 1
+#!/usr/bin/env bash
+set -euo pipefail
+if [ "$#" -ne 3 ]; then
+  echo "Usage: $0 <scala-source-dir> <kotlin-source-dir> <output-dir>" >&2
+  exit 2
 fi
-# Assign the parameters to env
-INPUT_PATH_SCALA=$1
-INPUT_PATH_KOTLIN=$2
-OUTPUT_PATH_BOTH=$3
-COMPILE_CLASS_PATH=$(lein classpath | tail -n 1)
-RET=$?
-
-mkdir -pv $OUTPUT_PATH_BOTH
-
-# 2. Check if Leiningen successfully resolved the classpath
-if [ $RET -ne 0 ] || [ -z "$COMPILE_CLASS_PATH" ]; then
-    echo "Error: Failed to retrieve project.clj classpath."
-    exit 1
-fi
-echo "Called $0 with scala in: $INPUT_PATH_SCALA"
-echo "kotlin in: $INPUT_PATH_KOTLIN"
-echo "output dir:  $OUTPUT_PATH_BOTH"
-echo "class path: $COMPILE_CLASS_PATH"
-pwd
-echo "compile scala....";
-echo "get files....";
-find $INPUT_PATH_SCALA -type f -name "*.scala" > ./test.lst;
-echo "compile scala....";
-scalac -d $OUTPUT_PATH_BOTH @./test.lst;
-RET=$?
-echo "Scala compiled with exit code was: $RET"
-
-if [ $RET = 0 ]; then
-  echo "Compile Kotlin..."
-  kotlinc $INPUT_PATH_KOTLIN -d $OUTPUT_PATH_BOTH -cp "$COMPILE_CLASS_PATH";
-  RET=$?
-  echo "Kotlin compiled with exit code was: $RET"
-fi
-echo "Exit compile script";
-exit $RET
+scala_sources="$1"
+kotlin_sources="$2"
+classes_dir="$3"
+# Run from modules/reflect, where the polyglot profile is defined.
+compile_classpath="$(lein with-profile +polyglot classpath)"
+mkdir -p "$classes_dir"
+source_list="$(mktemp)"
+trap 'rm -f "$source_list"' EXIT
+find "$scala_sources" -type f -name '*.scala' > "$source_list"
+scalac -classpath "$compile_classpath" -d "$classes_dir" "@$source_list"
+kotlinc "$kotlin_sources" -d "$classes_dir" -cp "$classes_dir:$compile_classpath"

@@ -29,3 +29,13 @@ replay_pid*
 # IntelliJ files
 .idea
 *.iml
+
+# Module outputs and local environments
+**/target/
+**/.lein-*
+.DS_Store
+**/pyenv/
+
+pom.xml
+
+.nrepl-port
