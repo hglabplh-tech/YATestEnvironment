@@ -32,7 +32,7 @@
                               :update :always
                               ;; You can also apply them to releases only:
                               :releases {:checksum :fail :update :always}}]]
-  :dependencies [[org.clojure/clojure "1.13.0-alpha5"]
+  :dependencies [[org.clojure/clojure "1.12.6"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [org.scala-lang/scala3-library_3 "3.8.4"]
                  [org.scala-lang/scala-reflect "2.13.18"]
@@ -42,7 +42,8 @@
                  [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
                  [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
                  [org.jetbrains.kotlin/kotlin-reflect "2.1.20"]
-                 [org.clojure/spec.alpha "0.6.249"]
+                 [org.clojure/spec.alpha "0.5.238"]
+                 [org.clojure/core.specs.alpha "0.4.74"]
                  [lein-javadoc "0.3.0"]
                  [org.clojure/core.async "1.6.681"]
                  [de.active-group/active-clojure "0.45.1"]
@@ -93,25 +94,26 @@
   :test-paths ["src/test/clojure" "src/test/java"]
   :resource-paths ["src/test/resources" "lib/tools.jar"]
 
-
+  ;;:aot :all
 
   :profiles {:java-tests-compile
              {:java-source-paths ["src/test/java"]}
              }
   :aliases {"java-tests" ["do" "compile," "with-profile"
-                          "java-tests-compile" "javac," "codox.main/generate-docs"]
+                          "java-tests-compile" "javac"]
             "all-tests"  ["test," "java-tests"]
             "comp-sc3-kotlin" ["shell" "./sc_kotlin_comp.sh" "./src/scala" "./src/kotlin" "target/classes"]
 
             }
 
-  :uberjar {:prep-tasks ["clean" "comp-sc3-kotlin" "javac" "codox" "compile" "javadoc"  ]
-            }
+  uberjar {:prep-tasks  ["clean" "javac" "codox" "compile" "javadoc"  ]  }
+
+
   :classifiers [["sources" {:source-paths      ^:replace ["src/main/clojure"]
                             :java-source-paths ^:replace ["src/main/java"]
                             :resource-paths    ^:replace ["javadoc"]}]
-                ["javadoc" {:source-paths      ^:replace []
-                            :java-source-paths ^:replace []
+                ["javadoc" {:source-paths      ^:replace ["src/main/clojure"]
+                            :java-source-paths ^:replace ["src/main/java"]
                             :resource-paths    ^:replace ["javadoc"]}]]
 
   :codox {:extra-deps {codox/codox                         {:mvn/version "0.10.7" :exclusions [org.ow2.asm/asm-all]}

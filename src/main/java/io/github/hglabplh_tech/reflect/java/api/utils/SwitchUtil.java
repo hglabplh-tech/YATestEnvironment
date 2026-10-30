@@ -198,13 +198,13 @@ public class SwitchUtil {
                         .assocEx(retrieveKeywordForJavaID("switchCount", ObjType.NONE),
                                 switchInfo.switchCount)
                         .assocEx(retrieveKeywordForJavaID("switchOpcodes", ObjType.NONE),
-                                getArrayAsLazyVector(toStringArray(switchInfo.opcodes)));
+                                getArrayAsVector(toStringArray(switchInfo.opcodes)));
                 if (method != null) {
                     methodMap = methodMap
                             .assocEx(retrieveKeywordForJavaID("returnType", ObjType.NONE),
                                     method.getGenericReturnType())
                             .assocEx(retrieveKeywordForJavaID("paramTypes", ObjType.NONE),
-                                    getArrayAsLazyVector(method.getGenericParameterTypes()));
+                                    getArrayAsVector(method.getGenericParameterTypes()));
                 }
                 result = result.assocEx(switchIndex, methodMap);
                 switchIndex++;
@@ -329,7 +329,7 @@ public class SwitchUtil {
      */
     private static class SwitchInstructionInfo {
         private int switchCount = 0;
-        private IPersistentVector opcodes = getArrayAsLazyVector(new String[]{});
+        private IPersistentVector opcodes = getArrayAsVector(new String[]{});
 
         /**
          * Add one switch opcode to this switch instruction information.

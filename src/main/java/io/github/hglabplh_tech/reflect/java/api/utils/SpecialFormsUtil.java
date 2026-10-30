@@ -91,7 +91,7 @@ public class SpecialFormsUtil {
             parmTypes = ctors[0].getGenericParameterTypes();
                     recordMap = recordMap.assocEx(
                     retrieveKeywordForJavaID("ctorParmType", ObjType.NONE),
-                    getArrayAsLazyVector(parmTypes));
+                    getArrayAsVector(parmTypes));
         }
         if (parmTypes != null) {
             Field[] fields = theRecordClass.getDeclaredFields();
@@ -106,7 +106,7 @@ public class SpecialFormsUtil {
                                 retrieveKeywordForJavaID(
                                         nameTypeEntry.getKey(),
                                         ObjType.NONE),
-                                getArrayAsLazyVector(typeArrTemp));
+                                getArrayAsVector(typeArrTemp));
             }
 
 
@@ -133,7 +133,7 @@ public class SpecialFormsUtil {
             Parameter[] params = construct.getParameters();
             theResult = theResult.assocEx(
                     retrieveKeywordForJavaID("paramTypes", ObjType.NONE),
-                    getArrayAsLazyVector(params));
+                    getArrayAsVector(params));
             theResult = theResult.assocEx(
                     retrieveKeywordForJavaID("returnType", ObjType.NONE),
                     construct.getGenericParameterTypes());

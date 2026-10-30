@@ -8,7 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
 /**
  * This is a utility class for getting the Annotations belonging to a
  * class method field
@@ -23,7 +23,7 @@ public class AnnotationsUtil {
      * @return a vector of annotation classes
      */
     public static IPersistentVector getClassAnnots(Class<?> clazz) {
-        return getArrayAsLazyVector(clazz.getAnnotations());
+        return getArrayAsVector(clazz.getAnnotations());
     }
 
     /**
@@ -32,7 +32,7 @@ public class AnnotationsUtil {
      * @return a vector of annotation classes
      */
     public static IPersistentVector getFieldAnnots(Field field) {
-        return getArrayAsLazyVector(field.getAnnotations());
+        return getArrayAsVector(field.getAnnotations());
     }
 
     /**
@@ -41,7 +41,7 @@ public class AnnotationsUtil {
      * @return a vector of annotation classes
      */
     public static IPersistentVector getMethodAnnots(Method meth) {
-        return getArrayAsLazyVector(meth.getAnnotations());
+        return getArrayAsVector(meth.getAnnotations());
     }
 
     /**
@@ -71,7 +71,7 @@ public class AnnotationsUtil {
      * @return
      */
     public static IPersistentVector getCtorAnnots(Constructor<?> ctor){
-        return getArrayAsLazyVector(ctor.getAnnotations());
+        return getArrayAsVector(ctor.getAnnotations());
     }
 
 

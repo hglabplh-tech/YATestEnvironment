@@ -6,10 +6,10 @@
 
 (clojure.core/defn get-structured-meta-data [^String class-name]
 (let [class-util (rcl/get-class-util class-name)
-      struct-data ({:structured-class
+      struct-data {:structured-class
                     (rcl/get-all-class-attributes-and-values class-util)
-                    })
+                    }
       ]
-  {:language :clojure :ns-name (str class-name) :reflect-data struct-data}
+  {:language :java :class-name (str class-name) :reflect-data struct-data}
 
   ))

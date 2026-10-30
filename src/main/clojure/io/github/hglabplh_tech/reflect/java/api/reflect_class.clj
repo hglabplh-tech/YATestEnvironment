@@ -3,8 +3,9 @@
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-class
   (:require [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as atool]
             [io.github.hglabplh-tech.reflect.java.api.packages :as pkg]
-            [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
             [io.github.hglabplh-tech.reflect.java.api.reflect-field :as rfld]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as er-refl]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
   (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
                                                            )))
@@ -210,7 +211,7 @@
   [^ClassUtil util]
   (mapv (fn [^Class clazz]
           (let [the-util (get-class-util-by-class clazz)]
-          (get-all-class-attributes-and-values the-util)))
+            (get-all-class-attributes-and-values the-util)))
         (.traversePublicSubClasses util))
   )
 
@@ -237,11 +238,15 @@
   [^ClassUtil util]
   {:class-name      (get-class-name util)
    :super-class     (get-super-class util)
+   :gen-super       (get-generic-super-class util)
    :pinner-classes  (traverse-public-inner-classes util)
    :annotations     (atool/get-annotations-infos (get-class-annots (get-the-class util))) ;; TODO: do this also for fields, methods and constructors
+   :enum-specs      (er-refl/analyze-enum (get-the-class util))
+   :record-specs    (er-refl/analyze-record (get-the-class util))
    :interfaces      (get-interfaces util)
+   :gen-interfaces  (get-generic-interfaces util)
    :enclosing-class (get-enclosing-class util)
    :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
-   :methods         (rmct/get-all-meth-and-type-modifiers (get-all-ctors util))
-   :fields          (rfld/get-all-fields-and-type-modifiers (get-all-ctors util))
+   :methods         (rmct/get-all-meth-and-type-modifiers (get-all-methods util))
+   :fields          (rfld/get-all-fields-and-type-modifiers (get-all-fields util))
    :attributes      (get-class-attributes (get-the-class util))})

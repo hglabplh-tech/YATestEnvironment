@@ -1,7 +1,8 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-field
-  (:require [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
+  (:require [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as atool]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
   (:import (io.github.hglabplh_tech.reflect.java.api.utils FieldsUtil)))
 
 (defn get-field-name
@@ -36,7 +37,7 @@
   [field]
   (FieldsUtil/getAllAnnotations field))
 
-(defn get-annot-type
+(defn get-annot-field-type
   "Get annotation type of a field definitions annotation
   @param : the field we look for"
   {:added  "0.9.0"
@@ -44,7 +45,7 @@
   [field]
   (FieldsUtil/getAnnotType field))
 
-(defn get-generic-type
+(defn get-generic-field-type
   "Get the generic type of a field definition
   @param : the field we look for"
   {:added  "0.9.0"
@@ -58,9 +59,12 @@
   @param : the field we look for"
   {:added  "1.1.0"
    :static true}
-  [& fields]
-  (map (fn [field] {:ctor-name  (get-field-name field)
-                    :type        (get-field-type field)
+  [fields]
+  (map (fn [field] {:field-name  (get-field-name field)
+                    :annots       (atool/get-annotations-infos (get-all-annots field))
+                    :type        {:field-type       (get-field-type field)
+                                  :gen-field-type   (get-generic-field-type field)
+                                  :annot-field-type (get-annot-field-type field)}
                     :modifiers  (rtypes/get-item-modifiers
                                   (get-field-modifier field))
                     :attribs    (rtypes/get-field-attributes field)}

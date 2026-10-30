@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
 
 /**
@@ -66,7 +66,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getPublicAnnotations() {
         Annotation[] annots = theClass.getAnnotations();
-        return getArrayAsLazyVector(annots);
+        return getArrayAsVector(annots);
     }
 
     /**
@@ -77,7 +77,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getDeclAnnotsByType(Class<Annotation> annotationClass) {
         Annotation[] annots = theClass.getDeclaredAnnotationsByType(annotationClass);
-        return getArrayAsLazyVector(annots);
+        return getArrayAsVector(annots);
     }
 
     /**
@@ -87,7 +87,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getPublicMethods() {
         Method[] methods = theClass.getMethods();
-        return getArrayAsLazyVector(methods);
+        return getArrayAsVector(methods);
     }
 
     /**
@@ -98,7 +98,7 @@ public class ClassUtil {
     public  IPersistentVector getConstructors() {
         Constructor<?>[] constrArray =
                 this.theClass.getConstructors();
-        return getArrayAsLazyVector(constrArray);
+        return getArrayAsVector(constrArray);
     }
 
     /**
@@ -110,7 +110,7 @@ public class ClassUtil {
     public  IPersistentVector getAllConstructors() {
         Constructor<?>[] constrArray =
                 this.theClass.getDeclaredConstructors();
-        return getArrayAsLazyVector(constrArray);
+        return getArrayAsVector(constrArray);
     }
 
     /**
@@ -121,7 +121,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getAllMethods() {
         Method[] methods = this.theClass.getDeclaredMethods();
-        return getArrayAsLazyVector(methods);
+        return getArrayAsVector(methods);
     }
 
     /**
@@ -150,7 +150,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getPublicFields() {
         Field[] fields = theClass.getFields();
-        return getArrayAsLazyVector(fields);
+        return getArrayAsVector(fields);
     }
 
     /**
@@ -161,7 +161,7 @@ public class ClassUtil {
      */
     public  IPersistentVector getAllFields() {
         Field[] fields = theClass.getDeclaredFields();
-        return getArrayAsLazyVector(fields);
+        return getArrayAsVector(fields);
     }
 
     /**
@@ -171,7 +171,7 @@ public class ClassUtil {
      * @return the generic interfaces
      */
     public  IPersistentVector getGenericInterfaces() {
-        return getArrayAsLazyVector(this.theClass.getGenericInterfaces());
+        return getArrayAsVector(this.theClass.getGenericInterfaces());
     }
 
     /**
@@ -180,7 +180,7 @@ public class ClassUtil {
      * @return the generic interfaces
      */
     public  IPersistentVector getInterfaces() {
-        return getArrayAsLazyVector(this.theClass.getInterfaces());
+        return getArrayAsVector(this.theClass.getInterfaces());
     }
 
     /**
@@ -242,7 +242,7 @@ public class ClassUtil {
      * @return public sub-classes as Clojure persistent vector
      */
     public  IPersistentVector getPublicSubClasses() {
-        return getArrayAsLazyVector(this.theClass.getClasses());
+        return getArrayAsVector(this.theClass.getClasses());
     }
     public IPersistentCollection traversePublicSubClasses() {
         return internTraversePublicSubClasses(this.theClass);
@@ -270,7 +270,7 @@ public class ClassUtil {
      * @return
      */
     public  IPersistentVector getAllSubClasses() {
-        return getArrayAsLazyVector(this.theClass.getDeclaredClasses());
+        return getArrayAsVector(this.theClass.getDeclaredClasses());
     }
 
     public static  Boolean isAssignable(Class<?> interfaceToCheck,

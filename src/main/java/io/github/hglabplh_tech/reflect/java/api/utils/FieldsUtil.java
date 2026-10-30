@@ -6,7 +6,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
 
 
 /**
@@ -58,7 +58,7 @@ public class FieldsUtil {
      * @return all annotations of the field
      */
     public static IPersistentVector getAllAnnotations(Field field) {
-        return getArrayAsLazyVector(field.getDeclaredAnnotations());
+        return getArrayAsVector(field.getDeclaredAnnotations());
     }
 
     /**

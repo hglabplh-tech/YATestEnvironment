@@ -1,8 +1,10 @@
 ;; Copyright (c) 2026 Harald Glab-Plhak
 
 (ns io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors
-  (:require [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes]
-            [io.github.hglabplh-tech.reflect.java.api.java-representation :as represent])
+  (:require [clojure.pprint :refer :all]
+            [io.github.hglabplh-tech.reflect.java.api.annotations.annot-tool :as atool]
+            [io.github.hglabplh-tech.reflect.java.api.java-representation :as represent]
+            [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
   (:import (io.github.hglabplh_tech.reflect.java.api.utils MethsCtorsUtil)
            (java.lang.reflect Constructor Method)))
 
@@ -11,7 +13,7 @@
   @param : the ctor we look for"
   {:added  "0.9.0"
    :static true}
-  [ctor]
+  [^Constructor ctor]
   (MethsCtorsUtil/getCtorName ctor))
 
 (defn get-ctor-param-count
@@ -19,7 +21,7 @@
   @param : the ctor we look for"
   {:added  "0.9.0"
    :static true}
-  [ctor]
+  [^Constructor ctor]
   (MethsCtorsUtil/getCtorParamCount ctor))
 
 (defn get-ctor-exception-types
@@ -44,30 +46,33 @@
   @param : the ctor we look for"
   {:added  "0.9.0"
    :static true}
-  [ctor]
-  (MethsCtorsUtil/getCtorParamTypes ctor))
+  [^Constructor ctor]
+  (represent/type-def-representation (MethsCtorsUtil/getCtorParamTypes ctor)))
 
 (defn get-generic-ctor-param-types
-  "Get the methods parameter types
- @param : the method we look for"
+  "Get the constructor generic parameter types
+ @param : the ctor we look for"
   {:added  "0.9.0"
    :static true}
-  [meth]
-  (map represent/type-def-representation (MethsCtorsUtil/getCtorGenericParmTypes meth)))
+  [^Constructor ctor]
+  (map represent/type-def-representation (MethsCtorsUtil/getCtorGenericParmTypes ctor)))
 
-"Get the constructors modifiers
+
+(defn get-ctor-modifier
+  "Get the constructors modifiers
   @param : the ctor we look for"
-{:added  "0.9.0"
- :static true}
-(defn get-ctor-modifier [ctor]
+  {:added  "0.9.0"
+   :static true}
+  [^Constructor ctor]
   (MethsCtorsUtil/getCtorModifiers ctor))
+
 
 (defn get-ctor-declared-annotations
   "Get the annotations of the method
   @param : the constructor we look for"
-  {:added "1.4.0"
+  {:added  "1.4.0"
    :static true}
-  [ctor]
+  [^Constructor ctor]
   (MethsCtorsUtil/getDeclAnnotsCtor ctor))
 
 (defn get-ctor-param-annots
@@ -75,7 +80,7 @@
   @param : the ctor we look for"
   {:added  "0.9.0"
    :static true}
-  [ctor]
+  [^Constructor ctor]
   (MethsCtorsUtil/getCtorParamAnnots ctor))
 
 (defn get-ctor-declaring-class
@@ -93,18 +98,25 @@
   @param : the ctors list"
   {:added  "0.9.0"
    :static true}
-  [& ctors]
-  (map (fn [ctor]
-         {:ctor-name  (get-ctor-name ctor)
-          :all-parm-types {:param-types(get-ctor-param-types ctor)
-                           :gen-param-types (get-generic-ctor-param-types ctor)}
-          :param-annots (get-ctor-param-annots meth)
-          :modifiers  (rtypes/get-item-modifiers
-                        (get-ctor-modifier ctor))
-          :attribs    (rtypes/get-ctor-attributes ctor)
-          :annots    (get-ctor-declared-annotations ctor)
-          :exception-types (get-ctor-exception-types ctor)})
-       ctors))
+  [ctors]
+  (println "=====================CTORS=====================")
+  (pprint ctors)
+  (println "=======================END=====================")
+
+  (mapv (fn [^Constructor ctor]
+          {:ctor-name       (get-ctor-name ctor)
+           :annotations     (atool/get-annotations-infos (get-ctor-declared-annotations ctor))
+           :param-count     (get-ctor-param-count ctor)
+           :all-parm-types  {:param-types     (get-ctor-param-types ctor)
+                             :gen-param-types (get-generic-ctor-param-types ctor)
+                             }
+           :param-annots    (atool/get-annotations-infos (get-ctor-param-annots ctor))
+           :modifiers       (rtypes/get-item-modifiers
+                              (get-ctor-modifier ctor))
+           :attribs         (rtypes/get-ctor-attributes ctor)
+           :annots          (get-ctor-declared-annotations ctor)
+           :exception-types (get-ctor-exception-types ctor)})
+        ctors))
 
 
 
@@ -188,7 +200,7 @@
 (defn get-meth-declared-annotations
   "Get the annotations of the method
   @param : the method we look for"
-  {:added "1.4.0"
+  {:added  "1.4.0"
    :static true}
   [^Method meth]
   (MethsCtorsUtil/getDeclAnnotsMethod meth))
@@ -203,7 +215,7 @@
 
 (defn get-meth-annot-return-type
   "Get te annotations of a method return type definition"
-  {:added "0.9.0"
+  {:added  "0.9.0"
    :static true}
   [^Method meth]
   (MethsCtorsUtil/getMethodAnnotReturnType meth))
@@ -213,20 +225,22 @@
  types attributes these values are translated partly in keywods
  especially for modifiers and attributes
  @param : the list of methods"
-  [& meths]
+  [meths]
   (map (fn [^Method meth]
-         {:meth-name  (get-meth-name meth)
-          :all-parm-types {:param-types(get-meth-param-types meth)
-                           :gen-param-types (get-generic-meth-param-types meth)}
-          :param-annots (get-meth-param-annots meth)
-          :modifiers  (rtypes/get-item-modifiers
-                        (get-method-modifier meth))
-          :attribs    (rtypes/get-meth-attributes meth)
+         {:meth-name       (get-meth-name meth)
+          :annotations     (atool/get-annotations-infos (get-meth-declared-annotations meth))
+          :param-count     (get-meth-param-count meth)
+          :all-parm-types  {:param-types     (get-meth-param-types meth)
+                            :gen-param-types (get-generic-meth-param-types meth)}
+          :param-annots    (atool/get-annotations-infos (get-meth-param-annots meth))
+          :modifiers       (rtypes/get-item-modifiers
+                             (get-method-modifier meth))
+          :attribs         (rtypes/get-meth-attributes meth)
           :exception-types (get-meth-exception-types meth)
-          :annots   (get-meth-declared-annotations meth)
-          :return-types {:return-type (get-method-return-type meth)
-                        :gen-return-type (get-generic-method-return-type meth)
-                         :annot-return-type (get-meth-annot-return-type meth)} }    ;; ???????????????
+          :annots          (get-meth-declared-annotations meth)
+          :return-types    {:return-type       (get-method-return-type meth)
+                            :gen-return-type   (get-generic-method-return-type meth)
+                            :annot-return-type (get-meth-annot-return-type meth)}} ;; ???????????????
          )
        meths))
 

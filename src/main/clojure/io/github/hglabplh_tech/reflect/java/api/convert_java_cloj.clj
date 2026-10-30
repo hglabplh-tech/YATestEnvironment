@@ -67,7 +67,7 @@
   [field]
   (let [fld-name (fields/get-field-name field)
         fld-general (fields/get-all-fields-and-type-modifiers field)
-        fld-gen-type (fields/get-generic-type field)
+        fld-gen-type (fields/get-generic-field-type field)
         fld-annots (fields/get-all-annots field)
         ]
     {:field

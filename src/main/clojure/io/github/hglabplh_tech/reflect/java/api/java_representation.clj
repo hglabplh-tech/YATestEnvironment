@@ -21,7 +21,7 @@
   (if (instance? AnnotatedType the-type)
     (let [the-annot-type (.getAnnotatedOwnerType the-type)
           the-annot-type-name (get-base-type-representation the-annot-type)
-          the-type-annotations (ClojFunctionalUtils/getArrayAsLazyVector
+          the-type-annotations (ClojFunctionalUtils/getArrayAsVector
                                  (.getAnnotations the-type))
           the-annot (if (not (empty? annotation))
                       (.getAnnotation the-type
@@ -40,7 +40,7 @@
     (if
       (instance? (class ParameterizedType) the-type)
       (let [type-name (get-base-type-representation the-type)
-            type-arguments (ClojFunctionalUtils/getArrayAsLazyVector
+            type-arguments (ClojFunctionalUtils/getArrayAsVector
                              (.getActualTypeArguments the-type))
             type-argument-names (map #(get-base-type-representation %)
                                      type-arguments)
@@ -65,7 +65,7 @@
   {:type-var-type
    {:bounds       (map (fn [act-type]
                          (get-base-type-representation act-type))
-                       (ClojFunctionalUtils/getArrayAsLazyVector
+                       (ClojFunctionalUtils/getArrayAsVector
                          (.getBounds the-type)))
     :type-name    (.getName the-type)
 
@@ -74,11 +74,11 @@
                       (.getGenericDeclaration the-type) index)
                     {})
     :annot-bounds (map get-annot-type-representation
-                       (ClojFunctionalUtils/getArrayAsLazyVector
+                       (ClojFunctionalUtils/getArrayAsVector
                          (.getAnnotatedBounds the-type)))}})
 
 (defn- get-generic-decl-represent [gen-decl index]
-  (let [decl-type-vect (ClojFunctionalUtils/getArrayAsLazyVector
+  (let [decl-type-vect (ClojFunctionalUtils/getArrayAsVector
                     (.getTypeParameters gen-decl))]
     (if (empty? decl-type-vect)
       nil

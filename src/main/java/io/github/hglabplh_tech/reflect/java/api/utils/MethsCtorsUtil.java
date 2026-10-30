@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsLazyVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getAsMap;
 
 /**
@@ -61,13 +61,12 @@ public class MethsCtorsUtil {
      * @param ctor the constructor definition
      * @return the parameter types of the constructor
      */
-    public static  IPersistentVector getCtorParamTypes(Constructor<?> ctor) {
-        Type[] b = ctor.getGenericParameterTypes();
-        return getArrayAsLazyVector(ctor.getParameterTypes());
+    public static IPersistentVector getCtorParamTypes(Constructor<?> ctor) {
+        return getArrayAsVector(ctor.getParameterTypes());
     }
 
-    public static  IPersistentVector getCtorGenericParmTypes(Constructor<?> ctor){
-        return getArrayAsLazyVector(ctor.getGenericParameterTypes());
+    public static IPersistentVector getCtorGenericParmTypes(Constructor<?> ctor) {
+        return getArrayAsVector(ctor.getGenericParameterTypes());
     }
 
     /**
@@ -115,7 +114,7 @@ public class MethsCtorsUtil {
      * @return the methods parameter types
      */
     public static  IPersistentVector getMethodParamTypes (Method method) {
-        return getArrayAsLazyVector(method.getParameterTypes());
+        return getArrayAsVector(method.getParameterTypes());
     }
 
     /**
@@ -163,7 +162,7 @@ public class MethsCtorsUtil {
      * @return the methods exception type
      */
     public static  IPersistentVector getMethExceptionTypes(Method method) {
-        return getArrayAsLazyVector(method.getExceptionTypes());
+        return getArrayAsVector(method.getExceptionTypes());
     }
 
     /**
@@ -172,7 +171,7 @@ public class MethsCtorsUtil {
      * @return the methods generic exception types
      */
     public static  IPersistentVector getMethGenericExTypes(Method method) {
-        return getArrayAsLazyVector(method.getGenericExceptionTypes());
+        return getArrayAsVector(method.getGenericExceptionTypes());
     }
 
     /**
@@ -181,7 +180,7 @@ public class MethsCtorsUtil {
      * @return the methods generic parameter types
      */
     public static  IPersistentVector getMethGenericParmTypes(Method method){
-        return getArrayAsLazyVector(method.getGenericParameterTypes());
+        return getArrayAsVector(method.getGenericParameterTypes());
     }
 
     /**
@@ -287,7 +286,7 @@ public class MethsCtorsUtil {
      */
     public static  IPersistentVector
     getCtorExceptionTypes(Constructor<?> ctor) {
-        return getArrayAsLazyVector(ctor.getExceptionTypes());
+        return getArrayAsVector(ctor.getExceptionTypes());
     }
 
     /**
@@ -297,7 +296,7 @@ public class MethsCtorsUtil {
      */
     public static IPersistentVector
     getCtorGenericExTypes(Constructor<?> ctor) {
-        return getArrayAsLazyVector(ctor.getGenericExceptionTypes());
+        return getArrayAsVector(ctor.getGenericExceptionTypes());
     }
 
     /**
@@ -307,7 +306,7 @@ public class MethsCtorsUtil {
      */
     public static IPersistentVector
     getDeclAnnotsMethod(Method meth) {
-        return getArrayAsLazyVector(meth.getDeclaredAnnotations());
+        return getArrayAsVector(meth.getDeclaredAnnotations());
     }
 
     /**
@@ -317,7 +316,7 @@ public class MethsCtorsUtil {
      */
     public static IPersistentVector
     getDeclAnnotsCtor(Constructor<?> ctor) {
-        return getArrayAsLazyVector(ctor.getDeclaredAnnotations());
+        return getArrayAsVector(ctor.getDeclaredAnnotations());
     }
 
     /**
@@ -327,7 +326,7 @@ public class MethsCtorsUtil {
      */
     public static IPersistentVector
     getTypeParamsMethod(Method meth) {
-        return getArrayAsLazyVector(meth.getTypeParameters());
+        return getArrayAsVector(meth.getTypeParameters());
     }
 
     /**
@@ -337,6 +336,6 @@ public class MethsCtorsUtil {
      */
     public static IPersistentVector
     getTypeParamsCtor(Constructor<?> ctor) {
-        return getArrayAsLazyVector(ctor.getTypeParameters());
+        return getArrayAsVector(ctor.getTypeParameters());
     }
 }

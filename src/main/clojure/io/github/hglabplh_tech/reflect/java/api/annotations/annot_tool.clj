@@ -17,7 +17,7 @@
 
 
 
-(defn- get-vals-from-objects-vect-data
+(defn get-vals-from-objects-vect-data
   "gets the annotation values of a vector of methods
   or fields which can have themselves more than one annotation"
   {
@@ -34,14 +34,14 @@
                            annots)) annotations)]
     annot-as-cloj))
 
-(defn- get-annotations-infos
+(defn get-annotations-infos
   "gets the annotation values of a method or field
   or fields which can have themselves more than one annotation"
   {
    :added "1.1.0"
    :static true
    }
-  [& annotations]
+  [annotations]
   (let [annot-as-cloj    (map (fn [annot]
                                      (if (nil? annot)
                                        'nil

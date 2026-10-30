@@ -1,12 +1,11 @@
 package io.github.hglabplh_tech.reflect.general;
 
 import clojure.lang.*;
-import scala.quoted.runtime.impl.QuotesImpl;
 
-
-import java.lang.annotation.Annotation;
 import java.lang.reflect.TypeVariable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -20,7 +19,7 @@ public class ClojFunctionalUtils {
     /**
      * Private constructor class has only statics
      */
-    private ClojFunctionalUtils () {
+    private ClojFunctionalUtils() {
 
     }
 
@@ -29,9 +28,9 @@ public class ClojFunctionalUtils {
      * @param arrayContent the array to transform
      * @return the persistence vector with the array-content
      */
-    public static <T> IPersistentVector getArrayAsLazyVector(T [] arrayContent) {
-        IPersistentVector newVector = LazilyPersistentVector.create(arrayContent);
-        return newVector;
+    public static <T> IPersistentVector getArrayAsVector(T[] arrayContent) {
+        List<?> arrayContentList = Arrays.asList(arrayContent);
+        return PersistentVector.create(arrayContentList);
     }
 
     /**
@@ -39,14 +38,20 @@ public class ClojFunctionalUtils {
      * @param arrayContent the 2 DIM array  to transform
      * @return the persistence Map with the array-content
      */
-    public static <T> IPersistentMap getAsMap(T [][] arrayContent) {
-        IPersistentMap newMap = PersistentArrayMap.createAsIfByAssoc(arrayContent);
-        return newMap;
+    public static <T> IPersistentMap getAsMap(T[][] arrayContent) {
+        PersistentArrayMap theMap = PersistentArrayMap.EMPTY;
+        for (T[] first : arrayContent) {
+            IPersistentVector completeVect = getArrayAsVector(first);
+            for (T second : first) {
+                theMap.assoc(second, completeVect);
+            }
+        }
+        return theMap;
     }
 
     /**
      *
-     * @param value
+     * @param clojFun
      * @return
      */
     public static Consumer<IFn> buildFunConsumer(IFn clojFun) {
@@ -55,26 +60,27 @@ public class ClojFunctionalUtils {
 
     /**
      * transform a java.util.List to a Clojure vector
+     *
      * @param listContent the list to be transformed
      * @return thevector with the list content
      */
-    public static IPersistentVector getListAsLazyVector(List<?> listContent) {
-        IPersistentVector newVector = LazilyPersistentVector.create(listContent.toArray());
-        return newVector;
+    public static IPersistentVector getListAsVector(List<?> listContent) {
+        return PersistentVector.create(listContent);
     }
 
     /**
      * transform a generic param to a key value
+     *
      * @param paramVect the vector of parameters
      * @return the key value map (name, type-name)
      */
     public static IPersistentMap
-        retrieveGenericParamTypesAsMeta(IPersistentVector paramVect) {
+    retrieveGenericParamTypesAsMeta(IPersistentVector paramVect) {
         IPersistentMap resultMap = PersistentArrayMap.EMPTY;
         for (int index = 0;
              index < paramVect.length();
              index++) {
-            TypeVariable<?> typeVar = (TypeVariable<?>)paramVect.nth(index);
+            TypeVariable<?> typeVar = (TypeVariable<?>) paramVect.nth(index);
             String varName = typeVar.getName();
             String typeName = typeVar.getTypeName();
             resultMap = resultMap.assocEx(index, Tuple.create(varName, typeName));
@@ -87,13 +93,14 @@ public class ClojFunctionalUtils {
      * Make a Clojure keyword out of a Java Name String
      * the name string is converted to Clojure name convention e.g. K gets k-
      * (No CamelCase)
-     * @param id the id(Java Name) to be converted
+     *
+     * @param id         the id(Java Name) to be converted
      * @param objectType the type of the object to generate a prefix if wanted
      *                   (meth-(Method) fld-(Field) cls-(Class) ...
      * @return the K
      */
     public static Keyword retrieveKeywordForJavaID(String id,
-                                                            ObjType objectType) {
+                                                   ObjType objectType) {
         char[] idCharArray = id.toCharArray();
         StringBuilder resultBuffer = new StringBuilder(objectType.prefix());
         for (char character : idCharArray) {
@@ -112,7 +119,9 @@ public class ClojFunctionalUtils {
     /**
      * The enum class for the different types when translating class names to
      * Clojure keyword convention
-     * @author Harald Glab-Plhak*/
+     *
+     * @author Harald Glab-Plhak
+     */
     public static enum ObjType {
         CLASS("cls-"),
         INTERFACE("ifc-"),
@@ -125,7 +134,8 @@ public class ClojFunctionalUtils {
         FREENAME("name-"),
         FREEVAL("val-"),
         FREETYPE("typename-"),
-        NONE(""),;
+        NONE(""),
+        ;
 
 
         private final String prefix;

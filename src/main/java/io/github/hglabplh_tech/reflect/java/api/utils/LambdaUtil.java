@@ -107,8 +107,8 @@ public class LambdaUtil {
      * @return a vector with the functional interface classes
      */
     public static @Nonnull IPersistentVector getFunctionalInterfaces(@Nonnull Class<?> theClass) {
-        IPersistentVector interfaces = getArrayAsLazyVector(theClass.getInterfaces());
-        IPersistentVector result = getArrayAsLazyVector(new Class<?>[]{});
+        IPersistentVector interfaces = getArrayAsVector(theClass.getInterfaces());
+        IPersistentVector result = getArrayAsVector(new Class<?>[]{});
         for (int index = 0; index < interfaces.length(); index++) {
             Class<?> interfaceClass = (Class<?>) interfaces.nth(index);
             if (isFunctionalInterface(interfaceClass)) {
@@ -154,9 +154,9 @@ public class LambdaUtil {
                     .assocEx(retrieveKeywordForJavaID("ctorName", ObjType.NONE),
                             constructor.getName())
                     .assocEx(retrieveKeywordForJavaID("paramTypes", ObjType.NONE),
-                            getArrayAsLazyVector(constructor.getGenericParameterTypes()))
+                            getArrayAsVector(constructor.getGenericParameterTypes()))
                     .assocEx(retrieveKeywordForJavaID("exceptTypes", ObjType.NONE),
-                            getArrayAsLazyVector(constructor.getGenericExceptionTypes()));
+                            getArrayAsVector(constructor.getGenericExceptionTypes()));
             result = result.assocEx(index, ctorResult);
         }
         return result;
@@ -270,9 +270,9 @@ public class LambdaUtil {
                 .assocEx(retrieveKeywordForJavaID("returnType", ObjType.NONE),
                         method.getGenericReturnType())
                 .assocEx(retrieveKeywordForJavaID("paramTypes", ObjType.NONE),
-                        getArrayAsLazyVector(method.getGenericParameterTypes()))
+                        getArrayAsVector(method.getGenericParameterTypes()))
                 .assocEx(retrieveKeywordForJavaID("exceptTypes", ObjType.NONE),
-                        getArrayAsLazyVector(method.getGenericExceptionTypes()));
+                        getArrayAsVector(method.getGenericExceptionTypes()));
     }
 
     /**

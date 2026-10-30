@@ -1,7 +1,7 @@
 (ns io.github.hglabplh_tech.reflect.clojure.api.reflect-field-test
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
-            [io.github.hglabplh_tech.reflect.clojure.api.reflect-class :as rcl]
+            [io.github.hglabplh_tech.reflect.java.api.reflect-class :as rcl]
             [io.github.hglabplh_tech.reflect.clojure.api.reflect-field :as rfield]))
 
 
