@@ -22,7 +22,12 @@
   :javac-options ["--release" "17"]
   ;; Clojure sources are required by consumers; do not use :omit-source true.
   :omit-source false
-  :jar-exclusions [#"(^|/)\.gitkeep$" #"(^|/)\.DS_Store$"]
+  :test-selectors {:default (complement :integration)
+                   :integration :integration
+                   ;; This selector matches absolutely nothing
+                   :none (constantly false)}
+
+:jar-exclusions [#"(^|/)\.gitkeep$" #"(^|/)\.DS_Store$"]
   :profiles {:dev {:java-source-paths ["src/test/java"]
                    :resource-paths ["src/test/resources"]
                    :source-paths ["../../test-support/clojure"]

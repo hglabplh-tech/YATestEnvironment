@@ -22,7 +22,12 @@
   :compile-path "target/umbrella-classes"
   :javac-options ["--release" "17"]
   :omit-source false
-  :plugins [[lein-shell "0.5.0"]]
+  :test-selectors {:default (complement :integration)
+                   :integration :integration
+                   ;; This selector matches absolutely nothing
+                   :none (constantly false)}
+
+:plugins [[lein-shell "0.5.0"]]
   :aliases {"modules" ["shell" "bash" "scripts/modules.sh"]
             "all-tests" ["test"]}
   ;; Local development uses sibling sources after `lein modules install`.

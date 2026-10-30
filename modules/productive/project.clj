@@ -12,6 +12,9 @@
   :dependencies [[org.clojure/clojure "1.12.6"]
                  [de.active-group/active-clojure "0.45.1"]
                  [de.active-group/active-data "0.4.0"]
+                 [jakarta.validation/jakarta.validation-api "3.0.2"]
+                 [org.hibernate.validator/hibernate-validator "8.0.1.Final"]
+                 [org.glassfish/jakarta.el "4.0.2"]
                  [prismatic/schema "1.4.2"]]
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
@@ -20,7 +23,12 @@
   :javac-options ["--release" "17"]
   ;; Clojure sources are required by consumers; do not use :omit-source true.
   :omit-source false
-  :jar-exclusions [#"(^|/)\.gitkeep$" #"(^|/)\.DS_Store$"]
+  :test-selectors {:default (complement :integration)
+                   :integration :integration
+                   ;; This selector matches absolutely nothing
+                   :none (constantly false)}
+
+:jar-exclusions [#"(^|/)\.gitkeep$" #"(^|/)\.DS_Store$"]
   :profiles {:dev {:java-source-paths ["src/test/java"]
                    :resource-paths ["src/test/resources"]
                    :source-paths ["../../test-support/clojure"]
