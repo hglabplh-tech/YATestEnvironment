@@ -32,20 +32,27 @@
                    :none (constantly false)}
 
   :jar-exclusions [#"(^|/)\.gitkeep$" #"(^|/)\.DS_Store$"]
+
   :profiles {:dev {:java-source-paths ["src/test/java"]
                    :resource-paths ["src/test/resources"]
                    :source-paths ["../../test-support/clojure"]
                    :compile-path "target/dev-classes"}
-             ;; Scala/Kotlin inspection is optional; compile with +polyglot.
-             :polyglot {:dependencies [[org.scala-lang/scala3-library_3 "3.8.4"]
-                                       [org.scala-lang/scala-reflect "2.13.18"]
-                                       [org.scala-lang/tasty-core_3 "3.8.4"]
-                                       [ch.epfl.scala/tasty-query_3 "1.8.0"]
-                                       [org.scala-lang/scala3-tasty-inspector_3 "3.8.4"]
-                                       [org.jetbrains.kotlin/kotlin-stdlib "2.1.20"]
-                                       [org.jetbrains.kotlin/kotlin-metadata-jvm "2.1.20"]
-                                       [org.jetbrains.kotlin/kotlin-reflect "2.1.20"]]
-                        :plugins [[lein-shell "0.5.0"]]
-                        :aliases {"comp-sc3-kotlin"
-                                  ["shell" "bash" "../../sc_kotlin_comp.sh"
-                                   "src/main/scala" "src/main/kotlin" "target/classes"]}}})
+             :java-compile
+             {:java-source-paths ["src/main/java"]
+              :compile-path "target/classes"}
+
+             :java-tests
+             {:java-source-paths ["src/test/java"]
+              :compile-path "target/test-classes"}
+
+             :clojure-tests
+             {:test-paths ["src/test/clojure"]}}
+             :aliases
+             {"compile-java" ["javac"]
+              "compile-for-tests" ["do"
+               ["with-profile" "+java-compile" "javac"]
+               ["with-profile" "+java-tests" "javac"]
+                                   ["install"]]
+              "test-clojure" ["with-profile"
+                              "+clojure-tests"
+                              "test"]})

@@ -31,4 +31,23 @@
   :profiles {:dev {:java-source-paths ["src/test/java"]
                    :resource-paths ["src/test/resources"]
                    :source-paths ["../../test-support/clojure"]
-                   :compile-path "target/dev-classes"}})
+                   :compile-path "target/dev-classes"}
+             :java-compile
+             {:java-source-paths ["src/main/java"]
+              :compile-path "target/classes"}
+
+             :java-tests
+             {:java-source-paths ["src/test/java"]
+              :compile-path "target/test-classes"}
+
+             :clojure-tests
+             {:test-paths ["src/test/clojure"]}}
+  :aliases
+  {"compile-java" ["javac"]
+   "compile-for-tests" ["do"
+                        ["with-profile" "+java-compile" "javac"]
+                        ["with-profile" "+java-tests" "javac"]
+                        ["install"]]
+   "test-clojure" ["with-profile"
+                   "+clojure-tests"
+                   "test"]})
