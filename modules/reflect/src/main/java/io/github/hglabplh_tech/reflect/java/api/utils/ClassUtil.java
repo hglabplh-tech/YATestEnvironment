@@ -180,7 +180,7 @@ public class ClassUtil {
      * @return the generic interfaces
      */
     public  IPersistentVector getInterfaces() {
-        return getArrayAsVector(this.theClass.getInterfaces());
+        return getArrayAsVector(theClass.getInterfaces());
     }
 
     /**

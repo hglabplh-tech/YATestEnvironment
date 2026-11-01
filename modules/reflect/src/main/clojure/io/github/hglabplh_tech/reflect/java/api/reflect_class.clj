@@ -7,9 +7,10 @@
             [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
             [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as er-refl]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
-  (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil
-                                                           )))
+  (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil)
+           ))
 (declare get-all-class-attributes-and-values)
+
 (defn get-class-util
   "get the class util by the canonical class-name with Class/forName"
   {:added "1.1.0"}
@@ -20,7 +21,9 @@
   "get the class util by a given class"
   {:added "1.1.0"}
   [^Class the-class]
-  (ClassUtil. the-class))
+  (if (nil? the-class)
+    nil
+    (ClassUtil. the-class)))
 
 (defn get-class
   "Get a class out of the package definitions by the canonical name
@@ -231,22 +234,44 @@
 
 (defn get-all-class-attributes-and-values
   "Get the fields modifiers and types and
-  attributes of one or more  field definition(s)
-  @param : the field we look for"
+  attributes of a class including interfaces sub-/superclasses
+  @param : the class we look for"
   {:added  "1.1.0"
    :static true}
   [^ClassUtil util]
-  {:class-name      (get-class-name util)
-   :super-class     (get-super-class util)
-   :gen-super       (get-generic-super-class util)
-   :pinner-classes  (traverse-public-inner-classes util)
-   :annotations     (atool/get-annotations-infos (get-class-annots (get-the-class util))) ;; TODO: do this also for fields, methods and constructors
-   :enum-specs      (er-refl/analyze-enum (get-the-class util))
-   :record-specs    (er-refl/analyze-record (get-the-class util))
-   :interfaces      (get-interfaces util)
-   :gen-interfaces  (get-generic-interfaces util)
-   :enclosing-class (get-enclosing-class util)
-   :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
-   :methods         (rmct/get-all-meth-and-type-modifiers (get-all-methods util))
-   :fields          (rfld/get-all-fields-and-type-modifiers (get-all-fields util))
-   :attributes      (get-class-attributes (get-the-class util))})
+  (if (nil? util)
+    {}
+    (let [refl-clazz (get-the-class util)]
+    (cond
+      (rtypes/is-enum refl-clazz)
+      {:enum-class (er-refl/analyze-enum refl-clazz)}
+      (rtypes/is-record refl-clazz)
+      {:record-class (er-refl/analyze-record refl-clazz)  }
+      (rtypes/is-annotation refl-clazz)
+      {:annot-class (atool/get-annotations-infos refl-clazz)}
+      :else
+      {:normal-class
+      {:class-name      (get-class-name util)
+       :super-class     (get-all-class-attributes-and-values (get-class-util-by-class (get-super-class util)))
+       :gen-super       (get-generic-super-class util)
+       :pinner-classes  (mapv  (fn [inner-clazz]
+                                 (let [inner-util (get-class-util-by-class inner-clazz)]
+                                   (get-all-class-attributes-and-values inner-util)))
+                               (get-all-sub-classes util))
+       :annotations     (atool/get-annotations-infos (get-class-annots refl-clazz)) ;; TODO: do this also for fields, methods and constructors
+       :enum-specs      (er-refl/analyze-enum refl-clazz)
+       :record-specs    (er-refl/analyze-record refl-clazz)
+       :interfaces      (mapv (fn [interface-clazz]
+                                (get-all-class-attributes-and-values
+                                  (get-class-util-by-class interface-clazz)))
+                              (get-interfaces util))
+       :gen-interfaces  (get-generic-interfaces util)
+       :enclosing-class (get-enclosing-class util)
+       :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
+       :methods         (rmct/get-all-meth-and-type-modifiers (get-all-methods util))
+       :fields          (rfld/get-all-fields-and-type-modifiers (get-all-fields util))
+       :attributes      (get-class-attributes refl-clazz)}}
+      )
+
+    ))
+  )

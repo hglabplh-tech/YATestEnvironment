@@ -13,10 +13,9 @@
 
 (defn analyze-enum
   "Analyze enum type"
-
   {:added "1.1.0"
    :static true}
-  [clazz]
+  [^Class clazz]
   (let [enum-spec
         (SpecialFormsUtil/getEnumSpec clazz)]
     {:enum-spec enum-spec}

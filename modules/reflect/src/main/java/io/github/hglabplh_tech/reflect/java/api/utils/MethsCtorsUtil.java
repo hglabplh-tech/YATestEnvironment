@@ -2,15 +2,14 @@ package io.github.hglabplh_tech.reflect.java.api.utils;
 
 import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
+import clojure.lang.PersistentArrayMap;
+import clojure.lang.PersistentVector;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
+import java.util.Set;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getAsMap;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
 /**
  * This s a utility class for getting the definition data of
@@ -68,6 +67,55 @@ public class MethsCtorsUtil {
     public static IPersistentVector getCtorGenericParmTypes(Constructor<?> ctor) {
         return getArrayAsVector(ctor.getGenericParameterTypes());
     }
+    public static IPersistentVector getCtorParametersAndParmAttribs(Constructor<?> ctor) {
+        IPersistentVector result = PersistentVector.EMPTY;
+        Parameter[] params = ctor.getParameters();
+        for (Parameter parameter: params) {
+            IPersistentMap paramDefMap = getParameterDefs(parameter);
+            result = result.cons(paramDefMap);
+        }
+        return result;
+    }
+
+    public static IPersistentMap getParameterDefs(Parameter parameter) {
+        IPersistentMap result = PersistentArrayMap.EMPTY;
+        String theName = parameter.getName();
+        Class<?> theType = parameter.getType();
+        AnnotatedType annotType = parameter.getAnnotatedType();
+        Annotation[] annots = parameter.getAnnotations();
+        Type type = parameter.getParameterizedType();
+        String paramTypeString = type.getTypeName();
+        IPersistentVector annotsVector = getArrayAsVector(annots);
+        int modifiers = parameter.getModifiers();
+        String modifiersString = Modifier.toString(modifiers);
+        Boolean isVarArg =parameter.isVarArgs();
+        Boolean isImplicit = parameter.isImplicit();
+        Boolean isNamePresent = parameter.isNamePresent();
+        Boolean isSynthetic = parameter.isSynthetic();
+        result = result.assocEx(retrieveKeywordFromString(null, "param-name"), theName);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-type"), theType);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-annot-type"), annotType);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-parametrized-type"), paramTypeString);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-annots"), annotsVector);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-modifiers"), modifiersString);
+        IPersistentVector flags = PersistentVector.EMPTY;
+
+        if (isVarArg) {
+            flags = flags.cons(retrieveKeywordFromString(null, "vararg"));
+        }
+        if (isImplicit) {
+            flags = flags.cons(retrieveKeywordFromString(null, "implicit"));
+        }
+        if (isNamePresent) {
+            flags = flags.cons(retrieveKeywordFromString(null, "name-present"));
+        }
+        if (isSynthetic) {
+            flags = flags.cons(retrieveKeywordFromString(null, "synthetic"));
+        }
+        result = result.assocEx(retrieveKeywordFromString(null, "param-flags"), flags);
+        return result;
+    }
+
 
     /**
      * Get the constructors modifiers integer
@@ -125,6 +173,16 @@ public class MethsCtorsUtil {
     public static IPersistentMap getMethodParamAnnots (
             Method method) {
         return getAsMap(method.getParameterAnnotations());
+    }
+
+    public static IPersistentVector getMethParametersAndParmAttribs(Method method) {
+        IPersistentVector result = PersistentVector.EMPTY;
+        Parameter[] params = method.getParameters();
+        for (Parameter parameter: params) {
+            IPersistentMap paramDefMap = getParameterDefs(parameter);
+            result = result.cons(paramDefMap);
+        }
+        return result;
     }
 
 

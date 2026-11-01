@@ -49,6 +49,14 @@
   [^Constructor ctor]
   (represent/type-def-representation (MethsCtorsUtil/getCtorParamTypes ctor)))
 
+(defn get-ctor-param-attributes
+  "Get the constructors parameter types/attributes
+  @param : the ctor we look for"
+  {:added  "0.9.0"
+   :static true}
+  [^Constructor ctor]
+ (MethsCtorsUtil/getCtorParametersAndParmAttribs ctor))
+
 (defn get-generic-ctor-param-types
   "Get the constructor generic parameter types
  @param : the ctor we look for"
@@ -107,9 +115,8 @@
           {:ctor-name       (get-ctor-name ctor)
            :annotations     (atool/get-annotations-infos (get-ctor-declared-annotations ctor))
            :param-count     (get-ctor-param-count ctor)
-           :all-parm-types  {:param-types     (get-ctor-param-types ctor)
-                             :gen-param-types (get-generic-ctor-param-types ctor)
-                             }
+           :all-param-attribs (get-ctor-param-attributes ctor)
+           :generic-param-types (get-generic-ctor-param-types ctor)
            :param-annots    (atool/get-annotations-infos (get-ctor-param-annots ctor))
            :modifiers       (rtypes/get-item-modifiers
                               (get-ctor-modifier ctor))
@@ -145,6 +152,14 @@
    :static true}
   [^Method meth]
   (MethsCtorsUtil/getMethodParamCount meth))
+
+(defn get-meth-param-attributes
+  "Get the methods parameter types/attributes
+  @param : the ctor we look for"
+  {:added  "0.9.0"
+   :static true}
+  [^Constructor ctor]
+ (MethsCtorsUtil/getMethParametersAndParmAttribs ctor))
 
 (defn get-meth-param-types
   "Get the methods parameter types
@@ -230,8 +245,8 @@
          {:meth-name       (get-meth-name meth)
           :annotations     (atool/get-annotations-infos (get-meth-declared-annotations meth))
           :param-count     (get-meth-param-count meth)
-          :all-parm-types  {:param-types     (get-meth-param-types meth)
-                            :gen-param-types (get-generic-meth-param-types meth)}
+          :all-param-attribs (get-meth-param-attributes meth)
+          :generic-param-types (get-generic-meth-param-types meth)
           :param-annots    (atool/get-annotations-infos (get-meth-param-annots meth))
           :modifiers       (rtypes/get-item-modifiers
                              (get-method-modifier meth))

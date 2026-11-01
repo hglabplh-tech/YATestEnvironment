@@ -1,7 +1,6 @@
 package io.github.hglabplh_tech.reflect.java.api.utils;
 
-import clojure.lang.IPersistentMap;
-import clojure.lang.PersistentArrayMap;
+import clojure.lang.*;
 
 import java.lang.Record;
 import java.lang.constant.ClassDesc;
@@ -78,8 +77,8 @@ public class SpecialFormsUtil {
      */
     public static IPersistentMap
     getRecordSpec(Class<?> thePotentialRecordClass) {
-        IPersistentMap recordMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
-        Class<? extends Record> theRecordClass = null;
+        IPersistentMap recordMap = PersistentHashMap.create(PersistentArrayMap.EMPTY);
+        Class<? extends Record> theRecordClass;
         if (thePotentialRecordClass.isRecord()) {
             theRecordClass = (Class<? extends Record>) thePotentialRecordClass;
         } else {
@@ -98,7 +97,6 @@ public class SpecialFormsUtil {
             Map<String, Type> nameTypeMap = Arrays.stream(fields)
                     .collect(Collectors.toMap(Field::getName,
                             Field::getGenericType, (a, b) -> b));
-            IPersistentMap fieldsTypesMap = PersistentArrayMap.EMPTY;
             for (Map.Entry<String, Type> nameTypeEntry : nameTypeMap.entrySet()) {
                 Type[] typeArrTemp = {nameTypeEntry.getValue()};
                 recordMap =
@@ -108,10 +106,24 @@ public class SpecialFormsUtil {
                                         ObjType.NONE),
                                 getArrayAsVector(typeArrTemp));
             }
-
-
-
+            Method[] methods = theRecordClass.getMethods();
+            IPersistentMap methodMap = PersistentHashMap.create(PersistentArrayMap.EMPTY);
+            Integer index = 0;
+            for (Method meth: methods) {
+                IPersistentMap allMethodsParms = PersistentHashMap.EMPTY;
+                IPersistentVector result = MethsCtorsUtil.getMethParametersAndParmAttribs(meth);
+                allMethodsParms = allMethodsParms.assocEx(retrieveKeywordFromString(null, "parameters"),
+                        result);
+                allMethodsParms = allMethodsParms.assocEx(retrieveKeywordFromString(null, "return-type"),
+                        MethsCtorsUtil.getMethodReturnType(meth));
+                methodMap = methodMap.assocEx(
+                        retrieveKeywordFromString("meth_" + index++ + "_", MethsCtorsUtil.getMethodName(meth)),
+                        allMethodsParms);
+            }
+            recordMap = recordMap.assocEx(retrieveKeywordFromString(null, "methods"),
+                    methodMap);
         }
+
         return recordMap;
     }
 

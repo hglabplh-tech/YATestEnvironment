@@ -104,17 +104,20 @@ public class ClojFunctionalUtils {
         char[] idCharArray = id.toCharArray();
         StringBuilder resultBuffer = new StringBuilder(objectType.prefix());
         for (char character : idCharArray) {
-            if (Character.isUpperCase(character)) {
-                char charLower = Character.toLowerCase(character);
-                resultBuffer.append('-').append(charLower);
-            } else {
                 resultBuffer.append(character);
-            }
-
         }
-
         return Keyword.intern(resultBuffer.toString());
     }
+
+    public static Keyword retrieveKeywordFromString(String prefix, String keyString) {
+        StringBuilder resultBuffer = new StringBuilder();
+        if (prefix != null) {
+            resultBuffer.append(prefix).append('-');
+        }
+        resultBuffer.append(keyString);
+        return Keyword.intern(resultBuffer.toString());
+    }
+
 
     /**
      * The enum class for the different types when translating class names to

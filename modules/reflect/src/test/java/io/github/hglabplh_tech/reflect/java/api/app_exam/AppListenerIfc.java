@@ -6,4 +6,8 @@ package io.github.hglabplh_tech.reflect.java.api.app_exam;
 
 public interface AppListenerIfc {
 
+    Integer countEmployees(String lastName);
+
+    Boolean employeeAdded(String lastname);
+
 }
