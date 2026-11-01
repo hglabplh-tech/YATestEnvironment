@@ -5,19 +5,24 @@
 package io.github.hglabplh_tech.reflect.java.api.app_exam;
 
 import io.github.hglabplh_tech.reflect.java.api.example.annot_rec.EmployeeType;
-import io.github.hglabplh_tech.reflect.java.api.example.annot_rec.MyTestRecord;
+
 
 import javax.annotation.Nonnull;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
 
 public class Application extends AppBase implements AppListenerIfc {
 
     public static String BLUBB = "Hallo";
+
+    private final List<String> infos = new ArrayList<>();
+
+    private final Map<Integer, String> orders = new HashMap<>();
+
     private final @Nonnull  String host;
 
     private final @Nonnull Integer port;
@@ -50,6 +55,12 @@ public class Application extends AppBase implements AppListenerIfc {
 
     public @Nonnull URL url() {
         return url;
+    }
+
+    public <T> T testParametrized(T term) throws ClassNotFoundException {
+        String typeName = term.getClass().getCanonicalName();
+        ClassLoader loader = Application.class.getClassLoader();
+        return (T) loader.loadClass(typeName);
     }
 
     public @Nonnull Integer sendRequest(@Nonnull  final URL url, @Nonnull String host, @Nonnull Integer port, String... messages) {
@@ -125,6 +136,25 @@ public class Application extends AppBase implements AppListenerIfc {
                                 String city,
                                 String country
 
-    ) {
+    ){};
+
+    public static class Tuple<K extends Integer, E> {
+        private final K key;
+
+        private final E value;
+
+        public Tuple(K key, E value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public K key() {
+            return key;
+        }
+
+        public E value() {
+            return value;
+        }
     }
+
 }
