@@ -2,6 +2,8 @@ package io.github.hglabplh_tech.reflect.general;
 
 import clojure.lang.*;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,6 +119,35 @@ public class ClojFunctionalUtils {
         resultBuffer.append(keyString);
         return Keyword.intern(resultBuffer.toString());
     }
+    public static boolean isParameterized(Type theType) {
+        return theType instanceof ParameterizedType;
+    }
+
+    public static IPersistentMap readParametrizedType(Type theType) {
+        IPersistentMap result = PersistentHashMap.EMPTY;
+        if (isParameterized(theType)) {
+            IPersistentMap inner = PersistentHashMap.EMPTY;
+            ParameterizedType paramType = (ParameterizedType)theType;
+            Type rawType = paramType.getRawType();
+            String rawTypeName = rawType.getTypeName();
+            inner = inner.assocEx(retrieveKeywordFromString(null, "raw-type"), rawTypeName);
+            Type[] types = paramType.getActualTypeArguments();
+            List<String> typeNames = new ArrayList<>();
+            for (Type type: types) {
+                typeNames.add(type.getTypeName());
+            }
+            Type ownerType = paramType.getOwnerType();
+            inner = inner.assocEx(retrieveKeywordFromString(null, "owner-type"),
+                    (ownerType != null) ? ownerType.getTypeName() : "N/A");
+            IPersistentVector namesVect = getListAsVector(typeNames);
+            inner = inner.assocEx(retrieveKeywordFromString(null, "type-args-vect"), namesVect);
+            result = result.assocEx(retrieveKeywordFromString(null, "parametrized-type"), inner);
+        } else {
+            result = result.assocEx(retrieveKeywordFromString(null, "base-type"), theType.getTypeName());
+        }
+        return result;
+    }
+
 
 
     /**

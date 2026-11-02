@@ -5,14 +5,10 @@ import io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils;
 
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.Optional;
 
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
-import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
 /**
  * This utility class is for getting the reflection on a specific class
@@ -99,6 +95,44 @@ public class ClassUtil {
         Constructor<?>[] constrArray =
                 this.theClass.getConstructors();
         return getArrayAsVector(constrArray);
+    }
+
+    public boolean isGenericClass() {
+        return this.theClass.getTypeParameters().length > 0;
+    }
+
+
+    public IPersistentVector getGenerics() {
+        if (isGenericClass()) {
+            TypeVariable<?>[] genTypeVariables = this.theClass.getTypeParameters();
+            IPersistentVector result = PersistentVector.EMPTY;
+            for (TypeVariable<?> genTypeVar: genTypeVariables) {
+                IPersistentMap typesMap = PersistentHashMap.EMPTY;
+                Object type = genTypeVar.getGenericDeclaration();
+                typesMap = typesMap.assocEx(retrieveKeywordFromString(null, "type"), type);
+                String typeName = genTypeVar.getName();
+                typesMap = typesMap.assocEx(retrieveKeywordFromString(null, "typeName"), typeName);
+                AnnotatedType[] annotTypes = genTypeVar.getAnnotatedBounds();
+                Type[] types = genTypeVar.getBounds();
+                IPersistentVector tempAnnot = PersistentVector.EMPTY;
+                for (AnnotatedType annotType: annotTypes) {
+                    Type annType = annotType.getType();
+                    String annTypeName = annType.getTypeName();
+                    tempAnnot.cons(annTypeName);
+                }
+                typesMap.assocEx(retrieveKeywordFromString(null, "annotTypesVect"), tempAnnot);
+                IPersistentVector tempTypes  = PersistentVector.EMPTY;
+                for (Type theType: types) {
+                    IPersistentMap parmTypeMap =  readParametrizedType(theType);
+                    tempTypes.cons(parmTypeMap);
+                }
+                typesMap = typesMap.assocEx(retrieveKeywordFromString(null, "typesVect"), tempTypes);
+                result = result.cons(typesMap);
+            }
+            return result;
+        } else {
+            return PersistentVector.EMPTY;
+        }
     }
 
     /**

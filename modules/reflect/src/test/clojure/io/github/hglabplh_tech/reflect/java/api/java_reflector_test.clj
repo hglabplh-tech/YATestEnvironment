@@ -6,5 +6,14 @@
 
 (deftest simple-reflector-test (testing "A simple java reflection of a small class"
                                  (println (System/getProperty "java.class.path"))
-                                 (let [result (jrefl/get-structured-meta-data "io.github.hglabplh_tech.reflect.java.api.app_exam.Application")]
-                                   (pprint result))))
+                                 (let [result (jrefl/get-structured-meta-data
+                                                "io.github.hglabplh_tech.reflect.java.api.app_exam.Application")]
+                                   (pprint result))))       ;; add assertions
+
+(deftest parametriced-reflector-test (testing "A java reflection of a class with parametrized typing"
+                                 (println (System/getProperty "java.class.path"))
+                                 (let [result (jrefl/get-structured-meta-data
+                                                "io.github.hglabplh_tech.reflect.java.api.example.types.ParametrizedTypes")]
+                                   (pprint result))))       ;; add assertions
+
+(run-tests)

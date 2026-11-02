@@ -84,18 +84,20 @@ public class MethsCtorsUtil {
         AnnotatedType annotType = parameter.getAnnotatedType();
         Annotation[] annots = parameter.getAnnotations();
         Type type = parameter.getParameterizedType();
+
         String paramTypeString = type.getTypeName();
         IPersistentVector annotsVector = getArrayAsVector(annots);
         int modifiers = parameter.getModifiers();
         String modifiersString = Modifier.toString(modifiers);
-        Boolean isVarArg =parameter.isVarArgs();
-        Boolean isImplicit = parameter.isImplicit();
-        Boolean isNamePresent = parameter.isNamePresent();
-        Boolean isSynthetic = parameter.isSynthetic();
+        boolean isVarArg =parameter.isVarArgs();
+        boolean isImplicit = parameter.isImplicit();
+        boolean isNamePresent = parameter.isNamePresent();
+        boolean isSynthetic = parameter.isSynthetic();
         result = result.assocEx(retrieveKeywordFromString(null, "param-name"), theName);
-        result = result.assocEx(retrieveKeywordFromString(null, "param-type"), theType);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-type"), readParametrizedType(theType));
         result = result.assocEx(retrieveKeywordFromString(null, "param-annot-type"), annotType);
-        result = result.assocEx(retrieveKeywordFromString(null, "param-parametrized-type"), paramTypeString);
+        result = result.assocEx(retrieveKeywordFromString(null, "param-parametrized-type"),
+                readParametrizedType(type));
         result = result.assocEx(retrieveKeywordFromString(null, "param-annots"), annotsVector);
         result = result.assocEx(retrieveKeywordFromString(null, "param-modifiers"), modifiersString);
         IPersistentVector flags = PersistentVector.EMPTY;

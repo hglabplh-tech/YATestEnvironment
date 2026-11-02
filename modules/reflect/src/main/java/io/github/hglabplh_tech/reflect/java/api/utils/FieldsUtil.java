@@ -1,5 +1,6 @@
 package io.github.hglabplh_tech.reflect.java.api.utils;
 
+import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 
 import java.lang.reflect.AnnotatedType;
@@ -7,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.getArrayAsVector;
+import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.readParametrizedType;
 
 
 /**
@@ -35,12 +37,12 @@ public class FieldsUtil {
     }
 
     /**
-     * Get the type of the field as Class
+     * Get the type of the field as Persistent Map
      * @param field the field
      * @return the class representing the field type
      */
-    public static Class<?> getFieldType ( Field field) {
-        return field.getType();
+    public static IPersistentMap getFieldType (Field field) {
+        return readParametrizedType(field.getType());
     }
 
     /**
@@ -66,8 +68,8 @@ public class FieldsUtil {
      * @param field the field
      * @return the generic type
      */
-    public static Type getGenericType(Field field) {
-        return field.getGenericType();
+    public static IPersistentMap getGenericType(Field field) {
+        return readParametrizedType(field.getGenericType());
     }
 
 

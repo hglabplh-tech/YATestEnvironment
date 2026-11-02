@@ -218,6 +218,14 @@
         (.traversePublicSubClasses util))
   )
 
+(defn get-generics
+  "Get the enclosing class of a subclass
+  @param : ClassUtil instance with the class we analyze"
+  {:added "0.9.0"}
+  [^ClassUtil util]
+  (.getGenerics util))
+
+
 (defn get-enclosing-class
   "Get the enclosing class of a subclass
   @param : ClassUtil instance with the class we analyze"
@@ -254,6 +262,7 @@
       {:class-name      (get-class-name util)
        :super-class     (get-all-class-attributes-and-values (get-class-util-by-class (get-super-class util)))
        :gen-super       (get-generic-super-class util)
+       :generics        (get-generics util)
        :pinner-classes  (mapv  (fn [inner-clazz]
                                  (let [inner-util (get-class-util-by-class inner-clazz)]
                                    (get-all-class-attributes-and-values inner-util)))

@@ -8,9 +8,9 @@ import io.github.hglabplh_tech.reflect.java.api.example.annot_rec.Category;
 
 public class CaseInner {
 
-    public static final String test;
+    public static final String testIt;
     static { // how can this be reflected ???
-        test = "hello";
+        testIt = "hello";
     }
     public final Runnable theRunner = new Runnable() {
         @Override
