@@ -7,9 +7,20 @@
             [io.github.hglabplh-tech.reflect.java.api.reflect-meths-ctors :as rmct]
             [io.github.hglabplh-tech.reflect.java.api.reflect-special-forms :as er-refl]
             [io.github.hglabplh-tech.reflect.java.api.reflect-types :as rtypes])
-  (:import (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil)
+  (:import (io.github.hglabplh_tech.reflect.general ClojFunctionalUtils)
+           (io.github.hglabplh_tech.reflect.java.api.utils AnnotationsUtil ClassUtil)
            ))
-(declare get-all-class-attributes-and-values)
+(declare get-all-class-attributes-and-values-internal)
+
+(def classes-defs (atom []))
+
+(defn add-class-reflected [class-name]
+  (swap! classes-defs conj class-name))
+
+
+(defn class-reflected? [class-name]
+  (boolean (some #{class-name} @classes-defs)))
+
 
 (defn get-class-util
   "get the class util by the canonical class-name with Class/forName"
@@ -141,14 +152,23 @@
   @param : ClassUtil instance with the class we analyze"
   {:added "0.9.0"}
   [^ClassUtil util]
-  (.getGenericSuperClass util))
+  (let [result (.getGenericSuperClass util)]
+    (if (nil? result)
+      "N/A"
+      (ClojFunctionalUtils/readParametrizedType result))
+    ))
 
 (defn get-super-class
   "Get the super-class  of a class
   @param : ClassUtil instance with the class we analyze"
   {:added "0.9.0"}
   [^ClassUtil util]
-  (.getSuperClass util))
+  (let [the-clazz (.getSuperClass util)
+        the-clazz-name (if (nil? the-clazz) "UnknownClass" (.getCanonicalName the-clazz))]
+    (if (or (= the-clazz-name "UnknownClass") (class-reflected? the-clazz-name))
+      {:class-already-reflected the-clazz-name}
+      (get-all-class-attributes-and-values-internal (get-class-util-by-class the-clazz)))
+    ))
 
 (defn get-public-annotations
   "Get all public annotations in the class
@@ -207,17 +227,6 @@
   [^ClassUtil util]
   (.getPublicSubClasses util))
 
-(defn traverse-public-inner-classes
-  "Get the top level subclasses
-  @param : ClassUtil instance with the class we analyze"
-  {:added "0.9.0"}
-  [^ClassUtil util]
-  (mapv (fn [^Class clazz]
-          (let [the-util (get-class-util-by-class clazz)]
-            (get-all-class-attributes-and-values the-util)))
-        (.traversePublicSubClasses util))
-  )
-
 (defn get-generics
   "Get the enclosing class of a subclass
   @param : ClassUtil instance with the class we analyze"
@@ -241,46 +250,67 @@
   (.getEnclosingMethod util))
 
 (defn get-all-class-attributes-and-values
-  "Get the fields modifiers and types and
+  "External for getting the fields modifiers and types and
+ attributes of a class including interfaces sub-/superclasses
+ @param : the class we look for"
+  {:added  "1.4.0"
+   :static true}
+  [^ClassUtil util]
+  (reset! classes-defs [])
+  (get-all-class-attributes-and-values-internal util))
+
+
+(defn- interface-attrs-in-map [interface-clazz]
+  "Function used inside mapv for reflecting interfaces to call the class reflection or tell
+  it is already reflected or nil"
+  (if (nil? interface-clazz)
+    nil
+    (if (class-reflected? (.getCanonicalName interface-clazz))
+      {:class-already-reflected (.getCanonicalName interface-clazz)}
+      (get-all-class-attributes-and-values-internal
+        (get-class-util-by-class interface-clazz)))))
+
+(defn- get-all-class-attributes-and-values-internal
+  "Internal for getting the fields modifiers and types and
   attributes of a class including interfaces sub-/superclasses
   @param : the class we look for"
   {:added  "1.1.0"
    :static true}
   [^ClassUtil util]
+
   (if (nil? util)
     {}
-    (let [refl-clazz (get-the-class util)]
-    (cond
-      (rtypes/is-enum refl-clazz)
-      {:enum-class (er-refl/analyze-enum refl-clazz)}
-      (rtypes/is-record refl-clazz)
-      {:record-class (er-refl/analyze-record refl-clazz)  }
-      (rtypes/is-annotation refl-clazz)
-      {:annot-class (atool/get-annotations-infos refl-clazz)}
-      :else
-      {:normal-class
-      {:class-name      (get-class-name util)
-       :super-class     (get-all-class-attributes-and-values (get-class-util-by-class (get-super-class util)))
-       :gen-super       (get-generic-super-class util)
-       :generics        (get-generics util)
-       :pinner-classes  (mapv  (fn [inner-clazz]
-                                 (let [inner-util (get-class-util-by-class inner-clazz)]
-                                   (get-all-class-attributes-and-values inner-util)))
-                               (get-all-sub-classes util))
-       :annotations     (atool/get-annotations-infos (get-class-annots refl-clazz)) ;; TODO: do this also for fields, methods and constructors
-       :enum-specs      (er-refl/analyze-enum refl-clazz)
-       :record-specs    (er-refl/analyze-record refl-clazz)
-       :interfaces      (mapv (fn [interface-clazz]
-                                (get-all-class-attributes-and-values
-                                  (get-class-util-by-class interface-clazz)))
-                              (get-interfaces util))
-       :gen-interfaces  (get-generic-interfaces util)
-       :enclosing-class (get-enclosing-class util)
-       :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
-       :methods         (rmct/get-all-meth-and-type-modifiers (get-all-methods util))
-       :fields          (rfld/get-all-fields-and-type-modifiers (get-all-fields util))
-       :attributes      (get-class-attributes refl-clazz)}}
-      )
-
+    (let [refl-clazz (get-the-class util)
+          refl-clazz-name (.getCanonicalName refl-clazz)]
+      (if (not (class-reflected? refl-clazz-name))
+        (do (add-class-reflected refl-clazz-name)
+            (cond
+              (rtypes/is-enum refl-clazz)
+              {:enum-class (er-refl/analyze-enum refl-clazz)}
+              (rtypes/is-record refl-clazz)
+              {:record-class (er-refl/analyze-record refl-clazz)}
+              (rtypes/is-annotation refl-clazz)
+              {:annot-class (atool/get-annotation-info refl-clazz)}
+              :else
+              {:normal-class
+               {:class-name      (get-class-name util)
+                :super-class     (get-super-class util)
+                :gen-super       (get-generic-super-class util)
+                :generics        (get-generics util)
+                :pinner-classes  (mapv (fn [inner-clazz]
+                                         (let [inner-util (get-class-util-by-class inner-clazz)]
+                                           (get-all-class-attributes-and-values-internal inner-util)))
+                                       (get-all-sub-classes util))
+                :annotations     (atool/get-annotations-information (get-class-annots refl-clazz)) ;; TODO: do this also for fields, methods and constructors
+                :enum-specs      (er-refl/analyze-enum refl-clazz)
+                :record-specs    (er-refl/analyze-record refl-clazz)
+                :interfaces      (mapv interface-attrs-in-map  (get-interfaces util))
+                :gen-interfaces  (get-generic-interfaces util)
+                :enclosing-class (get-enclosing-class util)
+                :constructors    (rmct/get-all-ctor-and-type-modifiers (get-all-ctors util))
+                :methods         (rmct/get-all-meth-and-type-modifiers (get-all-methods util))
+                :fields          (rfld/get-all-fields-and-type-modifiers (get-all-fields util))
+                :attributes      (get-class-attributes refl-clazz)}}
+              )
+            )))
     ))
-  )

@@ -7,7 +7,6 @@ import clojure.lang.PersistentVector;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.Set;
 
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 
@@ -133,9 +132,9 @@ public class MethsCtorsUtil {
      * @param ctor the constructor definition
      * @return the methods parameter types
      */
-    public static  IPersistentMap getCtorParamAnnots (
+    public static  IPersistentVector getCtorParamAnnots (
             Constructor<?> ctor) {
-        return getAsMap(ctor.getParameterAnnotations());
+        return getAsTwoDimVector(ctor.getParameterAnnotations());
     }
 
 
@@ -172,9 +171,9 @@ public class MethsCtorsUtil {
      * @param method the method definition
      * @return the methods parameter types
      */
-    public static IPersistentMap getMethodParamAnnots (
+    public static IPersistentVector getMethodParamAnnots (
             Method method) {
-        return getAsMap(method.getParameterAnnotations());
+        return getAsTwoDimVector(method.getParameterAnnotations());
     }
 
     public static IPersistentVector getMethParametersAndParmAttribs(Method method) {

@@ -36,19 +36,19 @@ public class ClojFunctionalUtils {
     }
 
     /**
-     *
-     * @param arrayContent the 2 DIM array  to transform
-     * @return the persistence Map with the array-content
+     *Transform a 2-DIM array to a 2-DIM vector
+     * @param arrayContent the 2-DIM array  to transform
+     * @return the persistence vector with persistence vectors
      */
-    public static <T> IPersistentMap getAsMap(T[][] arrayContent) {
-        PersistentArrayMap theMap = PersistentArrayMap.EMPTY;
+    public static <T> IPersistentVector getAsTwoDimVector(T[][] arrayContent) {
+        IPersistentVector result = PersistentVector.EMPTY;
+        int index = 0;
         for (T[] first : arrayContent) {
             IPersistentVector completeVect = getArrayAsVector(first);
-            for (T second : first) {
-                theMap.assoc(second, completeVect);
-            }
+            result = result.cons(completeVect);
+            index++;
         }
-        return theMap;
+        return result;
     }
 
     /**
@@ -103,11 +103,9 @@ public class ClojFunctionalUtils {
      */
     public static Keyword retrieveKeywordForJavaID(String id,
                                                    ObjType objectType) {
-        char[] idCharArray = id.toCharArray();
+
         StringBuilder resultBuffer = new StringBuilder(objectType.prefix());
-        for (char character : idCharArray) {
-                resultBuffer.append(character);
-        }
+        resultBuffer.append(id);
         return Keyword.intern(resultBuffer.toString());
     }
 
@@ -163,7 +161,7 @@ public class ClojFunctionalUtils {
         FIELD("fld-"),
         METHOD("meth-"),
         ANNOTATION("annot-"),
-        ANNOTATION_POLICY("annot-policy"),
+        ANNOTATION_POLICY("annot-policy-"),
         RECORD("rec-"),
         FREENAME("name-"),
         FREEVAL("val-"),

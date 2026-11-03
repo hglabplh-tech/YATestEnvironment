@@ -61,13 +61,13 @@
    :static true}
   [fields]
   (map (fn [field] {:field-name  (get-field-name field)
-                    :annots       (atool/get-annotations-infos (get-all-annots field))
-                    :type        {:field-type       (get-field-type field)
-                                  :gen-field-type   (get-generic-field-type field)
-                                  :annot-field-type (get-annot-field-type field)}
-                    :modifiers  (rtypes/get-item-modifiers
-                                  (get-field-modifier field))
-                    :attribs    (rtypes/get-field-attributes field)}
+                    :annotations       (atool/get-annotations-information (get-all-annots field))
+                    :type {:field-type       (get-field-type field)
+                           :gen-field-type   (get-generic-field-type field)
+                           :annot-field-type (get-annot-field-type field)}
+                    :modifiers (rtypes/get-item-modifiers
+                                 (get-field-modifier field))
+                    :attribs (rtypes/get-field-attributes field)}
          )
        fields))
 

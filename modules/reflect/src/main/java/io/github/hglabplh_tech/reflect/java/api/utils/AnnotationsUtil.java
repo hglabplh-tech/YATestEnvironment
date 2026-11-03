@@ -101,9 +101,9 @@ public class AnnotationsUtil {
             IPersistentVector innerVect = LazilyPersistentVector.createOwning();
             Annotation[] objects = (Annotation[]) obj;
             for (Annotation objInner : objects) {
-                RT.conj(innerVect, objInner);
+                innerVect = innerVect.cons(objInner);
             }
-            resultMap.assocEx(i, innerVect);
+            resultMap = resultMap.assocEx(i, innerVect);
         }
 
         return  resultMap;

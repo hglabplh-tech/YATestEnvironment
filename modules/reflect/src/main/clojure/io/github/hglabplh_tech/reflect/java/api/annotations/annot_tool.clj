@@ -34,7 +34,7 @@
                            annots)) annotations)]
     annot-as-cloj))
 
-(defn get-annotations-infos
+(defn get-annotations-information
   "gets the annotation values of a method or field
   or fields which can have themselves more than one annotation"
   {
@@ -83,7 +83,7 @@
    }
   [meth]
   (let [annotations (refla/get-method-annots meth)]
-    (get-annotations-infos annotations)))
+    (get-annotations-information annotations)))
 
 (defn get-annotation-values-from-field
   "gets the annotation values of a field
@@ -94,4 +94,4 @@
    }
   [field]
   (let [annotations (refla/get-field-annots field)]
-    (get-annotations-infos annotations)))
+    (get-annotations-information annotations)))

@@ -8,7 +8,7 @@
 (let [class-util (rcl/get-class-util class-name)
       struct-data {:structured-class
                     (rcl/get-all-class-attributes-and-values class-util)
-                    }
+                   }
       ]
   {:language :java :class-name (str class-name) :reflect-data struct-data}
 

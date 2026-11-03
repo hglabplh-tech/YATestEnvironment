@@ -118,13 +118,13 @@ public class ClassUtil {
                 for (AnnotatedType annotType: annotTypes) {
                     Type annType = annotType.getType();
                     String annTypeName = annType.getTypeName();
-                    tempAnnot.cons(annTypeName);
+                    tempAnnot = tempAnnot.cons(annTypeName);
                 }
-                typesMap.assocEx(retrieveKeywordFromString(null, "annotTypesVect"), tempAnnot);
+                typesMap = typesMap.assocEx(retrieveKeywordFromString(null, "annotTypesVect"), tempAnnot);
                 IPersistentVector tempTypes  = PersistentVector.EMPTY;
                 for (Type theType: types) {
                     IPersistentMap parmTypeMap =  readParametrizedType(theType);
-                    tempTypes.cons(parmTypeMap);
+                    tempTypes = tempTypes.cons(parmTypeMap);
                 }
                 typesMap = typesMap.assocEx(retrieveKeywordFromString(null, "typesVect"), tempTypes);
                 result = result.cons(typesMap);
@@ -277,23 +277,6 @@ public class ClassUtil {
      */
     public  IPersistentVector getPublicSubClasses() {
         return getArrayAsVector(this.theClass.getClasses());
-    }
-    public IPersistentCollection traversePublicSubClasses() {
-        return internTraversePublicSubClasses(this.theClass);
-    }
-
-
-    public IPersistentCollection internTraversePublicSubClasses(Class<?> parent) {
-        Class<?>[] vect = parent.getClasses();
-        IPersistentCollection theList = PersistentList.EMPTY;
-        for (Class<?> actClass :vect) {
-            theList = theList.cons(actClass);
-            Class<?>[] subVect = actClass.getClasses();
-            if (subVect.length > 0) {
-                theList = internTraversePublicSubClasses(actClass);
-            }
-        }
-        return theList;
     }
 
     /**

@@ -113,15 +113,14 @@
 
   (mapv (fn [^Constructor ctor]
           {:ctor-name       (get-ctor-name ctor)
-           :annotations     (atool/get-annotations-infos (get-ctor-declared-annotations ctor))
+           :annotations     (atool/get-annotations-information (get-ctor-declared-annotations ctor))
            :param-count     (get-ctor-param-count ctor)
            :all-param-attribs (get-ctor-param-attributes ctor)
            :generic-param-types (get-generic-ctor-param-types ctor)
-           :param-annots    (atool/get-annotations-infos (get-ctor-param-annots ctor))
+           :param-annots    (mapv atool/get-annotations-information (get-ctor-param-annots ctor))
            :modifiers       (rtypes/get-item-modifiers
                               (get-ctor-modifier ctor))
            :attribs         (rtypes/get-ctor-attributes ctor)
-           :annots          (get-ctor-declared-annotations ctor)
            :exception-types (get-ctor-exception-types ctor)})
         ctors))
 
@@ -243,16 +242,15 @@
   [meths]
   (map (fn [^Method meth]
          {:meth-name       (get-meth-name meth)
-          :annotations     (atool/get-annotations-infos (get-meth-declared-annotations meth))
+          :annotations     (atool/get-annotations-information (get-meth-declared-annotations meth))
           :param-count     (get-meth-param-count meth)
           :all-param-attribs (get-meth-param-attributes meth)
           :generic-param-types (get-generic-meth-param-types meth)
-          :param-annots    (atool/get-annotations-infos (get-meth-param-annots meth))
+          :param-annots    (mapv atool/get-annotations-information (get-meth-param-annots meth))
           :modifiers       (rtypes/get-item-modifiers
                              (get-method-modifier meth))
           :attribs         (rtypes/get-meth-attributes meth)
           :exception-types (get-meth-exception-types meth)
-          :annots          (get-meth-declared-annotations meth)
           :return-types    {:return-type       (get-method-return-type meth)
                             :gen-return-type   (get-generic-method-return-type meth)
                             :annot-return-type (get-meth-annot-return-type meth)}} ;; ???????????????

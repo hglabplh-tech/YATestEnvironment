@@ -49,26 +49,25 @@ public class AnnotationTool<T extends Annotation> {
         Annotation[] annots = this.theAnnotation.annotationType().getAnnotations();
         IPersistentMap theMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
         for (Annotation annot : annots) {
-            if (annot.getClass()
-                    .isAssignableFrom(Target.class)) {
+            if (annot instanceof  Target) {
                 IPersistentMap typeMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
 
                 Target theTarget = (Target) annot;
                 typeMap = fillTargetAnnotAttribs(theTarget, typeMap);
-                theMap.assocEx(
+                theMap = theMap.assocEx(
                         Keyword.intern("Target"),
                         typeMap);
-            } else if (annot.getClass()
-                    .isAssignableFrom(Retention.class)) {
+            } else if (annot instanceof Retention) {
                 IPersistentMap typeMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
                 Retention theRetention = (Retention) annot;
                 RetentionPolicy theRetPolicy = theRetention.value();
-                theMap.assocEx(
-                        Keyword.intern("Retention"),
-                        typeMap);
-                typeMap.assocEx(
+                typeMap = typeMap.assocEx(
                         retrieveKeywordForJavaID(theRetPolicy.name(), ObjType.FIELD),
                         theRetPolicy);
+                theMap = theMap.assocEx(
+                        Keyword.intern("Retention"),
+                        typeMap);
+
             }
         }
         return theMap;
@@ -109,7 +108,7 @@ public class AnnotationTool<T extends Annotation> {
     fillTargetAnnotAttribs(Target theAnnotation, IPersistentMap typeMap) {
         ElementType[] elementTypes = theAnnotation.value();
         for (ElementType eType : elementTypes) {
-            Keyword elementKey = retrieveKeywordForJavaID(eType.name(), ObjType.FIELD);
+            Keyword elementKey = retrieveKeywordForJavaID(eType.name(), ObjType.NONE);
             typeMap = typeMap.assoc(elementKey, eType);
         }
         return typeMap;
