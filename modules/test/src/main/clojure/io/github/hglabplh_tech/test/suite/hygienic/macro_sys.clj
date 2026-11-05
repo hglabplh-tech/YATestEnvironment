@@ -1,8 +1,8 @@
 (ns io.github.hglabplh_tech.test.suite.hygienic.macro-sys
-  (:require   [clojure.walk :refer :all]
-              [clojure.pprint :refer :all]
-              [clojure.set :as set]
-              [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]))
+  (:require [clojure.walk :refer :all]
+            [clojure.pprint :refer :all]
+            [clojure.set :as set]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]))
 
 (def ellipsis-symbol '...)
 

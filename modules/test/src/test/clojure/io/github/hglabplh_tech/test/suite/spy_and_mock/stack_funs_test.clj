@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [clojure.pprint :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
             [io.github.hglabplh_tech.example.the-funs-ns :refer :all]
             [io.github.hglabplh_tech.example.the-main :refer :all]

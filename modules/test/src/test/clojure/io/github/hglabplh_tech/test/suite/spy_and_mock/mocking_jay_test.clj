@@ -7,9 +7,10 @@
             [active.data.realm.attach :refer :all]
             [schema.core :as s]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
-            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all])
+            [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all]
+            [io.github.hglabplh-tech.test.suite.spy-and-mock.mocking-j-collector :as collector])
   (:import (clojure.lang Symbol Namespace)))
 
 (s/set-fn-validation! (boolean 1))
@@ -32,6 +33,7 @@
     (boolean res)))
 
 (clojure.core/defn try-it [a b c]
+  (println (collector/clean-get-fun-caller 5 true))
   (println "Ups I am here" (+ a b c)))
 
 (prolog to-spy  my-enum-test try-it fun-store-being-spyed)

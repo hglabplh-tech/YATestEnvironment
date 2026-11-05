@@ -4,7 +4,10 @@
             [clojure.string :as str]
             [clojure.walk :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.real-fun-checkers :refer :all])
+            [active.data.realm :as realm]
+            [active.data.realm.inspection :as inspect]
+            [io.github.hglabplh-tech.test.suite.spy-and-mock.mocking-j-collector :as collector]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all])
 
   )
 
@@ -18,12 +21,6 @@
 (clojure.core/defn any-list? [value] (list? value))
 (clojure.core/defn any-long? [value] (= (type value) java.lang.Long))
 (clojure.core/defn any-map? [value] (map? value))
-
-(clojure.core/defn get-set-of? [pred]
-  (clojure.core/fn [value]
-    (and [(set? value) (map pred value)])
-    ))
-((get-set-of? integer?) '(3 4 5 67 8))
 (clojure.core/defn any-object? [value] (= (type value) java.lang.Object))
 (clojure.core/defn any-set? [value] (set? value))
 (clojure.core/defn any-set-of? [value pred]
@@ -31,7 +28,10 @@
 (clojure.core/defn any-short? [value] (= (type value) java.lang.Short))
 (clojure.core/defn any-string? [value] (string? value))
 (clojure.core/defn any-vararg? [value] (sequential? value))
-
+(clojure.core/defn set-of? [pred]
+  (clojure.core/fn [value]
+    (and [(set? value) (map pred value)])
+    ))
 ;; create mapping for functions
 ;; Meta data
 (def type-predicate-map
@@ -51,6 +51,7 @@
    :any-short?-key      any-short?
    :any-string?-key     any-string?
    :any-vararg?-key     any-vararg?
+   :set-of?-key         set-of?
    })
 
 
@@ -92,6 +93,9 @@
 (def mock-meta (atom {}))
 
 (def ns-f-meta-atom (atom []))
+
+(def statistic-control-flow (atom {:fun-statistics {}}))
+
 (def mock-control-flow (atom {:language :clojure :funcalls {}}))
 
 (def rule-vect (atom []))
@@ -196,13 +200,22 @@
 
 
 
-(clojure.core/defn collect-flow-calls [func-name ret-value & args]
-    (swap! mock-control-flow update :funcalls conj
-           {:function-name func-name
-            :arguments (vec args)
-            :return ret-value})
+(clojure.core/defn collect-flow-statistics [fun-meta]
+    (let [fun-name (get fun-meta :name)
+          fun-calls (get fun-meta :fun-calls-count)]
+      (if fun-calls
+        (add-meta-statistics fun-name (inc fun-calls))
+        (add-meta-statistics fun-name 1)
+        )
+      ))
 
-    )
+(clojure.core/defn collect-flow-calls [func-name ret-value & args]
+  (swap! mock-control-flow update :funcalls conj
+         {:function-name func-name
+          :arguments (vec args)
+          :return ret-value})
+
+  )
 
 (defn find-meta-for-fun [function-id]
   (get @mock-meta function-id))
@@ -254,12 +267,8 @@
             (fn [f]
               (fn [args#]
                 (f args#))))
-
           (swap! redirected-bindings dissoc fun-name#)
-
           )))))
-
-
 
 (defn mock-hook
   "Add some basic instrumentation to each var in a given namespace `sut`.
@@ -289,9 +298,9 @@
 
 (defmacro mock
   "mocks 1..n functions take care and only mock if the functions call things which you do not want to have
-  in your UNIT - Test AND which are extern to your project otherwise if this is neccessary
-  you may have to do a redesign of this part for in a well designed project this should NEVER
-  be needed if itfis your own code"
+  in your UNIT - Test AND which are extern to your project otherwise if this is necessary
+  you may have to do a redesign of this part for in a well-designed project this should NEVER
+  be needed if it is your own code"
   [& namespaces]
   `(do ~@(map mock-hook namespaces)))
 
@@ -404,6 +413,8 @@
   (let [fun# fun
         stack-trace-data# stack-trace-data]
     ;;(apply collect-meta-active-data fun-name# args#)
+    (println (collector/clean-get-fun-caller 3 true))
+    (collect-flow-statistics fun-meta)
     (get-it-spyed fun# fun-meta stack-trace-data#)
     'spyed))
 
@@ -424,8 +435,7 @@
                 curf
                 (fn [f]
                   (fn [& args#]
-                    (let [throwable (java.lang.Throwable. "dummy")
-                          stack-trc-data (.getStackTrace throwable)]
+                    (let [stack-trc-data (.getStackTrace (Thread/currentThread))]
                       (fun-spy-call f fun-meta# stack-trc-data)
                       (let [result# (apply f args#)]
                         (apply collect-flow-calls
