@@ -13,8 +13,9 @@
 (def to-mock :mock-key)
 
 
-(defmacro get-fun-meta [funname]
-  `(meta (var ~funname)))
+
+(clojure.core/defn get-fun-meta [fun-sym]
+  (meta (resolve fun-sym)))
 
 
 (clojure.core/defn get-schema-active-meta
@@ -60,19 +61,3 @@
                       (assoc (meta (var ~fun-name))
                         to-spy ~fun-name)))
        (var ~fun-name)))
-
-(defmacro add-meta-statistics
-  "Macro to set the Meta of the mocked function to a spy"
-  [fun-name call-count]
-  `(do (alter-meta! (var ~fun-name)
-                    (constantly
-                      (assoc (meta (var ~fun-name))
-                        :fun-calls-count call-count)))
-
-       )
-  true)
-
-
-
-
-

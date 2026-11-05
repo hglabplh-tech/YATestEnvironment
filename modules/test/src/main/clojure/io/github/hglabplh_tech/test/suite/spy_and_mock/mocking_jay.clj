@@ -94,13 +94,15 @@
 
 (def ns-f-meta-atom (atom []))
 
-(def statistic-control-flow (atom {:fun-statistics {}}))
+(def redirected-bindings (atom {}))
+
+(def statistic-control-flow (atom {:flow-stats [] :statistics {}}))
 
 (def mock-control-flow (atom {:language :clojure :funcalls {}}))
 
 (def rule-vect (atom []))
 
-(def redirected-bindings (atom {}))
+
 
 
 ;;(call-cond-> i-am-a-fake-fun-store
@@ -189,7 +191,7 @@
                  @redirected-bindings)))
 
 (defn qualified-fun-name [fun-meta]
-  (str (get fun-meta :ns) "/" (get fun-meta :name)))
+  (str (ns-name (:ns fun-meta))  "/" (:name fun-meta)))
 
 (clojure.core/defn collect-meta-active-data [func-name func-meta]
   (if (= (find-meta-for-fun func-name) nil)
@@ -198,16 +200,37 @@
              (get-structured-meta-data func-meta)))
       )
 
+(clojure.core/defn add-upd-spy-statistics
+  "Macro to set the Meta of the mocked function to a spy"
+  [fun-name call-count recursive-calls]
+  (swap! statistic-control-flow update :flow-stats conj
+         [fun-name])
+  (swap! statistic-control-flow update :statistics conj
+         {fun-name
+          {:fun-calls-count call-count
+           :recursive-calls recursive-calls}}))
 
+(clojure.core/defn get-spy-statistics
+  "Macro to set the Meta of the mocked function to a spy"
+  [fun-name]
+   @statistic-control-flow
+    )
 
 (clojure.core/defn collect-flow-statistics [fun-meta]
-    (let [fun-name (get fun-meta :name)
-          fun-calls (get fun-meta :fun-calls-count)]
-      (if fun-calls
-        (add-meta-statistics fun-name (inc fun-calls))
-        (add-meta-statistics fun-name 1)
-        )
+    (let [fun-name (qualified-fun-name fun-meta)
+          stats (get-spy-statistics fun-meta)
+          fun-calls (:fun-calls-count
+                        (get (:statistics stats) fun-name))
+          funcall-counter  (if fun-calls (inc fun-calls) 1)]
+      (println "fun stat collect: " fun-name)
+      (add-upd-spy-statistics fun-name funcall-counter false)
       ))
+
+(clojure.core/defn get-spy-statistics-by-fun
+  [fun-sym]
+  (let [fun-sym# fun-sym
+        fun-stats# (get-spy-statistics fun-sym#)]
+    {fun-sym# fun-stats#}))
 
 (clojure.core/defn collect-flow-calls [func-name ret-value & args]
   (swap! mock-control-flow update :funcalls conj
@@ -248,25 +271,24 @@
 
 (defn store-real-fun [fun-name meta-ns-name meta-fun-name fun-meta-data]
   (swap! redirected-bindings assoc
-         (str/join "$" [meta-ns-name meta-fun-name])
+         (qualified-fun-name fun-meta-data)
          [meta-ns-name meta-fun-name fun-name fun-meta-data])
   )
 
 
-(defn restore-real-fun
+(defn restore-real-funs
   [sut]
   (let [sut-intern (vals (ns-publics sut))]
     (println sut-intern)
     (doseq [curf sut-intern]
       (when (or (some? (:mock-key (meta curf)))
                 (some? (:spy-key (meta curf))))
-        (let [fun-name# (get (meta curf) :name)
-              the-orig-fun# (get @redirected-bindings fun-name#)]
+        (let [fun-name# (qualified-fun-name (meta curf))]
           (alter-var-root
             curf
             (fn [f]
-              (fn [args#]
-                (f args#))))
+              (fn [& args#]
+                (apply f args#))))
           (swap! redirected-bindings dissoc fun-name#)
           )))))
 
@@ -305,13 +327,9 @@
   `(do ~@(map mock-hook namespaces)))
 
 (defn find-in-list [the-list to-find]
-  (pprint to-find)
+
   (loop [the-list-int# the-list]
-    ;; (println "the value type: " (type to-find))
-    ;;(println "the list element type: " (type (first the-list-int#)))
       (do
-        ;;(println "false")
-        ;;(pprint (first the-list-int#))
         (if (empty? the-list-int#)
           (boolean nil)
           (if (= (first the-list-int#) to-find)
@@ -378,7 +396,7 @@
                                        ns-element-vect (str/split ns-st-ele-str #"\$")
                                        real-ns (first ns-element-vect)
                                        base-fun (second ns-element-vect)
-                                       the-rest (str/join "$" (rest (rest ns-element-vect)))
+                                       the-rest (str/join "/" (rest (rest ns-element-vect)))
                                        ]
                                    (recur (rest stack-trace-temp#)
                                           (conj result (filter-stack-data
@@ -392,7 +410,6 @@
                                                          fun-meta)))
                                    )
                                  ))]
-    (pprint processed-stack-data)
     processed-stack-data))
 
 ;;; The spy functionality
@@ -403,7 +420,7 @@
     (let [fun-meta# fun-meta
           struct-meta (get-structured-meta-data fun-meta#)]
       (println "I am a spy and I see you: " `~fun#)
-      (pprint struct-meta)
+      (collect-flow-statistics fun-meta#)
       struct-meta
       )
     ))
@@ -414,7 +431,6 @@
         stack-trace-data# stack-trace-data]
     ;;(apply collect-meta-active-data fun-name# args#)
     (println (collector/clean-get-fun-caller 3 true))
-    (collect-flow-statistics fun-meta)
     (get-it-spyed fun# fun-meta stack-trace-data#)
     'spyed))
 
@@ -422,10 +438,9 @@
   "This hook adds spy functionality to get data for profiling and
   test data generation and more"
   [sut]
-  (let [sut-intern (vals (ns-publics sut))
-        sut-name (ns-name sut)]
-    (println sut-intern)
-    (doseq [curf sut-intern]
+  (let [sut-publics (vals (ns-publics sut))]
+    (println sut-publics)
+    (doseq [curf sut-publics]
       (when (some? (:spy-key (meta curf)))
         (let [fun-name# (get (meta curf) :name)
               fun-ns# (get (meta curf) :ns)
@@ -478,4 +493,4 @@
   "restore the functions to original references"
   [& names]
   `(do
-     ~@(map restore-real-fun names)))
+     ~@(map restore-real-funs names)))

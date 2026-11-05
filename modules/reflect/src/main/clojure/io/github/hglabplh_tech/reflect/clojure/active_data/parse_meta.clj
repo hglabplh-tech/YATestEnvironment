@@ -22,7 +22,6 @@
          (= (get x key nil) value))))
 
 (clojure.core/defn make-base-predicate-fun [type-id]
-  (println type-id)
   (cond
     (= type-id :integer)
     integer?
@@ -117,7 +116,7 @@
                                              (decompile-active-rec field-realm-raw)
                                              field-getter-raw
                                              ]})]
-    (println "realm field")
+
     cooked
     )
   )
@@ -128,7 +127,6 @@
   {:added  "1.4.0"
    :static true}
   [fun-case]
-  (println "function case entered ->")
   (let [realm-base (realm-base-schema fun-case)
         position-args-raw (rinspect/function-case-positional-argument-realms fun-case)
         pos-args-def (mapv decompile-active-rec position-args-raw)
@@ -144,8 +142,7 @@
                                                      :opt-arg-def opt-args-def
                                                      }})]
 
-    (println "function case realm")
-    cooked                                                  ;; FIXME have to introduce realm-base again
+        cooked                                                  ;; FIXME have to introduce realm-base again
     ))
 
 (clojure.core/defn active-data-realm?
@@ -163,7 +160,6 @@
    :static true}
   [st-value]
   (let [value st-value]
-    (println "Funtion decompile-active-rec ->")
     (if (rinspect/realm? value)                             ;; FIXME normally only have to ask for realm :-(
       (let [realm-base (realm-base-schema value)]
         (cond
@@ -172,8 +168,6 @@
                 cooked (conj realm-base {:predicate-fun   (make-base-predicate-fun realm-id)
                                          :scalar-realm-id realm-id
                                          :scalar-name     (str realm-id)})]
-            (println "scalar realm")
-            (pprint cooked)
             cooked)
 
 
@@ -185,7 +179,6 @@
                                                                (<= from x to)))
                                          :int-from-val  from
                                          :int-to-val    to})]
-            (println "realm integer from to")
             cooked
             )
 
@@ -202,7 +195,6 @@
                                          :left-limit    realm-left
                                          :clusice-right realm-clusive-right
                                          :right-limit   realm-right})]
-            (println "realm real-range")
             cooked
             )
 
@@ -213,9 +205,8 @@
                                                             (fn [x]
                                                               (clojure.core/boolean (some #(% x) predicates))))
                                          :union-realm-def the-rec-compiled})]
-            (println "realm union")
-            cooked)
 
+            cooked)
           (rinspect/intersection? value)
           (let [realms (rinspect/intersection-realm-realms value)
                 cooked (conj realm-base {:predicate-fun (let [predicates (map rinspect/predicate realms)]
@@ -223,7 +214,6 @@
                                                             (every? #(% x) predicates)))
                                          :intersect-realm-def
                                          (mapv decompile-active-rec realms)})]
-            (println "realm intersection")
             cooked)
 
           (rinspect/sequence-of? value)
@@ -231,7 +221,6 @@
                 cooked (conj {:predicate-fun sequential?
                               :sequence-of-realm
                               (decompile-active-rec raw)})]
-            (println "realm sequence of")
             cooked
             )
 
@@ -251,7 +240,6 @@
                                          :set-of-realm
                                          (decompile-active-rec
                                            realm-realm-raw)})]
-            (println "realm set of")
             cooked
             )
 
@@ -259,7 +247,6 @@
           (let [keys-realm-map-raw (rinspect/map-with-keys-realm-map value)
                 cooked (conj realm-base {:predicate-fun map?
                                          :map-key-realm (decompile-active-rec keys-realm-map-raw)})]
-            (println "realm map with keys")
             cooked
             )
 
@@ -270,7 +257,6 @@
                                          :map-entry-realms [(decompile-active-rec key-realm-raw)
                                                             (decompile-active-rec value-realm-raw)]})]
             ;; look how we have to get  it -> compound ?
-            (println "map of realm")
             cooked
             )
 
@@ -281,7 +267,6 @@
                                                             (or (nil? x)
                                                                 (inner-predicate x))))
                                          :optional      (decompile-active-rec opt-realm)})]
-            (println "optional realm found: ")
             cooked
             )
 
@@ -290,7 +275,6 @@
                 cooked (conj realm-base {:predicate-fun (fn [x]
                                                           (clojure.core/contains? values-set x))
                                          :enum-def      values-set})]
-            (println "enum realm")
             cooked)
 
           (rinspect/map-with-tag? value)
@@ -307,7 +291,6 @@
                                                             (and (sequential? x)
                                                                  (= (count x) size))))
                                          :tuple-realms  (mapv decompile-active-rec tuple-realms)})]
-            (println "realm tuple")
             cooked
             )
 
@@ -319,10 +302,9 @@
                 cooked (conj realm-base {:record-name name-raw
                                          :record-ctor ctor-raw
                                          :rec-fields
-                                         (mapv (fn [v] (println "rec-field ->") (record-field-schema v))
+                                         (mapv (fn [v] (record-field-schema v))
                                                fields-raw)})]
-            (println "record  realm")
-            [realm-base cooked]
+            cooked
             )
 
 
@@ -330,10 +312,7 @@
           (rinspect/function? value)
           (let [the-cases (rinspect/function-realm-cases value)
                 cooked (conj realm-base {:function-cases-def (mapv (fn [val]
-                                                                     (println "fun-case-realm -> ")
                                                                      (fun-case-output-input-schema val)) the-cases)})]
-            (println "here is the function realm")
-            (pprint cooked)
             cooked
             )
 
@@ -342,7 +321,6 @@
                 cooked (conj realm-base {:predicate-fun     (fn [x#]
                                                               ((rinspect/predicate (force obj)) x#))
                                          :delayed-realm-def (decompile-active-rec obj)})]
-            (println "delayed realm")
             cooked
             )
 
@@ -353,19 +331,17 @@
                                          :named-realm-def
                                          {:name       name-raw
                                           :name-realm (decompile-active-rec realm-raw)}})]
-            (println "named realm")
             cooked)
+
           (rinspect/regex? value)
           (let [regular-expr (rinspect/regular-expression)
             cooked (conj realm-base {:predicate-fun (clojure.core/fn  [str-to-check]
                                                       (and (string? str-to-check)
                                                            (re-matches (re-pattern regular-expr) str-to-check)))
                                      :regular-expression regular-expr})]
-            (println "regular expression realm")
             cooked)
           :else
           (do
-            (println " This case should never happen")      ;; FIXME: here we have a gap
             [value]
             ;;(throw (IllegalArgumentException. (str "invalid realm member " value)))
             ))))))
