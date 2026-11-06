@@ -78,8 +78,8 @@
     (fun-store-being-spyed "Here I am I am real: " 8 8)
     ;;(restore-orig-funs hgp.cljito.spy-and-mock.mocking-jay-test)
     (try-it 8 8 8 true)
-    (pprint @mock-control-flow)
-    (pprint (get-spy-statistics-by-fun 'try-it))
+    (pprint @control-flow-collection)
+    (pprint (get-spy-statistics-by-funs 'try-it 'fun-store-being-spyed))
     ))
 
 (deftest test-example-spy

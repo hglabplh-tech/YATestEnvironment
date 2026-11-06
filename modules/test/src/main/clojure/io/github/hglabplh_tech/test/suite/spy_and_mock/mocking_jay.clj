@@ -98,7 +98,7 @@
 
 (def statistic-control-flow (atom {:flow-stats [] :statistics {}}))
 
-(def mock-control-flow (atom {:language :clojure :funcalls {}}))
+(def control-flow-collection (atom {:language :clojure :funcalls {}}))
 
 (def rule-vect (atom []))
 
@@ -210,30 +210,40 @@
           {:fun-calls-count call-count
            :recursive-calls recursive-calls}}))
 
-(clojure.core/defn get-spy-statistics
+(clojure.core/defn get-spy-statistics                       ;; TODO: make the function more flexible -> see below logic
   "Macro to set the Meta of the mocked function to a spy"
-  [fun-name]
-   @statistic-control-flow
-    )
+  [& fun-parts]                                             ;; has to be reworked >!! do it tomorrow
+  (let [raw-stats ( :statistics @statistic-control-flow)
+        keys-list (keys raw-stats)
+        stats (mapv  (clojure.core/fn [fun-part]
+                       (let [fun-names (filter  (clojure.core/fn  [str-to-check]
+                                                  (str/includes?
+                                                    str-to-check
+                                                    fun-part))
+                                                  keys-list)]
+                         (mapv (clojure.core/fn [fun-name]
+                                 {fun-name (get raw-stats fun-name)} )
+                               fun-names)))
+                     (first fun-parts) )]
+    stats))
 
 (clojure.core/defn collect-flow-statistics [fun-meta]
     (let [fun-name (qualified-fun-name fun-meta)
-          stats (get-spy-statistics fun-meta)
           fun-calls (:fun-calls-count
-                        (get (:statistics stats) fun-name))
+                        (get (:statistics @statistic-control-flow) fun-name))
           funcall-counter  (if fun-calls (inc fun-calls) 1)]
       (println "fun stat collect: " fun-name)
       (add-upd-spy-statistics fun-name funcall-counter false)
       ))
 
-(clojure.core/defn get-spy-statistics-by-fun
-  [fun-sym]
-  (let [fun-sym# fun-sym
-        fun-stats# (get-spy-statistics fun-sym#)]
-    {fun-sym# fun-stats#}))
+(clojure.core/defn get-spy-statistics-by-funs
+  [& fun-syms]
+  (let [fun-syms# (mapv str fun-syms)
+        fun-stats# (get-spy-statistics fun-syms#)]
+    {:selected-stats fun-stats#}))
 
 (clojure.core/defn collect-flow-calls [func-name ret-value & args]
-  (swap! mock-control-flow update :funcalls conj
+  (swap! control-flow-collection update :funcalls conj
          {:function-name func-name
           :arguments (vec args)
           :return ret-value})
