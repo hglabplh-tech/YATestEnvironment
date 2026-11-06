@@ -80,11 +80,14 @@
     (try-it 8 8 8 true)
     (pprint @control-flow-collection)
     (pprint (get-spy-statistics-by-funs 'try-it 'fun-store-being-spyed))
+    (pprint (get-spy-flow-stats))
+    (pprint (get-recur-data))
     ))
 
 (deftest test-example-spy
   (testing "A simple test for spy functionality"
     (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
     (pprint (my-enum-test  64.5 :two))
-
+    (pprint (get-spy-statistics-by-funs 'my-enum-test))
+    (pprint (get-spy-flow-stats))
     ))

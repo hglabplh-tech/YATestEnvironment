@@ -98,6 +98,8 @@
 
 (def statistic-control-flow (atom {:flow-stats [] :statistics {}}))
 
+(def recur-data-vect (atom []))
+
 (def control-flow-collection (atom {:language :clojure :funcalls {}}))
 
 (def rule-vect (atom []))
@@ -200,11 +202,20 @@
              (get-structured-meta-data func-meta)))
       )
 
+(clojure.core/defn collect-recur-data [fun-name]
+  (swap! recur-data-vect conj fun-name)
+  )
+
+(clojure.core/defn get-recur-data []
+  @recur-data-vect
+  )
+
 (clojure.core/defn add-upd-spy-statistics
   "Macro to set the Meta of the mocked function to a spy"
-  [fun-name call-count recursive-calls]
+  [fun-name call-count recursive-calls ret-val args]
+  (println "----------------------------------------------- I am called")
   (swap! statistic-control-flow update :flow-stats conj
-         [fun-name])
+         [{:name fun-name :args args :ret-val ret-val}])
   (swap! statistic-control-flow update :statistics conj
          {fun-name
           {:fun-calls-count call-count
@@ -212,7 +223,7 @@
 
 (clojure.core/defn get-spy-statistics                       ;; TODO: make the function more flexible -> see below logic
   "Macro to set the Meta of the mocked function to a spy"
-  [& fun-parts]                                             ;; has to be reworked >!! do it tomorrow
+  [fun-parts]                                             ;; has to be reworked >!! do it tomorrow
   (let [raw-stats ( :statistics @statistic-control-flow)
         keys-list (keys raw-stats)
         stats (mapv  (clojure.core/fn [fun-part]
@@ -224,16 +235,24 @@
                          (mapv (clojure.core/fn [fun-name]
                                  {fun-name (get raw-stats fun-name)} )
                                fun-names)))
-                     (first fun-parts) )]
-    stats))
+                     fun-parts)]
 
-(clojure.core/defn collect-flow-statistics [fun-meta]
-    (let [fun-name (qualified-fun-name fun-meta)
-          fun-calls (:fun-calls-count
-                        (get (:statistics @statistic-control-flow) fun-name))
-          funcall-counter  (if fun-calls (inc fun-calls) 1)]
-      (println "fun stat collect: " fun-name)
-      (add-upd-spy-statistics fun-name funcall-counter false)
+      stats))
+
+(clojure.core/defn get-spy-flow-stats                       ;; TODO: make the function more flexible -> see below logic
+  "Macro to set the Meta of the mocked function to a spy"
+  []                                             ;; has to be reworked >!! do it tomorrow
+  (let [raw-stats ( :flow-stats @statistic-control-flow)]
+    raw-stats))
+
+(clojure.core/defn collect-flow-statistics [fun-meta ret-value args]
+    (let [fun-name# (qualified-fun-name fun-meta)
+
+          fun-calls# (:fun-calls-count
+                        (get (:statistics @statistic-control-flow) fun-name#))
+          funcall-counter#  (if fun-calls# (inc fun-calls#) 1)]
+      (println "fun stat collect: " fun-name#)
+      (add-upd-spy-statistics fun-name# funcall-counter# false ret-value args)
       ))
 
 (clojure.core/defn get-spy-statistics-by-funs
@@ -320,6 +339,7 @@
             (fn [f]
               (fn [& args#]
                 (let [result# (apply filter-action f fun-name# args#)]
+                  (collect-flow-statistics fun-meta# result# args#)
                   (apply collect-flow-calls
                          (qualified-fun-name fun-meta#)
                          result#
@@ -430,7 +450,7 @@
     (let [fun-meta# fun-meta
           struct-meta (get-structured-meta-data fun-meta#)]
       (println "I am a spy and I see you: " `~fun#)
-      (collect-flow-statistics fun-meta#)
+
       struct-meta
       )
     ))
@@ -461,8 +481,10 @@
                 (fn [f]
                   (fn [& args#]
                     (let [stack-trc-data (.getStackTrace (Thread/currentThread))]
+                      (collect-recur-data (qualified-fun-name fun-meta#))
                       (fun-spy-call f fun-meta# stack-trc-data)
                       (let [result# (apply f args#)]
+                        (collect-flow-statistics fun-meta# result# args#)
                         (apply collect-flow-calls
                                (qualified-fun-name fun-meta#)
                                result#
