@@ -270,6 +270,12 @@
       (get-all-class-attributes-and-values-internal
         (get-class-util-by-class interface-clazz)))))
 
+(defn inner-class-representation [inner-classes]
+  (mapv (fn [inner-clazz]
+          (let [inner-util (get-class-util-by-class inner-clazz)]
+            (get-all-class-attributes-and-values-internal inner-util)))
+        inner-classes))
+
 (defn- get-all-class-attributes-and-values-internal
   "Internal for getting the fields modifiers and types and
   attributes of a class including interfaces sub-/superclasses
@@ -288,7 +294,9 @@
               (rtypes/is-enum refl-clazz)
               {:enum-class (er-refl/analyze-enum refl-clazz)}
               (rtypes/is-record refl-clazz)
-              {:record-class (er-refl/analyze-record refl-clazz)}
+              {:record-class  {:pure-record (er-refl/analyze-record refl-clazz)
+                               :inner-classes  (inner-class-representation (get-all-sub-classes util))
+                               } }
               (rtypes/is-annotation refl-clazz)
               {:annot-class (atool/get-annotation-info refl-clazz)}
               :else
@@ -297,13 +305,10 @@
                 :super-class     (get-super-class util)
                 :gen-super       (get-generic-super-class util)
                 :generics        (get-generics util)
-                :pinner-classes  (mapv (fn [inner-clazz]
-                                         (let [inner-util (get-class-util-by-class inner-clazz)]
-                                           (get-all-class-attributes-and-values-internal inner-util)))
-                                       (get-all-sub-classes util))
+                :pinner-classes  (inner-class-representation (get-all-sub-classes util))
                 :annotations     (atool/get-annotations-information (get-class-annots refl-clazz)) ;; TODO: do this also for fields, methods and constructors
-                :enum-specs      (er-refl/analyze-enum refl-clazz)
-                :record-specs    (er-refl/analyze-record refl-clazz)
+                ;  :enum-specs      (er-refl/analyze-enum refl-clazz)
+                ;:record-specs    (er-refl/analyze-record refl-clazz)
                 :interfaces      (mapv interface-attrs-in-map  (get-interfaces util))
                 :gen-interfaces  (get-generic-interfaces util)
                 :enclosing-class (get-enclosing-class util)

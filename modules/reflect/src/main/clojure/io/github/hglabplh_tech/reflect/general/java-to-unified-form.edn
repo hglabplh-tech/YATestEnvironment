@@ -1,0 +1,1473 @@
+;; Actual outcomes of the supplied Clojure readers -> unified IR.
+#:mapping{:known-boundaries
+          ["The main output uses :reflect-data {:structured-class ...}; it is not the compatibility :class-data shape."
+           "Interface definitions use :normal-class plus :attr-interface, not a native :interface-class wrapper."
+           "Exceptions declared in :exception-types are class/type values, not exception instances. No runtime error trace is emitted."
+           "Records have no authoritative component-order list in these custom maps. Keep field candidates and raw constructor type vectors; do not zip them into invented ordered components."
+           "Nested enum/record branch names may be absent. Do not use their containing class name as their own identity."
+           "The :annot-class branch can fail upstream due to Class passed to an Annotation-instance helper; no successful declaration payload is claimed."
+           "No Jakarta semantic-constraint catalog is added: this correction maps emitted annotations as data. A later semantic layer may interpret them."
+           "Legacy annotation transforms can lose enum selection/default-member association or stringify arrays. Additional annotation discovery is not silently used to repair missing output."
+           "The switch helper reports heuristic raw byte matches; do not promote them to verified switch instruction counts or source branches."
+           "This catalog defines logical unified target paths and may require extensions to your AST grammar."],
+          :entry :java/reflection-result,
+          :catalog-id :java/generated-output-to-unified,
+          :native-prefixes
+          [#:native{:object-kind :class, :prefix "cls-"}
+           #:native{:object-kind :interface, :prefix "ifc-"}
+           #:native{:object-kind :constructor, :prefix "ctor-"}
+           #:native{:object-kind :field, :prefix "fld-"}
+           #:native{:object-kind :method, :prefix "meth-"}
+           #:native{:object-kind :annotation, :prefix "annot-"}
+           #:native{:object-kind :annotation-policy, :prefix "annot-policy-"}
+           #:native{:object-kind :record, :prefix "rec-"}
+           #:native{:object-kind :free-name, :prefix "name-"}
+           #:native{:object-kind :free-value, :prefix "val-"}
+           #:native{:object-kind :free-type, :prefix "typename-"}
+           #:native{:object-kind :none, :prefix ""}],
+          :operations
+          [#:operation{:id :annotation-policy,
+                       :description
+                       "Normalize Target/Retention enum values from authoritative live metadata or unambiguous native values; retain exact native policy keywords."}
+           #:operation{:id :canonical-to-qualified-name,
+                       :description
+                       "Preserve the canonical source name as a qualified name. Do not assume it is a JVM binary name."}
+           #:operation{:id :class-id-from-output,
+                       :description
+                       "Build declaration identity from emitted class-name plus optional output-source identity domain. Do not require a separately loaded Class; canonical name remains distinct from JVM binary name."}
+           #:operation{:id :constant,
+                       :description "Write the literal :value, including discriminator constants."}
+           #:operation{:id :copy,
+                       :description
+                       "Copy a known EDN-safe value. Omitted input remains omitted; nil is copied only when valid for that destination."}
+           #:operation{:id :decode-annotation-default,
+                       :description
+                       "Treat :val-* and :typename-* as default-value metadata; member association is unavailable unless live annotation declaration provides it. Preserve native key and payload."}
+           #:operation{:id :decode-class-flags,
+                       :description
+                       "Interpret :attr-* flags according to :java/class-attributes; :attr-interface selects contract rather than class. Sealed child completeness is not implied."}
+           #:operation{:id :decode-constructor-flags,
+                       :description "Read :attr-varargs and :attr-synthetic."}
+           #:operation{:id :decode-constructor-modifiers,
+                       :description
+                       "Decode visibility in CONSTRUCTOR context; do not invent method-only modifiers."}
+           #:operation{:id :decode-field-flags,
+                       :description "Read :attr-enum-const and :attr-synthetic."}
+           #:operation{:id :decode-field-modifiers,
+                       :description
+                       "Decode visibility, static, final, transient and volatile in FIELD context. Final means ordinary binding writes are prohibited, not deep immutability."}
+           #:operation{:id :decode-method-flags,
+                       :description
+                       "Read :attr-varargs/:attr-synthetic/:attr-default/:attr-bridge. Use flags for the proper JVM facts; retain all native values."}
+           #:operation{:id :decode-method-modifiers,
+                       :description
+                       "Decode visibility, abstract/final/static/native/synchronized/strict by METHOD context. Ignore :transient/:volatile as source method modifiers: their bits overlap varargs/bridge."}
+           #:operation{:id :decode-output-modifier-integer,
+                       :description
+                       "Interpret an emitted modifier integer using supplied method/constructor/field/class context; preserve raw integer and context-sensitive flags."}
+           #:operation{:id :decode-parameter-flags,
+                       :description
+                       "Read :vararg/:implicit/:name-present/:synthetic. Source name is trusted only when :name-present is set."}
+           #:operation{:id :decode-parameter-modifiers,
+                       :description
+                       "Interpret the native modifier string in parameter context. Never infer source-only final from absent runtime metadata."}
+           #:operation{:id :dispatch-class,
+                       :description
+                       "Select a class-wrapper branch by native keys; when nil, empty or unavailable emit availability evidence instead of inventing a declaration."}
+           #:operation{:id :dispatch-type,
+                       :description
+                       "Dispatch live java.lang.reflect.Type/AnnotatedType first, then recognized native map shapes and scoped names; never infer lost generic arguments from erasure."}
+           #:operation{:id :emit-interfaces,
+                       :description
+                       "Emit interface relationships and declarations/references, resolving generic counterparts by raw identity. Interface declaration nesting is not inheritance ownership."}
+           #:operation{:id :emit-nested-declarations,
+                       :description
+                       "Traverse :pinner-classes as nested declarations, not subclasses. Carry owner identity. Anonymous enum/record payloads need corresponding live Class or explicit identity evidence; never use encounter index as stable identity."}
+           #:operation{:id :emit-supertype,
+                       :description
+                       "Emit one normalized supertype relationship with the supplied role; preserve generic type separately from traversed class declaration."}
+           #:operation{:id :emit-type-parameters,
+                       :description
+                       "Emit scoped type-parameter definitions only from declaration/TypeVariable structures already reachable in the supplied output. Deduplicate by declaring scope and name. Do not query a separately obtained Executable."}
+           #:operation{:id :entry-key-name,
+                       :description
+                       "Read the entry key carried in context as a name, preserving the native key separately; string enum keys and keyword record-field keys are different native representations."}
+           #:operation{:id :enum-identity-from-output,
+                       :description
+                       "Decode a class descriptor already present in case entries, or use root-class-name for a root enum. Never inherit a containing class name as the nested enum name."}
+           #:operation{:id :executable-id-from-output,
+                       :description
+                       "Use emitted owner context, executable name, parameter erased types and return erased type to build overload-safe identity. Constructor name is <init>. Missing types require a provisional source-path ID and explicit incompleteness."}
+           #:operation{:id :freeze-native,
+                       :description
+                       "Recursively retain the original native keys, strings, casing and nesting. Convert live values to typed EDN descriptors or explicit registry references, never opaque printed strings."}
+           #:operation{:id :functional-shape,
+                       :description
+                       "Preserve a functional-interface/lambda observation with source and confidence. Heuristic flags do not prove a source lambda or a complete functional-interface classification."}
+           #:operation{:id :join-parameter-annotations,
+                       :description
+                       "Attach outer :param-annots[index] to parameter[index] inside the signature; merge with parameter-local annotations and preserve source provenance without duplication."}
+           #:operation{:id :join-switch-method,
+                       :description
+                       "Join switch evidence by owner+descriptor+methodName. Do not trust reflected signature enrichment joined only by method name when overloads exist."}
+           #:operation{:id :map-node,
+                       :description
+                       "Apply :mapping/ref once to the selected value and append the resulting node."}
+           #:operation{:id :map-nodes,
+                       :description
+                       "Apply :mapping/ref to each sequence item in input order, carrying index and owner context. Append nodes; do not replace existing children."}
+           #:operation{:id :map-package-results,
+                       :description
+                       "Traverse the actual sequence-of-Class-vectors. Preserve grouping and emit class references through the package-class-reference mapping. No package-name input field exists."}
+           #:operation{:id :merge-parameter-generics,
+                       :description
+                       "Enrich existing positional parameter types by index, preferring live annotated/generic types. nil/{} or N/A are unavailable, not new type declarations. Do not emit extra parameters."}
+           #:operation{:id :normalize-annotation-values,
+                       :description
+                       "Read actual live annotation member values where available. Use :meth-* transformed values only when their actual-value semantics are intact. Enum specifications and :val-* defaults are not actual enum member selections."}
+           #:operation{:id :normalize-annotations,
+                       :description
+                       "Normalize Annotation objects already in output or :annot-* wrapper maps. Preserve target, source provenance and native payload. No separate class annotation lookup or automatic enforcement claim."}
+           #:operation{:id :normalize-bounds,
+                       :description
+                       "Normalize all upper bounds in order; do not infer numeric ranges from a bound such as Integer."}
+           #:operation{:id :normalize-generic-declaration,
+                       :description
+                       "Normalize declaration owner identity and associated scoped type variables. Avoid expanding recursive generic declarations infinitely."}
+           #:operation{:id :normalize-legacy-value,
+                       :description
+                       "Preserve legacy transformed payloads. Strings representing arrays are not reversible arrays; enum-spec maps do not identify a selected enum constant. Mark ambiguity."}
+           #:operation{:id :normalize-output-annotation-object,
+                       :description
+                       "Normalize an Annotation object already present in the output, including its actual own member values. No separate class annotation discovery; no parsing of annotation toString."}
+           #:operation{:id :normalize-output-class-reference,
+                       :description
+                       "Read name/package/type identity from the supplied Class and emit a reference, not an invented declaration body."}
+           #:operation{:id :normalize-output-type-object,
+                       :description
+                       "Recursively normalize a Type, Class or AnnotatedType already present in the output, including nested type-use annotations. Access that object's type structure only; do not reload classes or fetch additional members."}
+           #:operation{:id :normalize-return,
+                       :description
+                       "Use live AnnotatedType.getType() or generic-return Type first, usable :gen-return-type next, erased :return-type last; preserve type-use annotations at every nested type level when available."}
+           #:operation{:id :normalize-throws,
+                       :description
+                       "Normalize each declared throwable Type to a declared-exception relationship; do not confuse declarations with runtime thrown instances or guaranteed behavior."}
+           #:operation{:id :normalize-type,
+                       :description
+                       "Normalize Type/Class/AnnotatedType objects already carried in output; otherwise dispatch recognized native maps and scoped retained names. No Class/forName or member rediscovery. Preserve unresolved types as partial/unknown."}
+           #:operation{:id :normalize-type-string,
+                       :description
+                       "Parse a retained type name with scope-aware generic/array/wildcard rules, or preserve it as an unresolved named reference. Do not guess that a short name is a type variable."}
+           #:operation{:id :ordered-enum-cases,
+                       :description
+                       "Traverse native string-keyed case entries sorted by :ordinal; string keys remain native string keys. Drop the :cls-e-info-empty sentinel."}
+           #:operation{:id :provisional-record-id,
+                       :description
+                       "Use root-class-name only when the record is the root. Otherwise build an explicitly provisional extraction-local identifier from the native source path and owner. It is not a recovered stable class name."}
+           #:operation{:id :record-field-candidates,
+                       :description
+                       "Traverse record payload entries except :ctorParmType and :methods as field candidates. Field maps may include static fields and are not authoritative record-component lists."}
+           #:operation{:id :record-method-entries,
+                       :description
+                       "Traverse :methods entries with indexed keyword keys. Preserve the exact key and parse only its terminal method-name hint; require signature or live Method for stable overload identity."}
+           #:operation{:id :resolve-class-reference,
+                       :description
+                       "Create a reference for :class-already-reflected. UnknownClass/N/A are missing-information sentinels rather than actual class names."}
+           #:operation{:id :select-normal-class-mapping,
+                       :description
+                       "If emitted :attributes includes :attr-interface select :java/interface; otherwise use :java/class. No new class query."}
+           #:operation{:id :simple-class-name,
+                       :description
+                       "Derive a simple name from an authoritative Class if available, otherwise from the supplied canonical name with an explicit derivation marker."}
+           #:operation{:id :source-parameter-name,
+                       :description
+                       "Copy :param-name to source :element/name only if the sibling :param-flags contains :name-present; always preserve the reflected name in JVM metadata."}
+           #:operation{:id :strip-known-prefix,
+                       :description
+                       "Remove exactly the declared native keyword prefix. No automatic case conversion or invented kebab-case conversion."}
+           #:operation{:id :switch-observation,
+                       :description
+                       "Keep switch byte-scan observations as heuristic JVM evidence. Current scanner counts raw 0xAA/0xAB bytes without decoding instruction boundaries; counts may include operands. It cannot recover source cases or distinguish switch statements from expressions."}],
+          :input-policy
+          ["Only supplied output values and context derived during traversal are inputs."
+           "No Class/forName, source re-reading, constructor invocation or additional declaration discovery is required."
+           "Live Type/AnnotatedType/Annotation/Class values already carried by reader output can be normalized before EDN printing."
+           "Lost information remains unavailable. Printed #object descriptions cannot restore objects."
+           "All native :from tags retain their exact spellings, casing and dynamic-key types."],
+          :version "2.0.0",
+          :catalog
+          [#:mapping{:id :java/reflection-result,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:language], :operation :copy, :to [:ast/language]}
+                      {:from [:class-name], :operation :copy, :to [:context/root-class-name]}
+                      {:from [:reflect-data :structured-class],
+                       :operation :dispatch-class,
+                       :to [:ast/root],
+                       :mapping/ref :java/class-wrapper}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :reader-output]}],
+                     :source "java_reflector.clj/get-structured-meta-data",
+                     :notes
+                     ["This exact wrapper is returned by java-reflector/get-structured-meta-data. Do not pass the compatibility :class-data representation here. Context root-class-name applies to this root only, not automatically to unnamed nested records."]}
+           #:mapping{:id :java/class-wrapper,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:normal-class],
+                       :operation :select-normal-class-mapping,
+                       :to [],
+                       :when {:condition :present},
+                       :write :replace-root,
+                       :mapping/ref :java/class,
+                       :mapping/alternatives [:java/interface]}
+                      {:from [:enum-class :enum-spec],
+                       :operation :map-node,
+                       :to [],
+                       :when {:condition :present},
+                       :write :replace-root,
+                       :mapping/ref :java/enum}
+                      {:from [:record-class :record-spec],
+                       :operation :map-node,
+                       :to [],
+                       :when {:condition :present},
+                       :write :replace-root,
+                       :mapping/ref :java/record}
+                      {:from [:annot-class],
+                       :operation :map-node,
+                       :to [],
+                       :when {:condition :present},
+                       :write :replace-root,
+                       :mapping/ref :java/annotation-class}
+                      {:from [:class-already-reflected],
+                       :operation :resolve-class-reference,
+                       :to [:ref],
+                       :when {:condition :present}}],
+                     :notes
+                     ["Dispatch only present native branches. nil or {} from traversal indicates no emitted declaration."
+                      "The annotation-class branch passes Class to a helper that expects Annotation; a thrown error is not a successful output shape and must not be fabricated into one."]}
+           #:mapping{:id :java/class,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :type-definition, :operation :constant, :to [:ast/tag]}
+                      {:value :java, :operation :constant, :to [:ast/language]}
+                      {:from [:class-name],
+                       :operation :canonical-to-qualified-name,
+                       :to [:ast/attributes :element/qualified-name]}
+                      {:from [:class-name],
+                       :operation :simple-class-name,
+                       :to [:ast/attributes :element/name]}
+                      {:from [:attributes],
+                       :operation :decode-class-flags,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [:super-class],
+                       :operation :dispatch-class,
+                       :to [:ast/children],
+                       :mapping/ref :java/class-wrapper,
+                       :relation/role :extends-class,
+                       :ownership :reference-not-child-owner,
+                       :write :append}
+                      {:from [:gen-super],
+                       :operation :emit-supertype,
+                       :to [:ast/attributes :type-definition/supertypes],
+                       :relation/role :extends-class,
+                       :write :merge-by-type}
+                      {:from [:generics],
+                       :operation :emit-type-parameters,
+                       :to [:ast/children],
+                       :mapping/ref :java/class-type-parameter,
+                       :write :append}
+                      {:from [:pinner-classes],
+                       :operation :emit-nested-declarations,
+                       :to [:ast/children],
+                       :mapping/ref :java/class-wrapper,
+                       :write :append}
+                      {:from [:annotations],
+                       :operation :normalize-annotations,
+                       :to [:ast/attributes :element/annotations]}
+                      {:from [:interfaces],
+                       :operation :emit-interfaces,
+                       :to [:ast/attributes :type-definition/supertypes],
+                       :mapping/ref :java/class-wrapper,
+                       :relation/role :implements,
+                       :write :merge-by-type}
+                      {:from [:gen-interfaces],
+                       :operation :emit-interfaces,
+                       :to [:ast/attributes :type-definition/supertypes],
+                       :write :merge-by-type}
+                      {:from [:enclosing-class],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :type-definition/enclosing]}
+                      {:from [:constructors],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/constructor,
+                       :write :append}
+                      {:from [:methods],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/method,
+                       :write :append}
+                      {:from [:fields],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/field,
+                       :write :append}
+                      {:from [:enum-specs],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :enum-specs]}
+                      {:from [:record-specs],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :record-specs]}
+                      {:from [], :operation :freeze-native, :to [:ast/native :java :class-payload]}
+                      {:from [:class-name], :operation :class-id-from-output, :to [:ast/id]}],
+                     :source "reflect_class.clj/get-all-class-attributes-and-values-internal",
+                     :notes
+                     ["All 15 keys of the emitted :normal-class map are consumed. No class modifiers or permitted-subclass list is present."
+                      ":super-class and :interfaces contain other declarations or reference markers; their relationships do not imply lexical ownership."
+                      ":pinner-classes is the actual native spelling and describes nested declarations, not subclasses."]}
+           #:mapping{:id :java/interface,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :contract, :operation :constant, :to [:ast/tag]}
+                      {:value :java/interface,
+                       :operation :constant,
+                       :to [:ast/attributes :element/native-kind]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [],
+                       :mapping/ref :java/class,
+                       :write :merge-with-contract-tag,
+                       :context/role :extends-interface}],
+                     :select {:from [:attributes], :contains :attr-interface},
+                     :notes
+                     ["Interface definitions arrive under :normal-class with :attr-interface. Reuse class-field processing but emit :contract, convert parent interface edges to extends-interface and retain absent visibility as unavailable. The parent dispatcher must select this mapping before ordinary class emission."]}
+           #:mapping{:id :java/class-reference,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:class-already-reflected],
+                       :operation :resolve-class-reference,
+                       :to [:ref]}]}
+           #:mapping{:id :java/method,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :callable, :operation :constant, :to [:ast/tag]}
+                      {:value :java, :operation :constant, :to [:ast/language]}
+                      {:value :method, :operation :constant, :to [:ast/attributes :callable/kind]}
+                      {:from [:meth-name], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from [:annotations],
+                       :operation :normalize-annotations,
+                       :to [:ast/attributes :element/annotations]}
+                      {:from [:param-count],
+                       :operation :copy,
+                       :to [:ast/native :java :param-count]}
+                      {:from [:modifiers],
+                       :operation :decode-method-modifiers,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [:attribs],
+                       :operation :decode-method-flags,
+                       :to [:ast/jvm],
+                       :write :merge}
+                      {:from [:exception-types],
+                       :operation :normalize-throws,
+                       :to [:ast/native :java :java/throws]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/method-signature,
+                       :write :append}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :executable-payload]}
+                      {:from [], :operation :executable-id-from-output, :to [:ast/id]}],
+                     :source "reflect_meths_ctors.clj",
+                     :notes
+                     ["Input is one element of :methods. Method identity uses owner context plus available erased parameter/return types. Use a source-path-local identity with explicit incompleteness if these are insufficient."
+                      "The signature mapping joins parameter annotations once; type variables are emitted only from generic declaration structures retained in this output. No separate Method lookup is required."]}
+           #:mapping{:id :java/constructor,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :callable, :operation :constant, :to [:ast/tag]}
+                      {:value :java, :operation :constant, :to [:ast/language]}
+                      {:value :constructor,
+                       :operation :constant,
+                       :to [:ast/attributes :callable/kind]}
+                      {:from [:ctor-name], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from [:annotations],
+                       :operation :normalize-annotations,
+                       :to [:ast/attributes :element/annotations]}
+                      {:from [:param-count],
+                       :operation :copy,
+                       :to [:ast/native :java :param-count]}
+                      {:from [:modifiers],
+                       :operation :decode-constructor-modifiers,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [:attribs],
+                       :operation :decode-constructor-flags,
+                       :to [:ast/jvm],
+                       :write :merge}
+                      {:from [:exception-types],
+                       :operation :normalize-throws,
+                       :to [:ast/native :java :java/throws]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/constructor-signature,
+                       :write :append}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :executable-payload]}
+                      {:from [], :operation :executable-id-from-output, :to [:ast/id]}],
+                     :source "reflect_meths_ctors.clj",
+                     :notes
+                     ["Input is one element of :constructors. JVM name is <init>; :ctor-name supplies the native declared constructor name. Parameter identities use emitted order. No source return node is invented."]}
+           #:mapping{:id :java/method-signature,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :signature, :operation :constant, :to [:ast/tag]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/parameter-list,
+                       :write :append}
+                      {:from [:return-types],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/return,
+                       :write :append}]}
+           #:mapping{:id :java/constructor-signature,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :signature, :operation :constant, :to [:ast/tag]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/parameter-list,
+                       :write :append}],
+                     :notes
+                     ["A constructor signature has parameter lists and no source return declaration. Its constructed type is derived from the containing declaration, not a new native input field. Adjust your AST grammar to permit this."]}
+           #:mapping{:id :java/parameter-list,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :parameter-list, :operation :constant, :to [:ast/tag]}
+                      {:value 0, :operation :constant, :to [:ast/attributes :parameter-list/index]}
+                      {:value :ordinary,
+                       :operation :constant,
+                       :to [:ast/attributes :parameter-list/kind]}
+                      {:from [:all-param-attribs],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/parameter,
+                       :write :append}
+                      {:from [:generic-param-types],
+                       :operation :merge-parameter-generics,
+                       :to [:ast/children],
+                       :write :merge-by-index}
+                      {:from [:param-annots],
+                       :operation :join-parameter-annotations,
+                       :to [:ast/children],
+                       :write :merge-by-index}],
+                     :notes
+                     ["Use :all-param-attribs order. Merge :generic-param-types and :param-annots by index into the emitted parameters. Generic declaration structures already in those values may add scoped type-variable nodes to the owning callable; do not look up a Method separately."]}
+           #:mapping{:id :java/parameter,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :parameter, :operation :constant, :to [:ast/tag]}
+                      {:value :value, :operation :constant, :to [:ast/attributes :parameter/role]}
+                      {:from-context [:index],
+                       :operation :copy,
+                       :to [:ast/attributes :parameter/index]}
+                      {:from [:param-name],
+                       :operation :source-parameter-name,
+                       :to [:ast/attributes :element/name]}
+                      {:from [:param-name], :operation :copy, :to [:ast/jvm :jvm/name]}
+                      {:from [:param-type],
+                       :operation :normalize-type,
+                       :to [:ast/jvm :jvm/erased-type]}
+                      {:from [:param-parametrized-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :parameter/type],
+                       :priority 20}
+                      {:from [:param-annot-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :parameter/type],
+                       :priority 30}
+                      {:from [:param-annots],
+                       :operation :normalize-annotations,
+                       :to [:ast/attributes :element/annotations]}
+                      {:from [:param-modifiers],
+                       :operation :decode-parameter-modifiers,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [:param-flags],
+                       :operation :decode-parameter-flags,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :parameter-payload]}]}
+           #:mapping{:id :java/return,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :return, :operation :constant, :to [:ast/tag]}
+                      {:from [:return-type],
+                       :operation :normalize-type,
+                       :to [:ast/jvm :jvm/return-type]}
+                      {:from [:return-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :return/type],
+                       :priority 10}
+                      {:from [:gen-return-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :return/type],
+                       :priority 20}
+                      {:from [:annot-return-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :return/type],
+                       :priority 30}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :return-types]}]}
+           #:mapping{:id :java/field,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :member, :operation :constant, :to [:ast/tag]}
+                      {:value :field, :operation :constant, :to [:ast/attributes :member/kind]}
+                      {:from [:field-name], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from [:annotations],
+                       :operation :normalize-annotations,
+                       :to [:ast/attributes :element/annotations]}
+                      {:from [:type :field-type],
+                       :operation :normalize-type,
+                       :to [:ast/jvm :jvm/erased-type]}
+                      {:from [:type :field-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :member/type],
+                       :priority 10}
+                      {:from [:type :gen-field-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :member/type],
+                       :priority 20}
+                      {:from [:type :annot-field-type],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :member/type],
+                       :priority 30}
+                      {:from [:modifiers],
+                       :operation :decode-field-modifiers,
+                       :to [:ast/attributes],
+                       :write :merge}
+                      {:from [:attribs],
+                       :operation :decode-field-flags,
+                       :to [:ast/jvm],
+                       :write :merge}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :field-payload]}]}
+           #:mapping{:id :java/declared-exception,
+                     :input #:input{:kind :live-type-or-native-type},
+                     :rules
+                     [{:from [], :operation :normalize-type, :to [:exception/type]}
+                      {:value :declared-throws, :operation :constant, :to [:exception/kind]}]}
+           #:mapping{:id :java/type,
+                     :input #:input{:kind :live-type-or-native-type},
+                     :rules [{:from [], :operation :dispatch-type, :to [:type]}]}
+           #:mapping{:id :java/base-type,
+                     :input #:input{:kind :map},
+                     :rules [{:from [:base-type], :operation :normalize-type-string, :to [:type]}]}
+           #:mapping{:id :java/parametrized-type,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:parametrized-type :raw-type],
+                       :operation :normalize-type-string,
+                       :to [:type/declaration]}
+                      {:from [:parametrized-type :owner-type],
+                       :operation :normalize-type-string,
+                       :to [:type/owner]}
+                      {:from [:parametrized-type :type-args-vect],
+                       :operation :normalize-type,
+                       :to [:type/arguments]}],
+                     :source "ClojFunctionalUtils.readParametrizedType"}
+           #:mapping{:id :java/parametrizied-type-legacy,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:parametrizied-type :type-name],
+                       :operation :copy,
+                       :to [:ast/native :java :type-name]}
+                      {:from [:parametrizied-type :raw-type-name],
+                       :operation :normalize-type-string,
+                       :to [:type/declaration]}
+                      {:from [:parametrizied-type :owner-type-name],
+                       :operation :normalize-type-string,
+                       :to [:type/owner]}
+                      {:from [:parametrizied-type :type-args],
+                       :operation :normalize-type,
+                       :to [:type/arguments]}],
+                     :source "java_representation.clj/get-parametrized-respresentation"}
+           #:mapping{:id :java/type-variable,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :variable, :operation :constant, :to [:type/kind]}
+                      {:from [:type-var-type :type-name],
+                       :operation :normalize-type-string,
+                       :to [:type/declaration]}
+                      {:from [:type-var-type :bounds],
+                       :operation :normalize-bounds,
+                       :to [:type/upper-bounds]}
+                      {:from [:type-var-type :generic-decl],
+                       :operation :normalize-generic-declaration,
+                       :to [:type/declaring-scope]}
+                      {:from [:type-var-type :annot-bounds],
+                       :operation :normalize-type,
+                       :to [:type/annotated-bounds]}]}
+           #:mapping{:id :java/generic-declaration,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:generic-decl-type :type-var-repr],
+                       :operation :emit-type-parameters,
+                       :to [:type-parameters]}]}
+           #:mapping{:id :java/generic-array,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :array, :operation :constant, :to [:type/kind]}
+                      {:from [:generic-type :type-name],
+                       :operation :copy,
+                       :to [:ast/native :java :generic-type-name]}
+                      {:from [:generic-type :comp-type-name],
+                       :operation :normalize-type-string,
+                       :to [:type/component]}]}
+           #:mapping{:id :java/annotated-type-legacy,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:annot-type :annot-type-name],
+                       :operation :copy,
+                       :to [:ast/native :java :annot-type-name]}
+                      {:from [:annot-type :type-annotations],
+                       :operation :normalize-annotations,
+                       :to [:type/annotations]}
+                      {:from [:annot-type :annot],
+                       :operation :normalize-annotations,
+                       :to [:ast/native :java :selected-annotation]}]}
+           #:mapping{:id :java/class-type-parameter,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :type-parameter, :operation :constant, :to [:ast/tag]}
+                      {:from [:typeName], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from-context [:index],
+                       :operation :copy,
+                       :to [:ast/attributes :type-parameter/index]}
+                      {:from [:type],
+                       :operation :normalize-generic-declaration,
+                       :to [:ast/attributes :type-parameter/declaring-scope]}
+                      {:from [:typesVect],
+                       :operation :normalize-bounds,
+                       :to [:ast/attributes :type-parameter/upper-bounds]}
+                      {:from [:annotTypesVect],
+                       :operation :copy,
+                       :to [:ast/native :java :annotTypesVect]}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :type-parameter-payload]}]}
+           #:mapping{:id :java/live-type,
+                     :input #:input{:kind :live-object},
+                     :rules [{:from [], :operation :normalize-output-type-object, :to [:type]}],
+                     :notes
+                     ["Input must be a Type/Class/AnnotatedType object already present in the supplied output. Normalize that object recursively; do not reload its class or query unrelated declaration members."
+                      "Support Class, ParameterizedType, TypeVariable, GenericArrayType, WildcardType and all AnnotatedType specializations. Follow generic owner/type links with cycle detection."]}
+           #:mapping{:id :java/enum,
+                     :input #:input{:kind :string-keyed-map},
+                     :rules
+                     [{:value :type-definition, :operation :constant, :to [:ast/tag]}
+                      {:value :java/enum,
+                       :operation :constant,
+                       :to [:ast/attributes :element/native-kind]}
+                      {:value :enum,
+                       :operation :constant,
+                       :to [:ast/attributes :type-definition/kind]}
+                      {:from [],
+                       :operation :ordered-enum-cases,
+                       :to [:ast/children],
+                       :mapping/ref :java/enum-case,
+                       :write :append}
+                      {:from [], :operation :freeze-native, :to [:ast/native :java :enum-spec]}
+                      {:from [], :operation :enum-identity-from-output, :to [:ast/id]}],
+                     :notes
+                     ["Enum constant map keys are native strings. Sort cases by emitted :ordinal."
+                      "Use an emitted :class-descr to recover binary identity if present; otherwise use root-class-name for a root enum. An unnamed nested enum without a descriptor remains incompletely identified."
+                      ":cls-e-info-empty is the non-enum sentinel and emits no enum node."]}
+           #:mapping{:id :java/enum-case,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:value :enum-case, :operation :constant, :to [:ast/tag]}
+                      {:from-context [:entry-key],
+                       :operation :entry-key-name,
+                       :to [:ast/attributes :element/name]}
+                      {:from [:ordinal],
+                       :operation :copy,
+                       :to [:ast/attributes :enum-case/ordinal]}
+                      {:from [:ordinal], :operation :copy, :to [:ast/attributes :enum-case/index]}
+                      {:from [:class-descr],
+                       :operation :copy,
+                       :to [:ast/jvm :jvm/class-descriptor]}
+                      {:from [:enum-descr], :operation :copy, :to [:ast/native :java :enum-descr]}
+                      {:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-case-key]}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :enum-case-payload]}]}
+           #:mapping{:id :java/record,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :type-definition, :operation :constant, :to [:ast/tag]}
+                      {:value :java/record,
+                       :operation :constant,
+                       :to [:ast/attributes :element/native-kind]}
+                      {:value :record-like,
+                       :operation :constant,
+                       :to [:ast/attributes :type-definition/kind]}
+                      {:from [],
+                       :operation :record-field-candidates,
+                       :to [:ast/native :java :record-field-candidates],
+                       :mapping/ref :java/record-field-candidate}
+                      {:from [:ctorParmType],
+                       :operation :normalize-type,
+                       :to [:ast/native :java :ctorParmType]}
+                      {:from [:methods],
+                       :operation :record-method-entries,
+                       :to [:ast/children],
+                       :mapping/ref :java/record-method,
+                       :write :append}
+                      {:from [], :operation :freeze-native, :to [:ast/native :java :record-spec]}
+                      {:from-context [:source-path],
+                       :operation :provisional-record-id,
+                       :to [:ast/id]}],
+                     :notes
+                     ["This output does not include getRecordComponents(), record class name, component order or accessor/component associations. Do not require an extra Class to make the table work."
+                      "Retain field candidates, constructor parameter-type vector and method fragments as emitted. Do not label the field-map iteration order as component order."
+                      "Root record identity may use root-class-name. An unnamed nested record gets an explicitly provisional source-path identity; stable global identity remains unavailable."
+                      ":ctorParmType comes from ctors[0], not a guaranteed canonical constructor. Field candidates can contain static fields."]}
+           #:mapping{:id :java/record-field-candidate,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :entry-key-name,
+                       :to [:candidate/name]}
+                      {:from-context [:entry-key], :operation :copy, :to [:candidate/native-key]}
+                      {:from [], :operation :normalize-type, :to [:candidate/type]}
+                      {:value :requires-record-component-check,
+                       :operation :constant,
+                       :to [:candidate/status]}]}
+           #:mapping{:id :java/record-method,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:value :callable, :operation :constant, :to [:ast/tag]}
+                      {:value :method, :operation :constant, :to [:ast/attributes :callable/kind]}
+                      {:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :indexed-method-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:ast/attributes :element/name],
+                       :prefix "meth_<index>_-"}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/record-method-signature,
+                       :write :append}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :record-method-payload]}],
+                     :notes
+                     ["Input is one native :methods entry with indexed keyword such as :meth_0_-street. Preserve this key."
+                      "Only parameters and erased return type are emitted. Stable overload identity can use the containing identity when known plus those types. An indexed source path is provisional, not a recovered global identity."
+                      "Methods from getMethods include inherited methods; no declaring-class field is emitted in this fragment."]}
+           #:mapping{:id :java/record-method-signature,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :signature, :operation :constant, :to [:ast/tag]}
+                      {:from [],
+                       :operation :map-node,
+                       :to [:ast/children],
+                       :mapping/ref :java/record-parameter-list,
+                       :write :append}
+                      {:from [:return-type],
+                       :operation :normalize-return,
+                       :to [:ast/children],
+                       :emit/tag :return,
+                       :write :append}]}
+           #:mapping{:id :java/record-parameter-list,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :parameter-list, :operation :constant, :to [:ast/tag]}
+                      {:value 0, :operation :constant, :to [:ast/attributes :parameter-list/index]}
+                      {:value :ordinary,
+                       :operation :constant,
+                       :to [:ast/attributes :parameter-list/kind]}
+                      {:from [:parameters],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/parameter,
+                       :write :append}]}
+           #:mapping{:id :java/annotation-wrapper,
+                     :input #:input{:kind :dynamic-key-map},
+                     :rules
+                     [{:from [],
+                       :operation :normalize-annotations,
+                       :to [:annotation],
+                       :mapping/ref :java/annotation}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :annotation-wrapper]}],
+                     :key-selector #:key{:kind :keyword, :prefix "annot-"}}
+           #:mapping{:id :java/annotation,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:annotation-type],
+                       :operation :normalize-type-string,
+                       :to [:annotation/type]}
+                      {:from [:annot-policy-annotation-attr],
+                       :operation :annotation-policy,
+                       :to [:annotation/policy],
+                       :mapping/ref :java/annotation-policy}
+                      {:from [:fields-values],
+                       :operation :normalize-legacy-value,
+                       :to [:annotation/field-values],
+                       :mapping/ref :java/annotation-field-value}
+                      {:from [:methods-values],
+                       :operation :normalize-annotation-values,
+                       :to [:annotation/arguments],
+                       :mapping/ref :java/annotation-method-value}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :annotation-payload]}]}
+           #:mapping{:id :java/annotation-class,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [], :operation :freeze-native, :to [:ast/native :java :annot-class]}
+                      {:value :unavailable,
+                       :operation :constant,
+                       :to [:ast/attributes :extraction/status]}],
+                     :notes
+                     ["No valid annotation-declaration payload can be guaranteed from the current Class-to-Annotation helper call. Preserve any emitted payload without claiming annotation member declarations or inventing a live Class enrichment source."]}
+           #:mapping{:id :java/annotation-policy,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:Target], :operation :annotation-policy, :to [:annotation/targets]}
+                      {:from [:Retention],
+                       :operation :annotation-policy,
+                       :to [:annotation/retention]}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :annotation-policy]}],
+                     :native-examples
+                     [{:Target {:METHOD :native/ElementType-METHOD}}
+                      {:Retention {:fld-RUNTIME :native/RetentionPolicy-RUNTIME}}]}
+           #:mapping{:id :java/annotation-field-value,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-entry-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:context/name-hint],
+                       :prefix "fld-"}
+                      {:from [],
+                       :operation :normalize-legacy-value,
+                       :to [:annotation/field-values]}],
+                     :key-selector #:key{:prefix "fld-"}}
+           #:mapping{:id :java/annotation-method-value,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-entry-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:context/name-hint],
+                       :prefix "meth-"}
+                      {:from [],
+                       :operation :normalize-annotation-values,
+                       :to [:annotation/arguments]}],
+                     :key-selector #:key{:prefix "meth-"}}
+           #:mapping{:id :java/annotation-default-value,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-entry-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:context/name-hint],
+                       :prefix "val-"}
+                      {:from [],
+                       :operation :decode-annotation-default,
+                       :to [:annotation/default-candidates]}],
+                     :key-selector #:key{:prefix "val-"}}
+           #:mapping{:id :java/annotation-default-type,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-entry-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:context/name-hint],
+                       :prefix "typename-"}
+                      {:from [],
+                       :operation :decode-annotation-default,
+                       :to [:annotation/default-type-candidates]}],
+                     :key-selector #:key{:prefix "typename-"}}
+           #:mapping{:id :java/live-annotation,
+                     :input #:input{:kind :live-annotation},
+                     :rules
+                     [{:from [],
+                       :operation :normalize-output-annotation-object,
+                       :to [:annotation]}],
+                     :notes
+                     ["Input must be an Annotation object already present in the output, such as :param-annots or an AnnotatedType annotation. Read its own type/member values; do not fetch annotations from a separately reloaded class."
+                      "If only the transformed annotation map remains, preserve lost selected enum values/default-member associations as unavailable."]}
+           #:mapping{:id :java/class-attributes,
+                     :input #:input{:kind :keyword-vector},
+                     :rules [{:from [], :operation :decode-class-flags, :to [:ast/attributes]}],
+                     :flag-table
+                     [{:native/flag :attr-annotation, :unified/key :java/annotation-interface?}
+                      {:native/flag :attr-anonymous, :unified/key :type-definition/anonymous?}
+                      {:native/flag :attr-array, :unified/key :jvm/array?}
+                      {:native/flag :attr-enum, :unified/key :jvm/enum?}
+                      {:native/flag :attr-interface, :unified/key :java/interface?}
+                      {:native/flag :attr-local, :unified/key :java/local?}
+                      {:native/flag :attr-member, :unified/key :java/member?}
+                      {:native/flag :attr-primitive, :unified/key :jvm/primitive?}
+                      {:native/flag :attr-sealed, :unified/key :type-definition/sealed?}
+                      {:native/flag :attr-synthetic, :unified/key :jvm/synthetic?}
+                      {:native/flag :attr-record, :unified/key :jvm/record?}],
+                     :notes
+                     ["This helper emits a vector of true :attr-* flags; a known complete vector makes missing flags false. A missing vector is unavailable, not all-false."]}
+           #:mapping{:id :java/method-attributes,
+                     :input #:input{:kind :keyword-vector},
+                     :rules [{:from [], :operation :decode-method-flags, :to [:ast/jvm]}],
+                     :flag-table
+                     [{:native/flag :attr-varargs, :unified/key :jvm/varargs?}
+                      {:native/flag :attr-synthetic, :unified/key :jvm/synthetic?}
+                      {:native/flag :attr-default, :unified/key :java/default-method?}
+                      {:native/flag :attr-bridge, :unified/key :jvm/bridge?}]}
+           #:mapping{:id :java/constructor-attributes,
+                     :input #:input{:kind :keyword-vector},
+                     :rules [{:from [], :operation :decode-constructor-flags, :to [:ast/jvm]}],
+                     :flag-table
+                     [{:native/flag :attr-varargs, :unified/key :jvm/varargs?}
+                      {:native/flag :attr-synthetic, :unified/key :jvm/synthetic?}]}
+           #:mapping{:id :java/field-attributes,
+                     :input #:input{:kind :keyword-vector},
+                     :rules [{:from [], :operation :decode-field-flags, :to [:ast/jvm]}],
+                     :flag-table
+                     [{:native/flag :attr-enum-const, :unified/key :java/enum-constant?}
+                      {:native/flag :attr-synthetic, :unified/key :jvm/synthetic?}]}
+           #:mapping{:id :java/parameter-flags,
+                     :input #:input{:kind :keyword-vector},
+                     :rules
+                     [{:from [], :operation :decode-parameter-flags, :to [:ast/attributes]}],
+                     :flag-table
+                     [{:native/flag :vararg, :unified/key :parameter/variadic?}
+                      {:native/flag :implicit, :unified/key :jvm/implicit?}
+                      {:native/flag :name-present, :unified/key :jvm/name-present?}
+                      {:native/flag :synthetic, :unified/key :jvm/synthetic?}]}
+           #:mapping{:id :java/method-modifiers,
+                     :input #:input{:kind :keyword-vector},
+                     :rules
+                     [{:from [], :operation :decode-method-modifiers, :to [:ast/attributes]}],
+                     :native-vocabulary
+                     [:abstract
+                      :final
+                      :interface
+                      :native
+                      :transient
+                      :strict
+                      :synchronized
+                      :static
+                      :volatile
+                      :public
+                      :private
+                      :protected]}
+           #:mapping{:id :java/constructor-modifiers,
+                     :input #:input{:kind :keyword-vector},
+                     :rules
+                     [{:from [], :operation :decode-constructor-modifiers, :to [:ast/attributes]}],
+                     :native-vocabulary
+                     [:abstract
+                      :final
+                      :interface
+                      :native
+                      :transient
+                      :strict
+                      :synchronized
+                      :static
+                      :volatile
+                      :public
+                      :private
+                      :protected]}
+           #:mapping{:id :java/field-modifiers,
+                     :input #:input{:kind :keyword-vector},
+                     :rules
+                     [{:from [], :operation :decode-field-modifiers, :to [:ast/attributes]}],
+                     :native-vocabulary
+                     [:abstract
+                      :final
+                      :interface
+                      :native
+                      :transient
+                      :strict
+                      :synchronized
+                      :static
+                      :volatile
+                      :public
+                      :private
+                      :protected]}
+           #:mapping{:id :java/lambda,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:lambdaClass],
+                       :operation :functional-shape,
+                       :to [:ast/attributes :lambda/runtime-class-candidate?]}
+                      {:from [:functionalInterfaces],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :lambda/target-types]}
+                      {:from [:captureFields],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/capture-field,
+                       :iteration :entries,
+                       :write :append}
+                      {:from [:constructors],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/lambda-constructor,
+                       :write :append,
+                       :iteration :entry-values}
+                      {:from [:syntheticLambdaMethods],
+                       :operation :map-nodes,
+                       :to [:ast/children],
+                       :mapping/ref :java/functional-method,
+                       :write :append,
+                       :iteration :entries}
+                      {:from [:functionalFields],
+                       :operation :map-nodes,
+                       :to [:ast/attributes :lambda/functional-fields],
+                       :mapping/ref :java/functional-field,
+                       :iteration :entries}
+                      {:from [:functionalMethodParameters],
+                       :operation :map-nodes,
+                       :to [:ast/attributes :lambda/functional-parameters],
+                       :mapping/ref :java/functional-parameter-method,
+                       :iteration :entry-values}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :lambda-specs]}],
+                     :source "LambdaUtil.getLambdaSpec via analyze-lambda",
+                     :entry-scope :direct-helper-only,
+                     :notes
+                     ["Actual return value of reflect-special-forms/analyze-lambda. It is not attached to the current java-reflector result. Treat observations as candidates rather than proof of complete source lambda semantics."]}
+           #:mapping{:id :java/capture-field,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:value :capture, :operation :constant, :to [:ast/tag]}
+                      {:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/native :java :native-capture-key]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:ast/attributes :capture/name],
+                       :prefix "fld-"}
+                      {:from [], :operation :normalize-type, :to [:ast/attributes :capture/type]}
+                      {:value :unknown,
+                       :operation :constant,
+                       :to [:ast/attributes :capture/mode]}]}
+           #:mapping{:id :java/lambda-constructor,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :callable, :operation :constant, :to [:ast/tag]}
+                      {:value :constructor,
+                       :operation :constant,
+                       :to [:ast/attributes :callable/kind]}
+                      {:from [:ctorName], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from [:paramTypes],
+                       :operation :normalize-type,
+                       :to [:ast/native :java :generic-parameter-types]}
+                      {:from [:exceptTypes],
+                       :operation :normalize-throws,
+                       :to [:ast/native :java :java/throws]}]}
+           #:mapping{:id :java/functional-method,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:value :callable, :operation :constant, :to [:ast/tag]}
+                      {:value :method, :operation :constant, :to [:ast/attributes :callable/kind]}
+                      {:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:ast/attributes :element/name],
+                       :prefix "meth-"}
+                      {:from [:returnType],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :callable/observed-return-type]}
+                      {:from [:paramTypes],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :callable/observed-parameter-types]}
+                      {:from [:exceptTypes],
+                       :operation :normalize-throws,
+                       :to [:ast/native :java :java/throws]}]}
+           #:mapping{:id :java/functional-field,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :strip-known-prefix,
+                       :to [:ast/attributes :element/name],
+                       :prefix "fld-"}
+                      {:from [:fieldType],
+                       :operation :normalize-type,
+                       :to [:ast/jvm :jvm/erased-type]}
+                      {:from [:genericType],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :member/type]}]}
+           #:mapping{:id :java/functional-parameter-method,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:methodName], :operation :copy, :to [:ast/attributes :element/name]}
+                      {:from [:params],
+                       :operation :map-nodes,
+                       :to [:functional-parameters],
+                       :mapping/ref :java/functional-parameter,
+                       :iteration :entries}]}
+           #:mapping{:id :java/functional-parameter,
+                     :input #:input{:kind :map-entry-value},
+                     :rules
+                     [{:from-context [:entry-key],
+                       :operation :copy,
+                       :to [:ast/attributes :parameter/index]}
+                      {:from [:paramType],
+                       :operation :normalize-type,
+                       :to [:ast/jvm :jvm/erased-type]}
+                      {:from [:genericParamType],
+                       :operation :normalize-type,
+                       :to [:ast/attributes :parameter/type]}]}
+           #:mapping{:id :java/switch,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:switchMethodCount],
+                       :operation :copy,
+                       :to [:ast/native :java :switchMethodCount]}
+                      {:from [:switchMethods],
+                       :operation :map-nodes,
+                       :to [:ast/jvm :jvm/switch-observations],
+                       :mapping/ref :java/switch-method,
+                       :iteration :entry-values}
+                      {:from [],
+                       :operation :freeze-native,
+                       :to [:ast/native :java :switch-specs]}],
+                     :source "SwitchUtil.getSwitchSpec",
+                     :entry-scope :direct-helper-only,
+                     :notes
+                     ["Actual return value of reflect-special-forms/analyze-switch. It is not attached to the current java-reflector result. Preserve current byte-scan counts as heuristic observations, not decoded source switch statements."]}
+           #:mapping{:id :java/switch-method,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:methodName], :operation :copy, :to [:observation/method-name]}
+                      {:from [:descriptor], :operation :copy, :to [:observation/descriptor]}
+                      {:from [:switchCount],
+                       :operation :switch-observation,
+                       :to [:observation/raw-byte-match-count]}
+                      {:from [:switchOpcodes],
+                       :operation :switch-observation,
+                       :to [:observation/raw-byte-match-kinds]}
+                      {:from [:returnType],
+                       :operation :normalize-type,
+                       :to [:observation/observed-return-type]}
+                      {:from [:paramTypes],
+                       :operation :normalize-type,
+                       :to [:observation/observed-parameter-types]}
+                      {:from [],
+                       :operation :join-switch-method,
+                       :to [:observation/method-reference]}]}
+           #:mapping{:id :java/analyze-enum-result,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:enum-spec],
+                       :operation :map-node,
+                       :to [:ast/root],
+                       :mapping/ref :java/enum}],
+                     :source "reflect_special_forms.clj/analyze-enum",
+                     :entry-scope :direct-helper}
+           #:mapping{:id :java/analyze-record-result,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:record-spec],
+                       :operation :map-node,
+                       :to [:ast/root],
+                       :mapping/ref :java/record}],
+                     :source "reflect_special_forms.clj/analyze-record",
+                     :notes ["{} is the actual non-record result and emits no record."],
+                     :entry-scope :direct-helper}
+           #:mapping{:id :java/package-results,
+                     :input #:input{:kind :sequence-of-class-vectors},
+                     :rules
+                     [{:from [],
+                       :operation :map-package-results,
+                       :to [:ast/children],
+                       :mapping/ref :java/package-class-reference}],
+                     :source "packages.clj/list-packages",
+                     :notes
+                     ["Input is a sequence of vectors of Class objects, one vector per package argument. No :package-name or class member definitions are emitted. Package names can be derived from the supplied Class values, with evidence that they are derived; preserve outer groups when requested."],
+                     :entry-scope :direct-helper}
+           #:mapping{:id :java/package-class-reference,
+                     :input #:input{:kind :class-object},
+                     :rules [{:from [], :operation :normalize-output-class-reference, :to [:ref]}],
+                     :notes
+                     ["Normalize only the supplied class identity/type. Do not run java-reflector again to invent a class body absent from this output."]}
+           #:mapping{:id :java/raw-annotations,
+                     :input #:input{:kind :annotation-sequence},
+                     :rules
+                     [{:from [],
+                       :operation :normalize-annotations,
+                       :to [:element/annotations],
+                       :mapping/ref :java/live-annotation}],
+                     :source
+                     "reflect_annotation.clj/get-ctor-annots|get-field-annots|get-method-annots; reflect_class.clj/get-class-annots"}
+           #:mapping{:id :java/raw-parameter-annotations,
+                     :input #:input{:kind :annotation-matrix},
+                     :rules
+                     [{:from [],
+                       :operation :join-parameter-annotations,
+                       :to [:parameters],
+                       :write :merge-by-index}],
+                     :source "reflect_annotation.clj/get-ctor-param-annots|get-meth-param-annots",
+                     :notes
+                     ["Outer index is parameter index; inner sequence contains its annotations."]}
+           #:mapping{:id :java/raw-annotated-return,
+                     :input #:input{:kind :annotated-type-object},
+                     :rules
+                     [{:from [], :operation :normalize-output-type-object, :to [:return/type]}],
+                     :source "reflect_annotation.clj/get-annot-return-type"}
+           #:mapping{:id :java/raw-types,
+                     :input #:input{:kind :type-sequence},
+                     :rules [{:from [], :operation :normalize-type, :to [:types]}],
+                     :notes
+                     ["Covers helper returns containing raw Class/Type arrays, vectors or sequences. Preserve order; the caller supplies whether these are parameters, bounds, interfaces or exceptions."],
+                     :entry-scope :direct-helper}
+           #:mapping{:id :java/type-name-result,
+                     :input #:input{:kind :map},
+                     :rules [{:from [:typeName], :operation :normalize-type-string, :to [:type]}],
+                     :source
+                     "reflect_types.clj/get-type-readable via ClassUtil.getValuesOfInterface"}
+           #:mapping{:id :java/boolean-attribute-result,
+                     :input #:input{:kind :boolean},
+                     :rules [{:from [], :operation :copy, :to [:attribute/value]}],
+                     :source "reflect_types.clj/is-*",
+                     :notes
+                     ["The caller must supply which predicate was invoked. A bare boolean has no native discriminator key; do not invent one in :from."]}
+           #:mapping{:id :java/modifier-integer-result,
+                     :input #:input{:kind :integer},
+                     :rules
+                     [{:from [], :operation :decode-output-modifier-integer, :to [:attributes]}],
+                     :source
+                     "reflect_field.clj/get-field-modifier; reflect_meths_ctors.clj/get-method-modifier|get-ctor-modifier",
+                     :notes
+                     ["Element kind comes from helper invocation context, not the integer. Decode by JVM context to avoid varargs/transient and bridge/volatile aliasing."]}
+           #:mapping{:id :java/base-type-name-result,
+                     :input #:input{:kind :string},
+                     :rules [{:from [], :operation :normalize-type-string, :to [:type]}],
+                     :source "java_representation.clj/get-base-type-representation",
+                     :notes
+                     ["N/A is the actual missing-information sentinel, not a type named N/A."]}
+           #:mapping{:id :java/single-field-type-group,
+                     :input #:input{:kind :map},
+                     :rules
+                     [{:from [:field-type], :operation :normalize-type, :to [:jvm/erased-type]}
+                      {:from [:field-type],
+                       :operation :normalize-type,
+                       :to [:member/type],
+                       :priority 10}
+                      {:from [:gen-field-type],
+                       :operation :normalize-type,
+                       :to [:member/type],
+                       :priority 20}
+                      {:from [:annot-field-type],
+                       :operation :normalize-type,
+                       :to [:member/type],
+                       :priority 30}]}
+           #:mapping{:id :java/declared-exception-sequence,
+                     :input #:input{:kind :type-sequence},
+                     :rules
+                     [{:from [],
+                       :operation :normalize-throws,
+                       :to [:java/throws],
+                       :mapping/ref :java/declared-exception}],
+                     :notes
+                     ["Only declared exception types are present. Throwable class bodies use normal-class mapping if separately supplied. Runtime causes/messages/stack traces are not part of these outputs."]}],
+          :purpose
+          "Map the actual outcomes of the nine supplied Clojure reader files into unified IR. Declarative data only; operation implementations are not included.",
+          :source-files
+          ["java_reflector.clj"
+           "java_representation.clj"
+           "packages.clj"
+           "reflect_annotation.clj"
+           "reflect_class.clj"
+           "reflect_field.clj"
+           "reflect_meths_ctors.clj"
+           "reflect_special_forms.clj"
+           "reflect_types.clj"],
+          :native-shapes
+          #:java{:reflection-result [:language :class-name :reflect-data],
+                 :lambda
+                 [:lambdaClass
+                  :functionalInterfaces
+                  :captureFields
+                  :constructors
+                  :syntheticLambdaMethods
+                  :functionalFields
+                  :functionalMethodParameters],
+                 :method
+                 [:meth-name
+                  :annotations
+                  :param-count
+                  :all-param-attribs
+                  :generic-param-types
+                  :param-annots
+                  :modifiers
+                  :attribs
+                  :exception-types
+                  :return-types],
+                 :class-type-parameter [:type :typeName :annotTypesVect :typesVect],
+                 :switch-method
+                 [:methodName :descriptor :switchCount :switchOpcodes :returnType :paramTypes],
+                 :switch [:switchMethods :switchMethodCount],
+                 :annotation
+                 [:annotation-type :annot-policy-annotation-attr :fields-values :methods-values],
+                 :field [:field-name :annotations :type :modifiers :attribs],
+                 :constructor
+                 [:ctor-name
+                  :annotations
+                  :param-count
+                  :all-param-attribs
+                  :generic-param-types
+                  :param-annots
+                  :modifiers
+                  :attribs
+                  :exception-types],
+                 :class-wrapper
+                 [:normal-class :enum-class :record-class :annot-class :class-already-reflected],
+                 :return [:return-type :gen-return-type :annot-return-type],
+                 :parameter
+                 [:param-name
+                  :param-type
+                  :param-annot-type
+                  :param-parametrized-type
+                  :param-annots
+                  :param-modifiers
+                  :param-flags],
+                 :class
+                 [:class-name
+                  :super-class
+                  :gen-super
+                  :generics
+                  :pinner-classes
+                  :annotations
+                  :enum-specs
+                  :record-specs
+                  :interfaces
+                  :gen-interfaces
+                  :enclosing-class
+                  :constructors
+                  :methods
+                  :fields
+                  :attributes]},
+          :entrypoints
+          [{:source "java_reflector.clj/get-structured-meta-data",
+            :mapping/ref :java/reflection-result,
+            :scope :main-return-value}
+           {:source "packages.clj/list-packages",
+            :mapping/ref :java/package-results,
+            :scope :direct-helper}
+           {:source "reflect_special_forms.clj/analyze-enum",
+            :mapping/ref :java/analyze-enum-result,
+            :scope :direct-helper}
+           {:source "reflect_special_forms.clj/analyze-record",
+            :mapping/ref :java/analyze-record-result,
+            :scope :direct-helper}
+           {:source "reflect_special_forms.clj/analyze-lambda",
+            :mapping/ref :java/lambda,
+            :scope :direct-helper-only-not-in-main-result}
+           {:source "reflect_special_forms.clj/analyze-switch",
+            :mapping/ref :java/switch,
+            :scope :direct-helper-only-not-in-main-result}
+           {:source "reflect_annotation.clj/get-ctor-annots|get-field-annots|get-method-annots",
+            :mapping/ref :java/raw-annotations,
+            :scope :direct-helper}
+           {:source "reflect_annotation.clj/get-ctor-param-annots|get-meth-param-annots",
+            :mapping/ref :java/raw-parameter-annotations,
+            :scope :direct-helper}
+           {:source "reflect_annotation.clj/get-annot-return-type",
+            :mapping/ref :java/raw-annotated-return,
+            :scope :direct-helper}
+           {:source "reflect_class.clj/get-all-class-attributes-and-values",
+            :mapping/ref :java/class-wrapper,
+            :scope :direct-helper}
+           {:source "reflect_field.clj/get-all-fields-and-type-modifiers",
+            :mapping/ref :java/field,
+            :iteration :sequence}
+           {:source "reflect_meths_ctors.clj/get-all-meth-and-type-modifiers",
+            :mapping/ref :java/method,
+            :iteration :sequence}
+           {:source "reflect_meths_ctors.clj/get-all-ctor-and-type-modifiers",
+            :mapping/ref :java/constructor,
+            :iteration :sequence}
+           {:source "java_representation.clj/type-def-representation",
+            :mapping/ref :java/type,
+            :scope :direct-helper}
+           {:source "reflect_types.clj/get-class-attributes",
+            :mapping/ref :java/class-attributes,
+            :scope :direct-helper}
+           {:source "reflect_types.clj/get-type-readable",
+            :mapping/ref :java/type-name-result,
+            :scope :direct-helper}],
+          :native-dynamic-keys
+          [{:native/pattern "annot-<Annotation.toString()>",
+            :native/key-type :keyword,
+            :mapping/ref :java/annotation-wrapper}
+           {:native/pattern "meth_<index>_-<methodName>",
+            :native/key-type :keyword,
+            :mapping/ref :java/record-method}
+           {:native/pattern "<enumConstantName>",
+            :native/key-type :string,
+            :mapping/ref :java/enum-case}
+           {:native/pattern "<recordFieldName>",
+            :native/key-type :keyword,
+            :mapping/ref :java/record-field-candidate}],
+          :semantics
+          {:availability
+           "Main-result shapes and separately callable helper results are distinguished. Lambda/switch/package outcomes are mapped only when those helper outputs are explicitly supplied. Unsupported data is preserved, not invented.",
+           :identity
+           "AST identifiers are derived from emitted names/types. Record and some helper outputs may only support extraction-local provisional IDs. This is explicit; no stable global identity is invented.",
+           :grammar
+           "Unified destinations are proposed IR keys. New callable/constraint/evidence/JVM observation keys require corresponding grammar rules; this file is not the earlier closed schema.",
+           :paths
+           "Paths are relative to the current mapping input, after :mapping/input-root unwrapping. [] selects the current value.",
+           :node
+           "Rule :map-node appends a mapped node to a children target unless :write :replace-root is explicit. Empty/non-declaration sentinels produce evidence, not nodes.",
+           :iteration
+           "Sequence iteration retains order and sets :index. :entries exposes entry-key and entry-value with the mapping input bound to entry-value. :entry-values iterates values and preserves keys as context. Map keys must never be silently keywordized.",
+           :write
+           "Default write is :set. :append extends children; :merge combines maps; :merge-by-index/parameter-index/type enrich existing nodes without duplication. Multiple candidate scalar writes require explicit priority.",
+           :jvm
+           "Targets below :ast/jvm describe fields of the current associated JVM representation. When multiple representations exist, host chooses/merges a matching representation by signature; these are logical paths, not numeric vector indexes.",
+           :conditions
+           "A rule :when {:condition :present} requires the source path to exist. Mapping selection uses exact matches or declared prefix/flag predicates.",
+           :priority
+           "Higher priority wins only if usable. nil, {}, N/A and UnknownClass never erase a usable semantic type. Known literal nil must be explicitly typed as a value.",
+           :ownership
+           "Containment owns nested declarations. Referenced supertypes/interfaces are shared declarations, not lexically owned children. Resolve repeated references by identity.",
+           :context
+           "Only derived context: owner-id, entry-key, sequence index, native source-path and root-class-name from the input wrapper. No externally supplied live-class/live-executable/live-record-component is required.",
+           :serialization
+           "Normalize only objects already present in reader output. The mapper must not silently re-run reflection against a separately loaded class."}}

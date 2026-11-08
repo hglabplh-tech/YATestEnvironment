@@ -15,5 +15,4 @@ public @interface MethodDescriber {
     Category category() default Category.APIS;
     String shortDescription() default "::to-describe::";
     String [] execSteps()  default {};
-
 }

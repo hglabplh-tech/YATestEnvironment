@@ -1,0 +1,96 @@
+GENERATED JAVA READER OUTPUT -> UNIFIED IR, VERSION 2
+
+Main download: java-reflector-output-to-unified.edn
+The older filename java-reflection-to-unified-mappings.edn contains the same
+corrected catalog. The previous download link therefore also points to version 2.
+
+CORRECTION AND SCOPE
+
+The input is the actual outcome of the nine supplied Clojure reader files.
+No separately loaded Class/Method, source rereading, compatibility :class-data
+wrapper, or external Jakarta provider metadata is required.
+
+The main entry :java/reflection-result consumes:
+  {:language :java
+   :class-name "fully.qualified.ClassName"
+   :reflect-data {:structured-class {:normal-class {...}}}}
+
+Other native branches are :enum-class, :record-class and :annot-class.
+:class-already-reflected is a reference marker. Interfaces use :normal-class
+with :attr-interface, not an invented :interface-class wrapper.
+
+Separate helper outputs have entries under :mapping/entrypoints. Lambda and
+switch outputs are mapped because reflect_special_forms.clj exposes them, but
+are not claimed to be attached to java-reflector's current result. The package
+reader returns a sequence of vectors of Class objects, not package maps.
+
+Objects already carried by the output are valid inputs. An AnnotatedType inside
+:param-annot-type or :annot-return-type can be normalized recursively before
+printing. The table does not reload classes or discover additional members to
+fill gaps. Printed #object descriptions cannot restore the original objects.
+
+FORMAT
+
+Each mapping is a separate entry in :mapping/catalog, for example:
+  {:mapping/id :java/method
+   :mapping/rules
+   [{:from [:meth-name]
+     :operation :copy
+     :to [:ast/attributes :element/name]}]}
+
+:from is relative to the current mapping input; [] selects the whole input.
+:from-context reads only traversal-derived owner-id, entry-key, index,
+source-path and root-class-name. These are not fabricated native reader fields.
+:mapping/ref selects a submapping. :operation names an operation contract.
+:write controls append/merge/replacement. A higher priority type wins only when
+usable: nil, {}, N/A and UnknownClass cannot erase usable type information.
+
+:ast/jvm paths are logical destinations within the associated JVM representation,
+not numeric vector indexes. Adapt them to the layout used by your own parser.
+
+All native tags preserve their spelling and case, including :pinner-classes,
+:param-parametrized-type, :parametrized-type, :parametrizied-type, :typeName,
+:annotTypesVect, :typesVect, :ctorParmType, :lambdaClass and :switchMethodCount.
+Generated keyword prefixes and indexed record-method keys remain unchanged.
+Native enum names are string keys; record field names are keyword keys.
+
+OUTPUT LIMITS
+
+- Record field-map order is not component order. No authoritative component list
+  or nested record class name is emitted. Preserve candidates and unknown order.
+- :ctorParmType comes from the first constructor, not a guaranteed canonical one.
+- Method :transient can be a varargs bit alias. Decode modifiers by element kind.
+- Source parameter names require :name-present. Otherwise keep reflected arg0 etc.
+- Generic helper maps may lose data. Use only live type objects already present;
+  missing information remains unavailable rather than triggering more reflection.
+- Annotation transformations may lose enum selection/default-member association.
+- The annotation-class branch can fail upstream because it passes Class to an
+  Annotation-instance helper. No successful annotation declaration is invented.
+- Declared exception types are mapped; runtime causes/messages/traces are absent.
+- Switch helper results are heuristic raw-byte observations, not verified source
+  switches. Its overload association can also be ambiguous.
+- No compatibility wrappers or semantic Jakarta constraint translators are added.
+  Actual emitted annotations remain mapped as data for a later semantic layer.
+
+USE
+
+  (require '[clojure.edn :as edn])
+  (def table
+    (edn/read-string (slurp "java-reflector-output-to-unified.edn")))
+  (def by-id
+    (into {} (map (juxt :mapping/id identity) (:mapping/catalog table))))
+  (get by-id :java/method)
+  (get by-id :java/class)
+  (get by-id :java/record)
+
+VALIDATION
+
+71 mapping entries, 259 rules, 55 operation contracts. EDN parsing, unique IDs,
+internal mapping/operation references and target path forms were checked.
+Coverage checks cover 13 native map shapes, including every normal-class,
+method, constructor and parameter key. No rule requires externally supplied live
+Class/Method/record-component objects.
+
+This is a declarative mapping specification, not a conversion-engine
+implementation. Unified target extensions must be added to your AST grammar as
+needed. The application source files were not modified.

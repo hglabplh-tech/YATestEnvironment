@@ -213,7 +213,6 @@
 (clojure.core/defn add-upd-spy-statistics
   "Macro to set the Meta of the mocked function to a spy"
   [fun-name call-count recursive-calls ret-val args]
-  (println "----------------------------------------------- I am called")
   (swap! statistic-control-flow update :flow-stats conj
          [{:name fun-name :args args :ret-val ret-val}])
   (swap! statistic-control-flow update :statistics conj

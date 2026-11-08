@@ -18,6 +18,8 @@
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [jakarta.validation/jakarta.validation-api "3.0.2"]
                  [org.hibernate.validator/hibernate-validator "8.0.1.Final"]
+                 [org.ow2.asm/asm "9.11.1"]
+                 [org.ow2.asm/asm-tree "9.11.1"]
                  [org.glassfish/jakarta.el "4.0.2"]]
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
