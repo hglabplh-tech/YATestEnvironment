@@ -292,7 +292,9 @@
         (do (add-class-reflected refl-clazz-name)
             (cond
               (rtypes/is-enum refl-clazz)
-              {:enum-class (er-refl/analyze-enum refl-clazz)}
+              {:enum-class {:pure-record (er-refl/analyze-enum refl-clazz)
+                            :inner-classes  (inner-class-representation (get-all-sub-classes util))
+                            } }
               (rtypes/is-record refl-clazz)
               {:record-class  {:pure-record (er-refl/analyze-record refl-clazz)
                                :inner-classes  (inner-class-representation (get-all-sub-classes util))
