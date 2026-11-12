@@ -44,6 +44,7 @@ public class SpecialFormsUtil {
         }
         Enum[] enumConsts = theEnum.getEnumConstants();
         IPersistentMap enumMap = PersistentArrayMap.EMPTY;
+        IPersistentMap enumValuesMap = PersistentArrayMap.EMPTY;
         for (Enum enumC : enumConsts) {
             String name = enumC.name();
             Integer ordinal = enumC.ordinal();
@@ -62,10 +63,39 @@ public class SpecialFormsUtil {
                         .assoc(retrieveKeywordForJavaID("enum-descr", ObjType.NONE),
                                 description.toString());
             }
-            enumMap = enumMap.assoc(name, enumAttrMap);
+            enumValuesMap = enumValuesMap.assocEx(name, enumAttrMap);
         }
+        enumMap = enumMap.assocEx(retrieveKeywordFromString(null, "enum-values-def"), enumValuesMap);
+        enumMap = enumMap.assocEx(retrieveKeywordFromString(null, "design-issues"),
+                getEnumDesignMap(theEnum, PersistentArrayMap.EMPTY));
         return enumMap;
 
+    }
+
+    private static IPersistentMap getEnumDesignMap(Class<? extends Enum> theEnumClass, IPersistentMap enumMap) {
+        boolean classesAllowed = true;
+        boolean fieldsAllowed = true;
+        for (Class<?> subClass : theEnumClass.getDeclaredClasses()) {
+            if (!(subClass.isInterface() && Modifier.isPrivate(subClass.getModifiers()))) {
+                classesAllowed = false;
+                break;
+            }
+        }
+        for (Field field: theEnumClass.getDeclaredFields()) {
+            if (!Modifier.isFinal(field.getModifiers())) {
+                fieldsAllowed = false;
+                break;
+            }
+        }
+        Keyword okFieldKey = retrieveKeywordFromString(null, "only-final-fields");
+        Keyword nokFieldKey = retrieveKeywordFromString(null, "none-final-fields");
+        Keyword okSubclassKey = retrieveKeywordFromString(null, "only-private-interfaces");
+        Keyword nokSubclassKey = retrieveKeywordFromString(null, "none-private-interfaces");
+        enumMap = enumMap.assocEx(retrieveKeywordFromString(null, "final-fields"),
+                fieldsAllowed ? okFieldKey : nokFieldKey);
+        enumMap = enumMap.assocEx(retrieveKeywordFromString(null, "enum-classes"),
+                classesAllowed ? okSubclassKey : nokSubclassKey);
+        return enumMap;
     }
 
     /**
@@ -92,6 +122,7 @@ public class SpecialFormsUtil {
                     retrieveKeywordForJavaID("ctorParmType", ObjType.NONE),
                     getArrayAsVector(parmTypes));
         }
+
         if (parmTypes != null) {
             Field[] fields = theRecordClass.getDeclaredFields();
             Map<String, Type> nameTypeMap = Arrays.stream(fields)
@@ -122,8 +153,35 @@ public class SpecialFormsUtil {
             }
             recordMap = recordMap.assocEx(retrieveKeywordFromString(null, "methods"),
                     methodMap);
+            recordMap = recordMap.assocEx(retrieveKeywordFromString(null, "design-issues"),
+                    getRecDesignMap(theRecordClass, PersistentArrayMap.EMPTY));
         }
+        return recordMap;
+    }
 
+    private static IPersistentMap getRecDesignMap(Class<? extends Record> theRecordClass, IPersistentMap recordMap) {
+        boolean classesAllowed = true;
+        boolean fieldsAllowed = true;
+        for (Class<?> subClass : theRecordClass.getDeclaredClasses()) {
+            if (!subClass.isRecord()) {
+                classesAllowed = false;
+                break;
+            }
+        }
+        for (Field field: theRecordClass.getDeclaredFields()) {
+            if (!Modifier.isFinal(field.getModifiers())) {
+                fieldsAllowed = false;
+                break;
+            }
+        }
+        Keyword okFieldKey = retrieveKeywordFromString(null, "only-final-fields");
+        Keyword nokFieldKey = retrieveKeywordFromString(null, "none-final-fields");
+        Keyword okSubclassKey = retrieveKeywordFromString(null, "only-record-classes");
+        Keyword nokSubclassKey = retrieveKeywordFromString(null, "none-record-classes");
+        recordMap = recordMap.assocEx(retrieveKeywordFromString(null, "final-fields"),
+                fieldsAllowed ? okFieldKey : nokFieldKey);
+        recordMap = recordMap.assocEx(retrieveKeywordFromString(null, "record-classes"),
+                classesAllowed ? okSubclassKey : nokSubclassKey);
         return recordMap;
     }
 

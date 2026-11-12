@@ -3,12 +3,12 @@ package io.github.hglabplh_tech.reflect.java.api.annotations;
 import clojure.lang.IPersistentMap;
 import clojure.lang.Keyword;
 import clojure.lang.PersistentArrayMap;
-import io.github.hglabplh_tech.reflect.java.api.utils.ClassUtil;
 
 
 import java.lang.annotation.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.*;
 import static io.github.hglabplh_tech.reflect.general.DataTypeTransformer.*;
@@ -18,25 +18,13 @@ import static io.github.hglabplh_tech.reflect.general.DataTypeTransformer.transf
  * This class is a utility class for analyzing the content and the attributes of
  * a given annotation.
  *
- * @param <T> T is the type of the class and this type extends the annotation class
  * @author Harald Glab-Plhak
  */
-public class AnnotationTool<T extends Annotation> {
+public class AnnotationTool {
 
-    /**
-     * the annotation to be analyzed
-     */
-    private final Annotation theAnnotation;
 
-    /**
-     * Here the Utility is constructed with an annotation to be analyzed
-     * if the input class is not an annotation an Illegal Argument Exception
-     * is thrown
-     *
-     * @param annot a annotation to analyze
-     */
-    public AnnotationTool(Annotation annot) {
-        this.theAnnotation = annot;
+
+    private AnnotationTool() {
     }
 
 
@@ -45,8 +33,7 @@ public class AnnotationTool<T extends Annotation> {
      *
      * @return the map of the annotation attributes
      */
-    public IPersistentMap getAnnotationAttributes() {
-        Annotation[] annots = this.theAnnotation.annotationType().getAnnotations();
+    public static IPersistentMap getAnnotationAttributes(Annotation[] annots) {
         IPersistentMap theMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
         for (Annotation annot : annots) {
             if (annot instanceof  Target) {
@@ -73,28 +60,84 @@ public class AnnotationTool<T extends Annotation> {
         return theMap;
     }
 
-    public Annotation theAnnotation() {
-        return theAnnotation;
-    }
 
-    public IPersistentMap retrieveAnnotationValuesAndAttributes() {
+    public static IPersistentMap retrieveAnnotationValuesAndAttributes(Annotation theAnnotation) {
         IPersistentMap theMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
-        IPersistentMap policies = getAnnotationAttributes();
+        IPersistentMap policies = getAnnotationAttributes(theAnnotation.annotationType().getAnnotations());
         theMap = theMap.assoc(retrieveKeywordForJavaID("annotation-attr", ObjType.ANNOTATION_POLICY),
                 policies);
-        Class<? extends Annotation> type = this.theAnnotation().annotationType();
+        Class<? extends Annotation> type = theAnnotation.annotationType();
         theMap = theMap.assoc(retrieveKeywordForJavaID("annotation-type", ObjType.NONE),
                 type.getCanonicalName());
         Field[] fields = type.getDeclaredFields();
         Method[] methods = type.getDeclaredMethods();
-        IPersistentMap fldMap = transformTypeValuesFromFields(fields, this.theAnnotation());
+        IPersistentMap fldMap = transformTypeValuesFromFields(fields, theAnnotation);
         theMap = theMap.assoc(retrieveKeywordForJavaID("fields-values", ObjType.NONE),
         fldMap);
-        IPersistentMap methMap = transformTypeValuesFromMethods(methods, this.theAnnotation());
+        IPersistentMap methMap = transformTypeValuesFromMethods(methods);
         theMap = theMap.assoc(retrieveKeywordForJavaID("methods-values", ObjType.NONE),
                 methMap);
         return theMap;
     }
+
+    public static IPersistentMap retrieveAnnotationClassValuesAndAttributes(Class<?> theAnnotationClass) {
+        IPersistentMap theMap = PersistentArrayMap.create(PersistentArrayMap.EMPTY);
+        IPersistentMap policies = getAnnotationAttributes(theAnnotationClass.getDeclaredAnnotations());
+        theMap = theMap.assoc(retrieveKeywordForJavaID("annotation-attr", ObjType.ANNOTATION_POLICY),
+                policies);
+
+        theMap = theMap.assoc(retrieveKeywordForJavaID("annotation-type", ObjType.NONE),
+                theAnnotationClass.getCanonicalName());
+        Field[] fields = theAnnotationClass.getDeclaredFields();
+        Method[] methods = theAnnotationClass.getDeclaredMethods();
+        IPersistentMap fldMap = transformTypeValuesFromFields(fields, theAnnotationClass);
+        theMap = theMap.assoc(retrieveKeywordForJavaID("fields-values", ObjType.NONE),
+                fldMap);
+        IPersistentMap methMap = transformTypeValuesFromMethods(methods);
+        theMap = theMap.assoc(retrieveKeywordForJavaID("methods-values", ObjType.NONE),
+                methMap);
+        theMap = theMap.assocEx(retrieveKeywordFromString(null, "design-issues"),
+                getAnnotDesignMap(theAnnotationClass.getDeclaredClasses(), methods));
+        return theMap;
+    }
+    private static IPersistentMap getAnnotDesignMap(Class<?>[] subclasses, Method[] methods) {
+        int badCountMeths = checkMethodsDesignFail(methods);
+        int badCountSubclasses = checkSubclassesDesignFail(subclasses);
+        Keyword okMethodsKey = retrieveKeywordFromString(null, "all-methods-valid");
+        Keyword nokMethodsKey = retrieveKeywordFromString(null, "invalid-methods");
+        Keyword okSubclassKey = retrieveKeywordFromString(null, "all-classes-valid");
+        Keyword nokSubclassKey = retrieveKeywordFromString(null, "invalid-classes");
+        IPersistentMap designMap = PersistentArrayMap.EMPTY;
+        designMap = designMap.assocEx(retrieveKeywordFromString(null, "subclasses"),
+                (badCountSubclasses == 0) ? okSubclassKey : nokSubclassKey);
+        designMap = designMap.assocEx(retrieveKeywordFromString(null, "methods"),
+                (badCountMeths == 0) ? okMethodsKey : nokMethodsKey);
+        return designMap;
+    }
+
+    private static int checkMethodsDesignFail(Method [] methods) {
+        int badCounter = 0;
+        for (Method method : methods) {
+            if (!Modifier.isAbstract(method.getModifiers())) {
+                badCounter++;
+            }
+        }
+        return badCounter;
+    }
+
+    private static int checkSubclassesDesignFail(Class<?> [] classes) {
+        int badCounter = 0;
+        for (Class<?> nested : classes) {
+            Method [] methods = nested.getMethods();
+            for (Method method : methods) {
+                if (!method.isSynthetic() && !Modifier.isAbstract(method.getModifiers())) {
+                    badCounter++;
+                }
+            }
+        }
+        return badCounter;
+    }
+
 
 
     /**
@@ -114,10 +157,21 @@ public class AnnotationTool<T extends Annotation> {
         return typeMap;
     }
 
-    public IPersistentMap getAllAnnotationInfos() {
+    public static IPersistentMap getAllAnnotationInfos(Annotation theAnnotation) {
         IPersistentMap annotMap = PersistentArrayMap.EMPTY;
-        Keyword elementKey = retrieveKeywordForJavaID(theAnnotation().toString(), ObjType.ANNOTATION);
-        annotMap = annotMap.assoc(elementKey, retrieveAnnotationValuesAndAttributes());
+        Keyword elementKey = retrieveKeywordForJavaID(theAnnotation.toString(), ObjType.ANNOTATION);
+        annotMap = annotMap.assoc(elementKey, retrieveAnnotationValuesAndAttributes(theAnnotation));
+        return annotMap;
+    }
+
+    public static IPersistentMap getAllAnnotationClassInfos(Class<?> theAnnotationClass) {
+        IPersistentMap annotMap = PersistentArrayMap.EMPTY;
+        if (theAnnotationClass.isAnnotation()) {
+            Keyword elementKey = retrieveKeywordForJavaID(theAnnotationClass.getCanonicalName(), ObjType.ANNOTATION);
+            annotMap = annotMap.assoc(elementKey, retrieveAnnotationClassValuesAndAttributes(theAnnotationClass));
+        }
+
+
         return annotMap;
     }
 }

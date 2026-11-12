@@ -18,7 +18,7 @@ public @interface MethodDescriberBad {
 
     String[] execSteps() default {};
 
-    static class BadIdea {
+    public class BadIdea {
         int counter = 0;
 
         BadIdea(int count) {

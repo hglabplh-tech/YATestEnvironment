@@ -7,7 +7,6 @@ import io.github.hglabplh_tech.reflect.java.api.utils.SpecialFormsUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.ObjType;
 import static io.github.hglabplh_tech.reflect.general.ClojFunctionalUtils.retrieveKeywordForJavaID;
@@ -152,42 +151,44 @@ public class DataTypeTransformer {
      * keyword is created the value is then added to a map with the keyword as key
      * Only the methods with an empty parameterlist are called for we assume them
      * to be 'getter' methods
+     *
      * @param methods the field definitions
-     * @param instance the field instance
      * @return the parsistant map wirh name value
      */
     public static IPersistentMap
-    transformTypeValuesFromMethods(Method[] methods, Object instance) {
-        IPersistentMap nameValueMap = PersistentArrayMap.create
+    transformTypeValuesFromMethods(Method[] methods) {
+
+        IPersistentMap methValuesMap = PersistentArrayMap.create
                 (PersistentArrayMap.EMPTY);
         for (Method method : methods) {
-            Object result = null;
+            IPersistentMap nameValueMap = PersistentArrayMap.create
+                    (PersistentArrayMap.EMPTY);
+            Class<?> result = null;
             Object defaultVal = null;
             String defaultValTypeName = null;
             if (method.getParameterCount() == 0) {
-                try {
-                    result = method.invoke(instance);
-                    defaultVal = method.getDefaultValue();
-                    defaultValTypeName = defaultVal.getClass().getTypeName();
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e);
+                result = method.getReturnType();
+                defaultVal = method.getDefaultValue();
+                defaultValTypeName = defaultVal.getClass().getTypeName();
+                IPersistentMap resultMap = PersistentArrayMap.EMPTY;
+                if(result.isEnum()) {
+                    resultMap = SpecialFormsUtil.getEnumSpec(result);
                 }
-                if (result == null) {
-                    throw new IllegalStateException("value not there");
-                }
-
-                if(result.getClass().isEnum()) {
-                    result = SpecialFormsUtil.getEnumSpec(result.getClass());
+                if(result.isRecord()) {
+                    resultMap = SpecialFormsUtil.getEnumSpec(result);
                 }
                 nameValueMap = nameValueMap.assoc(
-                        retrieveKeywordForJavaID(method.getName(), ObjType.METHOD),
-                        result);
-                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID(defaultVal.toString(), ObjType.FREEVAL), defaultVal);
-                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID(defaultValTypeName, ObjType.FREETYPE), defaultValTypeName);
-
+                        retrieveKeywordForJavaID("method-name", ObjType.NONE),
+                        resultMap);
+                nameValueMap = nameValueMap.assoc(
+                        retrieveKeywordForJavaID("return-type", ObjType.NONE),
+                        resultMap);
+                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID("default-value", ObjType.NONE), defaultVal);
+                nameValueMap = nameValueMap.assoc(retrieveKeywordForJavaID("val-type-name", ObjType.NONE), defaultValTypeName);
+                methValuesMap = methValuesMap.assocEx(retrieveKeywordForJavaID(method.getName(), ObjType.METHOD), nameValueMap);
             }
 
         }
-        return nameValueMap;
+        return methValuesMap;
     }
 }

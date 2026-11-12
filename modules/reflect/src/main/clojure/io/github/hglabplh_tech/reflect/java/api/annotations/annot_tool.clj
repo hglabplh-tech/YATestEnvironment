@@ -9,10 +9,21 @@
    :static true
    }
   [annot]
-  (let [ tool  (AnnotationTool. annot)
-        annot-attrs (.getAllAnnotationInfos ^AnnotationTool tool)]
+  (let [annot-attrs (AnnotationTool/getAllAnnotationInfos annot)]
     annot-attrs
    )
+  )
+
+(defn get-annotation-info-for-clazz
+  "gets the meta info of a given annotation class -- TODO: exper. has to be reworked"
+  {
+   :added "1.1.0"
+   :static true
+   }
+  [annot-clazz]
+  (let [annot-attrs (AnnotationTool/getAllAnnotationClassInfos annot-clazz)]
+    annot-attrs
+    )
   )
 
 

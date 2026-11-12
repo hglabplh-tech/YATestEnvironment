@@ -300,7 +300,9 @@
                                :inner-classes  (inner-class-representation (get-all-sub-classes util))
                                } }
               (rtypes/is-annotation refl-clazz)
-              {:annot-class (atool/get-annotation-info refl-clazz)}
+              {:annot-class  {:pure-record (atool/get-annotation-info-for-clazz refl-clazz)
+                              :inner-classes  (inner-class-representation (get-all-sub-classes util))
+                              } }
               :else
               {:normal-class
                {:class-name      (get-class-name util)

@@ -275,9 +275,14 @@ public class ClassUtil {
      *
      * @return public sub-classes as Clojure persistent vector
      */
-    public  IPersistentVector getPublicSubClasses() {
-        return getArrayAsVector(this.theClass.getClasses());
+    public  IPersistentVector getAllSubClasses() {
+        return getArrayAsVector(this.theClass.getDeclaredClasses());
     }
+
+    public  IPersistentVector getPermittedSubClasses() {
+        return getArrayAsVector(this.theClass.getPermittedSubclasses());
+    }
+
 
     /**
      * get all subclasses(inner classes) even if they
@@ -286,8 +291,8 @@ public class ClassUtil {
      *
      * @return
      */
-    public  IPersistentVector getAllSubClasses() {
-        return getArrayAsVector(this.theClass.getDeclaredClasses());
+    public  IPersistentVector getPublicSubClasses() {
+        return getArrayAsVector(this.theClass.getClasses());
     }
 
     public static  Boolean isAssignable(Class<?> interfaceToCheck,
