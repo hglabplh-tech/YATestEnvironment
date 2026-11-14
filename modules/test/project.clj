@@ -13,7 +13,7 @@
                  [org.clojars.hglabplh/yatest-reflect "1.4.0-SNAPSHOT"]
                  [org.junit.platform/junit-platform-commons "1.9.1"]
                  [de.active-group/active-clojure "0.45.1"]
-                 [de.active-group/active-data "0.4.0"]
+                 [de.active-group/active-data "0.4.0" :exclusions [org.clojure/clojure]]
                  [prismatic/schema "1.4.2"]]
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]

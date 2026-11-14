@@ -11,7 +11,7 @@
                                     :password :env/clojars_password}]]
   :dependencies [[org.clojure/clojure "1.12.6"]
                  [de.active-group/active-clojure "0.45.1"]
-                 [de.active-group/active-data "0.4.0"]
+                 [de.active-group/active-data "0.4.0" :exclusions [org.clojure/clojure]]
                  [jakarta.validation/jakarta.validation-api "3.0.2"]
                  [org.hibernate.validator/hibernate-validator "8.0.1.Final"]
                  [org.glassfish/jakarta.el "4.0.2"]
