@@ -23,7 +23,7 @@
   [all-meta-data gen-meta-data] ;; FIXME metadata have to be overviewed
   (let [active-fun-meta (get all-meta-data fn-realm-meta-key {})
         schema-meta-data (get all-meta-data :schema)
-        result-meta (conj {:schema schema-meta-data fn-realm-meta-key active-fun-meta}  gen-meta-data)]
+        result-meta (conj {:schema schema-meta-data fn-realm-meta-key active-fun-meta}  all-meta-data)]
     result-meta
 
     )

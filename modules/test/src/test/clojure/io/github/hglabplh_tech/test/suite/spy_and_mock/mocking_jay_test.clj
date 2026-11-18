@@ -26,6 +26,31 @@
     (println msg res)
     (boolean res)))
 
+(clojure.core/defn factorial
+      ([n] (factorial n 1))
+      ([n acc]
+       (if (zero? n)
+         acc
+         (recur (dec n) (*' acc n)))))
+
+(clojure.core/defn factorial-wo-recur
+  ([n] (factorial-wo-recur n 1))
+  ([n acc]
+   (if (zero? n)
+     acc
+     (factorial-wo-recur (dec n) (*' acc n)))))
+
+(clojure.core/defn format-message
+      "Formats a message with positional arguments and optional named parameters."
+      [recipient body & {:keys [greeting punctuation uppercase?]
+                         :or   {greeting "Hello"
+                                punctuation "!"
+                                uppercase? false}}]
+      (let [msg (str greeting ", " recipient ": " body punctuation)]
+        (if uppercase?
+          (.toUpperCase msg)
+          msg)))
+
 (defn fun-store-being-spyed :- realm/boolean
       [msg :- realm/string a :- realm/number b :- realm/number]
   (let [res (* a b)]
@@ -40,7 +65,7 @@
     [(fun-store-being-spyed "Inner call: " 5 6) result])
   ))
 
-(prolog to-spy  my-enum-test try-it fun-store-being-spyed)
+(prolog to-spy  my-enum-test try-it fun-store-being-spyed factorial factorial-wo-recur format-message)
 (prolog to-mock  i-am-a-fake-fun )
 (deftest test-extended-mock
   (testing "the extended mock"
@@ -85,9 +110,23 @@
     ))
 
 (deftest test-example-spy
-  (testing "A simple test for spy functionality"
+  (testing "A simple test for spy functionality with enums"
     (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
     (pprint (my-enum-test  64.5 :two))
     (pprint (get-spy-statistics-by-funs 'my-enum-test))
     (pprint (get-spy-flow-stats))
+    ))
+
+(deftest test-fun-with-named-params
+  (testing "A test for spy functionality with recursive and with named parameters"
+    (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
+    (factorial 10)
+    (factorial-wo-recur 10)
+    (format-message "Bob" "Server is down" :uppercase? true :greeting "Alert")
+    (println "=============== mock-meta==============================")
+    (pprint @mock-meta)
+    (println "=============== END mock-meta==============================")
+    (pprint (get-spy-statistics-by-funs 'process-items 'factorial-wo-recur 'factorial))
+    (pprint (get-spy-flow-stats))
+    (pprint (get-recur-data))
     ))

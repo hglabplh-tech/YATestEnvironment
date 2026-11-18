@@ -10,6 +10,7 @@
                                     :username :env/clojars_username
                                     :password :env/clojars_password}]]
   :dependencies [[org.clojure/clojure "1.12.6"]
+                 [com.rpl/specter "1.1.6"]
                  [de.active-group/active-clojure "0.45.1"]
                  [de.active-group/active-data "0.4.0" :exclusions [org.clojure/clojure]]
                  [prismatic/schema "1.4.2"]
@@ -31,6 +32,7 @@
   :javac-options ["--release" "17"]
   ;; Clojure sources are required by consumers; do not use :omit-source true.
   :omit-source false
+  :offline?  false
   :test-selectors {:default (complement :integration)
                    :integration :integration
                    ;; This selector matches absolutely nothing

@@ -4,6 +4,7 @@
             [active.data.realm.attach :refer :all]
             [clojure.pprint :refer :all]
             [clojure.spec.alpha :as spec]
+            [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]
             [io.github.hglabplh-tech.reflect.clojure.active-data.parse-meta :as pactd]
             [io.github.hglabplh-tech.reflect.clojure.analyze.fun-analyzer :refer :all]
             [schema.core]))
@@ -147,72 +148,6 @@
     (assoc parameter :type-hint hint)
     parameter))
 
-(clojure.core/defn parse-arglist-with-hints
-  "Reflect the first arity's positional, named and rest parameters.
-   Preserve specs and defaults; include :type-hint only when declared."
-  [fun-meta]
-  (let [func-name (symbol (str (:ns fun-meta) "/" (:name fun-meta)))
-        raw-args-lists (:arglists fun-meta)                 ;; parse more than one arg
-        fixed-args (mapv (clojure.core/fn [raw-args]
-                           (take-while #(not= '& %) raw-args)) raw-args-lists)
-        rest-args (mapv (clojure.core/fn [raw-args]
-                          (second (drop-while #(not= '& %) raw-args))) raw-args-lists)
-        destructured-map (mapv (clojure.core/fn [rest-arg]
-                                 (first (filter map? (concat fixed-args [rest-arg])))) rest-args)
-        spec-form (when-let [sp (spec/get-spec func-name)]
-                    (spec/describe sp))
-        flat-spec-lookup (apply hash-map (rest spec-form))
-        args-spec (:args flat-spec-lookup)
-        pos-specs (when (and (seq? args-spec)
-                             (contains? #{'cat 'clojure.spec.alpha/cat}
-                                        (first args-spec)))
-                    (mapv second (partition 2 (rest args-spec))))
-        keys-spec-form (->> args-spec
-                            (tree-seq coll? seq)
-                            (filter #(and (seq? %)
-                                          (contains? #{'keys 'clojure.spec.alpha/keys}
-                                                     (first %))))
-                            first)
-        keys-map (when keys-spec-form
-                   (apply hash-map (rest keys-spec-form)))
-        req-keys (set (map (comp symbol name) (:req-un keys-map)))
-        opt-keys (set (map (comp symbol name) (:opt-un keys-map)))
-        return-hint (mapv (clojure.core/fn [raw-args] (or (:tag fun-meta) (:tag (meta raw-args)))) raw-args-lists)
-        result
-        {:function-name func-name
-         :positional-parameters
-         (->> fixed-args
-              (map-indexed
-                (clojure.core/fn [position binding-form]
-                  (when (symbol? binding-form)
-                    (with-type-hint
-                      {:param    binding-form
-                       :position position
-                       :spec     (get pos-specs position)}
-                      binding-form))))
-              (remove nil?)
-              vec)
-         :named-parameters
-         (when destructured-map
-           (let [defaults (:or destructured-map)]
-             (into {}
-                   (map (clojure.core/fn [k]
-                          [k (with-type-hint
-                               {:required? (contains? req-keys k)
-                                :optional? (contains? opt-keys k)
-                                :default   (get defaults k :none)}
-                               k)]))
-                   (:keys destructured-map))))
-         :return-spec   (:ret flat-spec-lookup)}]
-    (mapv (clojure.core/fn [rest-arg] (cond-> result
-                                              return-hint (assoc :return-type-hint return-hint)
-                                              (symbol? rest-arg)
-                                              (assoc :rest-parameter
-                                                     (with-type-hint {:param rest-arg :variadic? true} rest-arg)))) rest-args)
-
-    ))
-
-
 (clojure.core/defn parse-meta-to-map [schema-val]
 
   (let [return-type (second (first schema-val))
@@ -244,9 +179,9 @@
                                      :private         priv
                                      :line            the-line
                                      :column          the-column
-                                     :args-types-list (parse-arglist-with-hints fun-meta)
+                                     :args-types-list (pspecs/reflect-mixed-params fun-meta)
                                      }
-                         :add-on    (conj {:cloj-specs  (parse-arglist-with-hints fun-meta)
+                         :add-on    (conj {:cloj-specs  (pspecs/reflect-mixed-params fun-meta)
                                            :schema      (parse-meta-to-map schema-val)
                                            :active-data (get-decompiled-active-data fun-meta)})}}
 
