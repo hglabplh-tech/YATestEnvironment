@@ -7,7 +7,7 @@
             [active.data.realm.attach :refer :all]
             [schema.core :as s]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
             [io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns :refer :all]
             [io.github.hglabplh-tech.test.suite.spy-and-mock.mocking-j-collector :as collector])

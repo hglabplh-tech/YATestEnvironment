@@ -5,16 +5,16 @@
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]
             [io.github.hglabplh-tech.test.suite.spy-and-mock.mocking-j-collector :as collector]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all])
-  (:import (io.github.hglabplh_tech.tests.utils Utilities))
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :refer :all])
+
 
   )
 
-(declare qualified-fun-name-with-thread-prefix)
 (declare collect-recur-data)
 (declare collect-flow-statistics)
 (declare collect-exception-statistics)
-(declare get-spy-flow-stats )
+(declare get-spy-flow-stats)
+(declare filter-action)
 
 
 (clojure.core/defn any-boolean? [value] (boolean? value))
@@ -131,61 +131,84 @@
       (finally
         (collect-recur-data :ret-from thread-fun-name)))))
 
+(clojure.core/defn- rule-args-match? [rule args]
+  (let [predicates (:param-cond (:when-clauses rule))]
+    (and (= (count predicates) (count args))
+         (every? true? (map (clojure.core/fn [pred value]
+                              (boolean (pred value)))
+                            predicates
+                            args)))))
 
-;;(call-cond-> i-am-a-fake-fun-store
-;                 :when
-;                 :any-boolean?-key :<-
-;                 [[:any-int?-key :$] [:any-int?-key :$] [:any-int?-key :$]
-;                   [:any-set-of?-key :$ integer?]]
-;                 [return-val 5]
-;                 :else
-;                 [do-nothing])
-(defn call-cond-> [fun
-                   cond?
-                   ret-val-predicate
-                   delim
-                   args-vect
-                   when-action-vect
-                   else?
-                   else-action-vect]
-  (let [ret-val-pred# ret-val-predicate
-        delim?-ok# (= delim :<-)
-        args-list# (map
-                     (clojure.core/fn [arg-element]
-                       (let [arg-pred-key (first arg-element)
-                             arg-pred (if (keyword? arg-pred-key)
-                                        (get-type-pred-by-key arg-pred-key)
-                                        arg-pred-key)
-                             parameters (rest arg-element)]
-                         (clojure.core/fn [value]
-                           ;; has to be rewritten because also
-                           ;; zero parms are possible (should work !!!)
-                           (if (not= (count parameters) 0)
-                             (if (and (= :$ (first parameters))
-                                      (= (count parameters) 2))
-                               (apply arg-pred
-                                      (list value
-                                            (second parameters)))
-                               (arg-pred value))
-                             (arg-pred value))
-                           ))) args-vect)
-        when-action (ArgCond. (first when-action-vect)
-                              (rest when-action-vect))
-        else-action (if else?
-                      (ArgCond. (first else-action-vect)
-                                (rest else-action-vect))
-                      nil)]
+(clojure.core/defn- call-rule-action [action]
+  (apply (:fun action) (:params action)))
 
-    (if delim?-ok#
-      (swap! rule-vect conj
-             (Rule. fun
-                    (WhenClauses. ret-val-pred# args-list#)
-                    when-action
-                    else-action
-                    ))
-      (throw (java.lang.IllegalArgumentException.
-               "macro syntax !!! "
-               )))))
+
+(clojure.core/defn fun-mock-call [fun & args]
+  (apply filter-action fun fun args))
+
+
+(clojure.core/defn register-rule!
+  [fun-var cond? ret-val-predicate delim args-vect when-action-vect else? else-action-vect]
+  (when-not (and (= cond? :when) (= delim :<-))
+    (throw (java.lang.IllegalArgumentException.
+             "Invalid call-cond-> syntax! Expected :when <ret-pred> :<- <args-vect> <when-action> [:else <else-action>]")))
+  (let [fun-meta  (meta fun-var)
+        qual-sym  (symbol (qualified-fun-name fun-meta))
+        args-list (mapv
+                    (clojure.core/fn [arg-element]
+                      (let [arg-pred-key (first arg-element)
+                            arg-pred     (if (keyword? arg-pred-key)
+                                           (get-type-pred-by-key arg-pred-key)
+                                           arg-pred-key)
+                            parameters   (rest arg-element)]
+                        (clojure.core/fn [value]
+                          (if (and (= :$ (first parameters))
+                                   (= (count parameters) 2))
+                            (apply arg-pred (list value (second parameters)))
+                            (arg-pred value)))))
+                    args-vect)
+        when-action (ArgCond. (first when-action-vect) (rest when-action-vect))
+        else-action (when (= else? :else)
+                      (ArgCond. (first else-action-vect) (rest else-action-vect)))]
+    (swap! rule-vect conj
+           (Rule. qual-sym
+                  (WhenClauses. ret-val-predicate args-list)
+                  when-action
+                  else-action))))
+
+(defmacro call-cond->
+  "Registers a mock condition rule for `fun` without requiring quoted symbols.
+   Supports optional :else clause and multiple rules per function."
+  ([fun cond? ret-val-predicate delim args-vect when-action-vect]
+   `(register-rule! (var ~fun) ~cond? ~ret-val-predicate ~delim ~args-vect ~when-action-vect nil nil))
+  ([fun cond? ret-val-predicate delim args-vect when-action-vect else? else-action-vect]
+   `(register-rule! (var ~fun) ~cond? ~ret-val-predicate ~delim ~args-vect ~when-action-vect ~else? ~else-action-vect)))
+
+(clojure.core/defn find-action-rules-for-fun
+  "Returns all rules registered for the function described by `fun-meta`."
+  [fun-meta]
+  (let [unqual-sym (:name fun-meta)
+        qual-sym   (symbol (qualified-fun-name fun-meta))]
+    (filter (clojure.core/fn [rule]
+              (let [target (:function-name rule)]
+                (or (= target qual-sym)
+                    (= target unqual-sym))))
+            @rule-vect)))
+
+(clojure.core/defn filter-action
+  "Evaluates all rules for `fun-meta` in registration order.
+   Executes the first matching :when-action, otherwise the first :else-action,
+   or delegates to the original `func`."
+  [func fun-meta & args]
+  (let [rules (find-action-rules-for-fun fun-meta)]
+    (if (seq rules)
+      (if-let [matched-rule (first (filter #(rule-args-match? % args) rules))]
+        (call-rule-action (:when-action matched-rule))
+        (if-let [fallback-action (some :else-action rules)]
+          (call-rule-action fallback-action)
+          (apply func args)))
+      (apply func args))))
+
 
 
 (clojure.core/defn return-val [value]
@@ -198,30 +221,13 @@
 (clojure.core/defn do-nothing [& _]
   'nothing)
 
-(clojure.core/defn find-action-rule-for-fun [func-name]
-  (first (filter (clojure.core/fn [element]
-                   (= func-name (:function-name element)))
-                 @rule-vect)))
-
 (clojure.core/defn find-meta-for-fun [func-name]
   (first (filter (clojure.core/fn [element]
                    (= func-name (:function-name element)))
                  @mock-meta)))
 
-(clojure.core/defn find-ns-data []
-  @mock-meta)
 
-(clojure.core/defn find-mocked-fun [func-name]
-  (first (filter (clojure.core/fn
-                   [element]
-                   (= func-name (:function-name element)))
-                 @redirected-bindings)))
 
-(defn qualified-fun-name [fun-meta]
-  (str (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
-
-(defn qualified-fun-name-with-thread-prefix [fun-meta]
-  (str (Utilities/getThreadIdentifierPrefix) (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
 
 (clojure.core/defn reset-spy-state!
   "Resets all spy, mock, recursion, and metadata tracking atoms to their initial empty state."
@@ -438,32 +444,6 @@
 (defn find-meta-for-fun [function-id]
   (get @mock-meta function-id))
 
-(clojure.core/defn- rule-args-match? [rule args]
-  (let [predicates (:param-cond (:when-clauses rule))]
-    (and (= (count predicates) (count args))
-         (every? true? (map (clojure.core/fn [pred value]
-                              (boolean (pred value)))
-                            predicates
-                            args)))))
-
-(clojure.core/defn- call-rule-action [action]
-  (apply (:fun action) (:params action)))
-
-;; rewrite this fun does not fit to be called from a macro :-(
-(clojure.core/defn filter-action [func func-name & args]
-  (let [rule (find-action-rule-for-fun func-name)]
-    (if (not (nil? rule))
-      (if (rule-args-match? rule args)
-        (call-rule-action (:when-action rule))
-        (if-let [else-action (:else-action rule)]
-          (call-rule-action else-action)
-          (apply func args)))
-      (apply func args))))
-
-(clojure.core/defn fun-mock-call [fun & args]
-  (apply filter-action fun fun args))
-
-
 (defn store-real-fun [orig-fn meta-ns-name meta-fun-name fun-meta-data]
   (let [q-name (qualified-fun-name fun-meta-data)]
     ;; Only store if not already redirected so double-spying doesn't overwrite the original fn
@@ -491,14 +471,6 @@
             (fn [f]
               (fn [& args#]
                 (invoke-with-tracking fun-meta# args# #(apply filter-action f fun-meta# args#))))))))))
-
-(defmacro mock
-  "mocks 1..n functions take care and only mock if the functions call things which you do not want to have
-  in your UNIT - Test AND which are extern to your project otherwise if this is necessary
-  you may have to do a redesign of this part for in a well-designed project this should NEVER
-  be needed if it is your own code"
-  [& namespaces]
-  `(do ~@(map mock-hook namespaces)))
 
 (defn find-in-list [the-list to-find]
 
@@ -638,9 +610,21 @@
                   (fun-spy-call f fun-meta# stack-trc-data)
                   (invoke-with-tracking fun-meta# args# #(apply f args#)))))))))))
 
+(defmacro mock
+  "Mocks 1..n namespaces at runtime after `prolog` has tagged target Vars."
+  [& namespaces]
+  `(do ~@(map (clojure.core/fn [ns-sym] `(mock-hook '~ns-sym)) namespaces)))
+
 (defmacro spy
+  "Spies on 1..n namespaces at runtime after `prolog` has tagged target Vars."
   [& name-spaces]
-  `(do ~@(map spy-hook name-spaces)))
+  `(do ~@(map (clojure.core/fn [ns-sym] `(spy-hook '~ns-sym)) name-spaces)))
+
+(defmacro restore-orig-funs
+  "Restores original function bindings for 1..n namespaces at runtime."
+  [& names]
+  `(do ~@(map (clojure.core/fn [ns-sym] `(restore-real-funs '~ns-sym)) names)))
+
 
 (defn the-prolog-1
   "Expands to code that registers the namespace and pre-caches reflection metadata in @mock-meta."
@@ -649,20 +633,16 @@
          the-fun-ns# (ns-name (get the-meta# :ns))]
      (collect-meta-by-ns the-fun-ns#)
      (collect-fun-meta-data the-meta#)))
+
 (defmacro prolog
   [key & names]
   (case key
     to-spy
     `(do
-       ~@(map (make-fn add-meta-spy) names)
+       ~@(map (clojure.core/fn [n] `(add-meta-spy ~n)) names)
        ~@(map the-prolog-1 names))
     to-mock
     `(do
-       ~@(map (make-fn add-meta-mock) names)
+       ~@(map (clojure.core/fn [n] `(add-meta-mock ~n)) names)
        ~@(map the-prolog-1 names))))
 
-(defmacro restore-orig-funs
-  "restore the functions to original references"
-  [& names]
-  `(do
-     ~@(map restore-real-funs names)))

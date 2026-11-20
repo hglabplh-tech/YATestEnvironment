@@ -1,7 +1,7 @@
 (ns io.github.hglabplh-tech.test.suite.spy-and-mock.full-excp-params-stack-trace-spy-test
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]))
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :refer :all]))
 
 ;; Target functions for spy and mock tests
 (defn divide-checked [a b]

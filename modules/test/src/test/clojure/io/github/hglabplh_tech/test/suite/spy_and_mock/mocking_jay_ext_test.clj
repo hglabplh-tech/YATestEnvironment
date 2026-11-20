@@ -4,7 +4,7 @@
             [active.data.realm :as realm]
             [active.data.realm.attach :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :refer :all]
             [io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay :refer :all]
             [schema.core :as s]))
 

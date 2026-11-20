@@ -1,18 +1,23 @@
 ;; (c) Harald Glab-Plhak
 ;; TODO: look for a better place for each function here some functions are really for mock / spy but some are reflective. Refacture this later
-(ns io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util
+(ns io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util
   (:refer-clojure :exclude [defn fn])
   (:require [clojure.walk :refer :all]
             [clojure.pprint :refer :all]
             [active.data.realm.attach :refer :all]
             [clojure.pprint :refer :all]
             [clojure.test :refer :all]
-            [schema.spec.core :refer :all]
-            ))
+            [schema.spec.core :refer :all])
+  (:import (io.github.hglabplh_tech.tests.utils Utilities))
+  )
 (def to-spy :spy-key)
 (def to-mock :mock-key)
 
+(clojure.core/defn qualified-fun-name [fun-meta]
+      (str (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
 
+(clojure.core/defn qualified-fun-name-with-thread-prefix [fun-meta]
+      (str (Utilities/getThreadIdentifierPrefix) (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
 
 (clojure.core/defn get-fun-meta [fun-sym]
   (meta (resolve fun-sym)))
