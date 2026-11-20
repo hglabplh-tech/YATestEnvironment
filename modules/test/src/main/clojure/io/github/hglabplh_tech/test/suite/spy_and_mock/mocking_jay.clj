@@ -3,12 +3,19 @@
             [clojure.string :as str]
             [clojure.walk :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
+            [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]
             [io.github.hglabplh-tech.test.suite.spy-and-mock.mocking-j-collector :as collector]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all]
-            [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs])
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.fun-meta-util :refer :all])
   (:import (io.github.hglabplh_tech.tests.utils Utilities))
 
   )
+
+(declare qualified-fun-name-with-thread-prefix)
+(declare collect-recur-data)
+(declare collect-flow-statistics)
+(declare collect-exception-statistics)
+(declare get-spy-flow-stats )
+
 
 (clojure.core/defn any-boolean? [value] (boolean? value))
 (clojure.core/defn any-byte? [value] (= (type value) java.lang.Byte))
@@ -105,7 +112,24 @@
 
 (def rule-vect (atom []))
 
+(def track-exceptions? (atom true))
 
+
+(clojure.core/defn- invoke-with-tracking
+  "Wraps `invoke-fn` with recursion tracking, return flow statistics, and conditional
+   exception tracking in a try/catch/finally block."
+  [fun-meta args invoke-fn]
+  (let [thread-fun-name (qualified-fun-name-with-thread-prefix fun-meta)]
+    (collect-recur-data :enter thread-fun-name)
+    (try
+      (let [result (invoke-fn)]
+        (collect-flow-statistics fun-meta result args)
+        result)
+      (catch Throwable ex
+        (collect-exception-statistics fun-meta ex args)
+        (throw ex))
+      (finally
+        (collect-recur-data :ret-from thread-fun-name)))))
 
 
 ;;(call-cond-> i-am-a-fake-fun-store
@@ -197,14 +221,33 @@
   (str (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
 
 (defn qualified-fun-name-with-thread-prefix [fun-meta]
-  (str (Utilities/getThreadIdentifierPrefix)  (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
+  (str (Utilities/getThreadIdentifierPrefix) (ns-name (:ns fun-meta)) "/" (:name fun-meta)))
 
-(clojure.core/defn collect-fun-meta-data [fun-name fun-meta]
-  (if (= (find-meta-for-fun fun-name) nil)
-    (swap! mock-meta assoc
-           (qualified-fun-name fun-meta)
-           (get-structured-meta-data fun-meta)))
-  )
+(clojure.core/defn reset-spy-state!
+  "Resets all spy, mock, recursion, and metadata tracking atoms to their initial empty state."
+  []
+  (reset! mock-meta {})
+  (reset! ns-f-meta-atom [])
+  (reset! redirected-bindings {})
+  (reset! statistic-control-flow {:flow-stats [] :statistics {}})
+  (reset! recur-data-vect [])
+  (reset! recur-data-map {})
+  (reset! control-flow-collection {:language :clojure :funcalls []})
+  (reset! rule-vect [])
+  :reset-done)
+
+
+(clojure.core/defn collect-fun-meta-data
+  "Populates @mock-meta once per qualified function name if not already cached."
+  [fun-meta]
+  (let [q-name (qualified-fun-name fun-meta)]
+    (or (find-meta-for-fun q-name)
+        (get (swap! mock-meta
+                    (fn [m]
+                      (if (contains? m q-name)
+                        m
+                        (assoc m q-name (get-structured-meta-data fun-meta)))))
+             q-name))))
 
 (clojure.core/defn collect-recur-data [trigger-key fun-name]
   (if (get @recur-data-map fun-name)
@@ -212,9 +255,9 @@
                                      fun-name
                                      :recursive?
                                      (> (get @recur-data-map fun-name) 1)})
-    (if (= trigger-key :enter)
-      (swap! recur-data-map update fun-name inc)
-      (swap! recur-data-map update fun-name dec)))
+        (if (= trigger-key :enter)
+          (swap! recur-data-map update fun-name inc)
+          (swap! recur-data-map update fun-name dec)))
 
     (do (swap! recur-data-map conj {fun-name 1})
         (swap! recur-data-vect conj {trigger-key fun-name :recursive? false}))))
@@ -223,15 +266,97 @@
   {:fun-vector @recur-data-vect :fun-call-map @recur-data-map}
   )
 
+(defn restore-real-funs
+  [sut]
+  (let [sut-publics (vals (ns-publics sut))]
+    (doseq [curf sut-publics]
+      (when (or (some? (:mock-key (meta curf)))
+                (some? (:spy-key (meta curf))))
+        (let [fun-name# (qualified-fun-name (meta curf))]
+          (when-let [[_ _ orig-fn# _] (get @redirected-bindings fun-name#)]
+            (alter-var-root curf (constantly orig-fn#))
+            (alter-meta! curf dissoc to-spy to-mock)
+            (swap! redirected-bindings dissoc fun-name#)))))))
+
+(clojure.core/defn reset-spy-state!
+  "Resets all spy, mock, recursion, exception tracking, and metadata atoms."
+  []
+  (reset! mock-meta {})
+  (reset! ns-f-meta-atom [])
+  (reset! redirected-bindings {})
+  (reset! statistic-control-flow {:flow-stats [] :statistics {}})
+  (reset! recur-data-vect [])
+  (reset! recur-data-map {})
+  (reset! control-flow-collection {:language :clojure :funcalls []})
+  (reset! rule-vect [])
+  (reset! track-exceptions? true)
+  :reset-done)
+
+(clojure.core/defn make-spy-fixture
+  "Returns a clojure.test :each fixture that restores original functions in `namespaces`
+   and resets all spy/mock atoms before and after every test."
+  [& namespaces]
+  (clojure.core/fn [test-fn]
+    (reset-spy-state!)
+    (try
+      (test-fn)
+      (finally
+        (doseq [ns-sym namespaces]
+          (restore-real-funs ns-sym))
+        (reset-spy-state!)))))
+
+(defmacro with-exception-tracking
+  "Temporarily sets `track-exceptions?` policy (`true`, `false`, or predicate fn) for `body`,
+   restoring the previous setting afterwards."
+  [policy & body]
+  `(let [prev# @track-exceptions?]
+     (reset! track-exceptions? ~policy)
+     (try
+       ~@body
+       (finally
+         (reset! track-exceptions? prev#)))))
+
+(clojure.core/defn get-tracked-exceptions
+  "Returns all flow-stats entries where `:threw?` is true."
+  []
+  (filterv :threw? (map first (get-spy-flow-stats))))
+
+(clojure.core/defn get-normal-returns
+  "Returns all flow-stats entries where `:threw?` is false."
+  []
+  (filterv (comp not :threw?) (map first (get-spy-flow-stats))))
+
+
+(clojure.core/defn printerr [& args]
+  (binding [*out* *err*]
+    (apply println args)))
+
+(clojure.core/defn get-cached-args-descr
+  "Retrieves pre-reflected :args-types-list from @mock-meta, populating @mock-meta if absent."
+  [fun-meta]
+  (let [q-name (qualified-fun-name fun-meta)
+        cached (or (find-meta-for-fun q-name)
+                   (let [structured (get-structured-meta-data fun-meta)]
+                     (swap! mock-meta assoc q-name structured)
+                     structured))]
+    (get-in cached [:structured-meta :base-data :args-types-list])))
+
 (clojure.core/defn add-upd-spy-statistics
-  "Macro to set the Meta of the mocked function to a spy"
+  "Records normal return flow statistics and increments call count."
   [fun-name fun-args-descr call-count ret-val args]
-  (let [recursive-call? (> (get @recur-data-map fun-name) 1)]
+  (let [recursive-call? (> (get @recur-data-map fun-name 0) 1)]
     (swap! statistic-control-flow update :flow-stats conj
-           [{:name fun-name :args args :args-descr fun-args-descr :ret-val ret-val}])
-    (swap! statistic-control-flow update :statistics conj
-           {fun-name
-            {:fun-calls-count call-count}})))
+           [{:name       fun-name
+             :args       args
+             :pos-args   (pspecs/format-args fun-args-descr args)
+             :args-descr fun-args-descr
+             :recursive? recursive-call?
+             :threw?     false
+             :ret-val    ret-val}])
+    (swap! statistic-control-flow update-in [:statistics fun-name]
+           (fn [existing]
+             (-> (or existing {:fun-calls-count 0 :exceptions-count 0})
+                 (assoc :fun-calls-count call-count))))))
 
 (clojure.core/defn get-spy-statistics                       ;; TODO: make the function more flexible -> see below logic
   "Macro to set the Meta of the mocked function to a spy"
@@ -257,30 +382,58 @@
   (let [raw-stats (:flow-stats @statistic-control-flow)]
     raw-stats))
 
-(clojure.core/defn collect-flow-statistics [fun-meta ret-value args]
-  (let [fun-name# (qualified-fun-name-with-thread-prefix fun-meta)
-        fun-args-descr# (pspecs/reflect-mixed-params fun-meta)
-        fun-calls# (:fun-calls-count
-                     (get (:statistics @statistic-control-flow) fun-name#))
-        funcall-counter# (if fun-calls# (inc fun-calls#) 1)]
-    (println "fun stat collect: " fun-name#)
-    (add-upd-spy-statistics fun-name# fun-args-descr# funcall-counter# ret-value args)
-    ))
+(clojure.core/defn collect-flow-statistics
+  "Records normal return flow statistics using pre-cached reflection metadata."
+  [fun-meta ret-value args]
+  (let [fun-name#        (qualified-fun-name-with-thread-prefix fun-meta)
+        fun-args-descr#  (get-cached-args-descr fun-meta)
+        fun-calls#       (get-in @statistic-control-flow [:statistics fun-name# :fun-calls-count] 0)
+        funcall-counter# (inc fun-calls#)]
+    (add-upd-spy-statistics fun-name# fun-args-descr# funcall-counter# ret-value args)))
 
 (clojure.core/defn get-spy-statistics-by-funs
-  [& fun-syms]
-  (let [fun-syms# (mapv str fun-syms)
-        fun-stats# (get-spy-statistics fun-syms#)]
-    {:selected-stats fun-stats#}))
+  "Returns a structured report of statistics, flow entries, exceptions,
+   recursion tracking, and cached reflection metadata.
+   - When called with no arguments: returns data for ALL mocked and spied functions.
+   - When called with `fun-syms`: filters results to matching function names."
+  ([]
+   (get-spy-statistics-by-funs nil))
+  ([& fun-syms]
+   (let [fun-parts      (->> fun-syms (remove nil?) (mapv str))
+         matches-fun?   (fn [entry-name]
+                          (or (empty? fun-parts)
+                              (some #(str/includes? (str entry-name) %) fun-parts)))
+         raw-stats      (:statistics @statistic-control-flow)
+         selected-stats (into {}
+                              (filter (fn [[k _]] (matches-fun? k)))
+                              raw-stats)
+         all-flows      (mapv first (:flow-stats @statistic-control-flow))
+         selected-flows (filterv #(matches-fun? (:name %)) all-flows)
+         exceptions     (filterv :threw? selected-flows)
+         normal-returns (filterv (comp not :threw?) selected-flows)
+         recur-vect     (filterv (fn [entry]
+                                   (some matches-fun? (vals entry)))
+                                 @recur-data-vect)
+         recur-map      (into {}
+                              (filter (fn [[k _]] (matches-fun? k)))
+                              @recur-data-map)
+         selected-meta  (into {}
+                              (filter (fn [[k _]] (matches-fun? k)))
+                              @mock-meta)
+         hooked-funs    (->> (keys @redirected-bindings)
+                             (filter matches-fun?)
+                             vec)]
+     {:hooked-functions hooked-funs
+      :selected-stats   selected-stats
+      :summary          {:total-calls      (reduce + 0 (map :fun-calls-count (vals selected-stats)))
+                         :total-exceptions (reduce + 0 (map #(get % :exceptions-count 0) (vals selected-stats)))}
+      :flow-stats       selected-flows
+      :exceptions       exceptions
+      :normal-returns   normal-returns
+      :recursion        {:call-log  recur-vect
+                         :depth-map recur-map}
+      :reflected-meta   selected-meta})))
 
-(clojure.core/defn collect-flow-calls [fun-meta ret-value & args] ;; TODO: this should be deleted and info moved to statistics
-  (let [fun-name (qualified-fun-name fun-meta)
-        fun-args-descr (get fun-meta :arglists)]
-  (swap! control-flow-collection update :funcalls conj
-         {:function-name fun-name
-          :arguments     (vec args)
-          :return        ret-value})
-  ))
 
 (defn find-meta-for-fun [function-id]
   (get @mock-meta function-id))
@@ -311,55 +464,33 @@
   (apply filter-action fun fun args))
 
 
-(defn store-real-fun [fun-name meta-ns-name meta-fun-name fun-meta-data]
-  (swap! redirected-bindings assoc
-         (qualified-fun-name fun-meta-data)
-         [meta-ns-name meta-fun-name fun-name fun-meta-data])
-  )
+(defn store-real-fun [orig-fn meta-ns-name meta-fun-name fun-meta-data]
+  (let [q-name (qualified-fun-name fun-meta-data)]
+    ;; Only store if not already redirected so double-spying doesn't overwrite the original fn
+    (when-not (contains? @redirected-bindings q-name)
+      (swap! redirected-bindings assoc
+             q-name
+             [meta-ns-name meta-fun-name orig-fn fun-meta-data]))))
 
 
-(defn restore-real-funs
-  [sut]
-  (let [sut-intern (vals (ns-publics sut))]
-    (println sut-intern)
-    (doseq [curf sut-intern]
-      (when (or (some? (:mock-key (meta curf)))
-                (some? (:spy-key (meta curf))))
-        (let [fun-name# (qualified-fun-name (meta curf))]
-          (alter-var-root
-            curf
-            (fn [f]
-              (fn [& args#]
-                (apply f args#))))
-          (swap! redirected-bindings dissoc fun-name#)
-          )))))
+
 
 (defn mock-hook
-  "Add some basic instrumentation to each var in a given namespace `sut`.
-  A poor man's profiler, this simply prints out the name of each
-  fn (var) when run."
+  "Adds mock rule dispatch with recursion tracking, flow statistics,
+   and conditional exception tracking (capturing both mocked and real exceptions)."
   [sut]
   (let [sut-intern (vals (ns-publics sut))]
-    (println sut-intern)
     (doseq [curf sut-intern]
       (when (some? (:mock-key (meta curf)))
         (let [fun-name# (get (meta curf) :name)
-              fun-ns# (get (meta curf) :ns)
+              fun-ns#   (get (meta curf) :ns)
               fun-meta# (meta curf)]
-          (store-real-fun curf fun-ns# fun-name# fun-meta#) ; ensure a fn
+          (store-real-fun @curf fun-ns# fun-name# fun-meta#)
           (alter-var-root
             curf
             (fn [f]
               (fn [& args#]
-                (let [result# (apply filter-action f fun-name# args#)]
-                  ;;(collect-flow-statistics fun-meta# result# args#)
-                  (apply collect-flow-calls
-                         fun-meta#
-                         result#
-                         args#)
-                  ))))
-
-          )))))
+                (invoke-with-tracking fun-meta# args# #(apply filter-action f fun-meta# args#))))))))))
 
 (defmacro mock
   "mocks 1..n functions take care and only mock if the functions call things which you do not want to have
@@ -424,37 +555,59 @@
       )
     ))
 
+;; Controls whether/which exceptions are recorded in @statistic-control-flow.
+;; Can be `true` (all exceptions), `false` (none), or a predicate `(fn [ex] ...)`.
+(def track-exceptions? (atom true))
 
-(defn get-processed-stackdata [stack-trace fun-meta]
-  (let [stack-trace-vec (seq stack-trace)
-        processed-stack-data (loop [stack-trace-temp# stack-trace-vec
-                                    result '()]
-                               (if (empty? stack-trace-temp#)
-                                 result
-                                 (let [value (first stack-trace-temp#)
-                                       invocation-type (.getMethodName value)
-                                       fname-st-element (.getFileName value)
-                                       lineno-st-element (.getLineNumber value)
-                                       ns-st-ele-str (.getClassName value)
-                                       ns-element-vect (str/split ns-st-ele-str #"\$")
-                                       real-ns (first ns-element-vect)
-                                       base-fun (second ns-element-vect)
-                                       the-rest (str/join "/" (rest (rest ns-element-vect)))
-                                       ]
-                                   (recur (rest stack-trace-temp#)
-                                          (conj result (filter-stack-data
-                                                         real-ns
-                                                         base-fun
-                                                         the-rest
-                                                         fname-st-element
-                                                         lineno-st-element
-                                                         invocation-type
-                                                         ns-element-vect
-                                                         fun-meta)))
-                                   )
-                                 ))]
-    processed-stack-data))
+(clojure.core/defn should-track-exception? [ex]
+  (let [policy @track-exceptions?]
+    (cond
+      (fn? policy) (boolean (policy ex))
+      :else        (boolean policy))))
 
+(clojure.core/defn collect-exception-statistics
+  "Records thrown exception details into @statistic-control-flow using pre-cached reflection metadata."
+  [fun-meta ex args]
+  (when (should-track-exception? ex)
+    (let [fun-name#        (qualified-fun-name-with-thread-prefix fun-meta)
+          fun-args-descr#  (get-cached-args-descr fun-meta)
+          recursive-call?  (> (get @recur-data-map fun-name# 0) 1)
+          ex-details#      {:class   (.getName (class ex))
+                            :message (.getMessage ex)
+                            :data    (ex-data ex)}]
+      (swap! statistic-control-flow update :flow-stats conj
+             [{:name       fun-name#
+               :args       args
+               :pos-args   (pspecs/format-args fun-args-descr# args)
+               :args-descr fun-args-descr#
+               :recursive? recursive-call?
+               :threw?     true
+               :exception  ex-details#}])
+      (swap! statistic-control-flow update-in [:statistics fun-name#]
+             (fn [existing]
+               (-> (or existing {:fun-calls-count 0 :exceptions-count 0})
+                   (update :fun-calls-count inc)
+                   (update :exceptions-count inc)))))))
+
+
+
+(defmacro with-exception-tracking
+  "Activates or configures exception tracking (`true`, `false`, or predicate fn) for `body`,
+   restoring the previous setting afterwards."
+  [policy & body]
+  `(let [prev# @track-exceptions?]
+     (reset! track-exceptions? ~policy)
+     (try
+       ~@body
+       (finally
+         (reset! track-exceptions? prev#)))))
+
+
+
+(clojure.core/defn get-tracked-exceptions
+  "Returns all flow-stats entries where an exception was thrown and tracked."
+  []
+  (filterv :threw? (map first (get-spy-flow-stats))))
 
 (clojure.core/defn fun-spy-call
   [fun fun-meta stack-trace-data]
@@ -467,55 +620,35 @@
     'spyed))
 
 (defn spy-hook
-  "This hook adds spy functionality to get data for profiling and
-  test data generation and more"
+  "Adds spy instrumentation with stack trace capture, recursion tracking,
+   and automatic conditional exception tracking."
   [sut]
   (let [sut-publics (ns-publics sut)]
-    (println sut-publics)
     (doseq [[_ curf] sut-publics]
       (when (some? (:spy-key (meta curf)))
         (let [fun-name# (get (meta curf) :name)
-              fun-ns# (get (meta curf) :ns)
+              fun-ns#   (get (meta curf) :ns)
               fun-meta# (meta curf)]
-          (do (store-real-fun curf fun-ns# fun-name# fun-meta#) ; ensure a fn
-              (alter-var-root
-                curf
-                (fn [f]
-                  (fn [& args#]
-                    (let [stack-trc-data (.getStackTrace (Thread/currentThread))]
-                      (collect-recur-data :enter (qualified-fun-name-with-thread-prefix fun-meta#))
-                      (fun-spy-call f fun-meta# stack-trc-data)
-                      (let [result# (apply f args#)]
-                        (collect-recur-data :ret-from (qualified-fun-name-with-thread-prefix fun-meta#))
-                        (println "===============================================================")
-                        (pprint fun-meta#)
-                        (pprint (get-structured-meta-data fun-meta#))
-                        (println "===============================================================")
-                        (collect-flow-statistics fun-meta# result# args#)
-                        (apply collect-flow-calls
-                               fun-meta#
-                               result#
-                               args#)
-                        result#)))
-                  )))
-
-          )))))
+          (store-real-fun @curf fun-ns# fun-name# fun-meta#)
+          (alter-var-root
+            curf
+            (fn [f]
+              (fn [& args#]
+                (let [stack-trc-data (.getStackTrace (Thread/currentThread))]
+                  (fun-spy-call f fun-meta# stack-trc-data)
+                  (invoke-with-tracking fun-meta# args# #(apply f args#)))))))))))
 
 (defmacro spy
   [& name-spaces]
   `(do ~@(map spy-hook name-spaces)))
 
 (defn the-prolog-1
+  "Expands to code that registers the namespace and pre-caches reflection metadata in @mock-meta."
   [var-name]
-  `(let [the-meta# (meta (var ~var-name))]
-     (constantly
-       (let [the-fun-name# (get the-meta# :name)
-             the-fun-ns# (ns-name (get the-meta# :ns))]
-         (collect-meta-by-ns the-fun-ns#)
-         (collect-fun-meta-data
-           the-fun-name# the-meta#
-           )))))
-
+  `(let [the-meta#   (meta (var ~var-name))
+         the-fun-ns# (ns-name (get the-meta# :ns))]
+     (collect-meta-by-ns the-fun-ns#)
+     (collect-fun-meta-data the-meta#)))
 (defmacro prolog
   [key & names]
   (case key

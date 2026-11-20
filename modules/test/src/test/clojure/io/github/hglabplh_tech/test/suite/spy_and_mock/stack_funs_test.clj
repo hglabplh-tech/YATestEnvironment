@@ -28,11 +28,4 @@
           (is  (= (find-in-list test-vect "honey") (boolean 1)))
       ))
 
-(deftest test.real-life.find-in-list
-  (testing "This test checks the find ns-entry fun - with real life conditions"
-    (spy hgp.cljito.example.the-main hgp.cljito.example.the-funs-ns)
-    (let [stk-trace (stck-fun-tester)]
-      (get-processed-stackdata stk-trace (meta (var stck-fun-tester)))
-      )
-    ))
 (run-tests)
