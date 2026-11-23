@@ -69,6 +69,7 @@
 (prolog to-mock  i-am-a-fake-fun )
 (deftest test-extended-mock
   (testing "the extended mock"
+    ;; TODO: correct this thing and double check the logic behind
     (call-cond-> 'i-am-a-fake-fun-store
                  :when
                  :any-boolean?-key :<-
@@ -83,14 +84,14 @@
 
 (deftest test-extended.mock-act-data
   (testing "the extended mock"
-    (call-cond-> 'i-am-a-fake-fun
+    (call-cond-> i-am-a-fake-fun
                  :when
                  :any-boolean?-key :<-
-                 [[:any-string?-key :$] [:any-int?-key :$] [:any-int?-key :$]
-                  ]
+                 [[:any-string?-key] [:any-int?-key] [:any-int?-key]]
                  [return-val 5]
                  :else
                  [return-val "real-fun"])
+
 
     (mock  io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay-test)
     (println  "get it" (i-am-a-fake-fun "Hi" 8 9 ))
@@ -119,14 +120,12 @@
 
 (deftest test-fun-with-named-params
   (testing "A test for spy functionality with recursive and with named parameters"
-    (spy io.github.hglabplh_tech.reflect.examples.clojure.the-funs-ns)
+    (spy io.github.hglabplh_tech.test.suite.spy-and-mock.mocking-jay-test)
     (factorial 10)
     (factorial-wo-recur 10)
     (format-message "Bob" "Server is down" :uppercase? true :greeting "Alert")
     (println "=============== mock-meta==============================")
-    (pprint @mock-meta)
+    ;;(pprint @mock-meta)
     (println "=============== END mock-meta==============================")
-    (pprint (get-spy-statistics-by-funs 'process-items 'factorial-wo-recur 'factorial))
-    (pprint (get-spy-flow-stats))
-    (pprint (get-recur-data))
-    ))
+    (pprint (get-spy-statistics-by-funs 'process-items 'factorial-wo-recur 'factorial 'format-message))))
+
