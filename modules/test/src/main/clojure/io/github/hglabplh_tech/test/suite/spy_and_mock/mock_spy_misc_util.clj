@@ -1,16 +1,16 @@
 ;; (c) Harald Glab-Plhak
 (ns io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util
   (:refer-clojure :exclude [defn])
-  (:require [clojure.walk :refer :all]
+  (:require [active.data.realm.attach :refer :all]
             [clojure.pprint :refer :all]
-            [active.data.realm.attach :refer :all]
             [clojure.pprint :refer :all]
-            [clojure.test :refer :all]
             [clojure.string :as str]
-            [schema.spec.core :refer :all]
+            [clojure.test :refer :all]
+            [clojure.walk :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.fun-reader :refer :all]
-            [io.github.hglabplh-tech.test.suite.spy-and-mock.stats-util :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]
+            [io.github.hglabplh-tech.test.suite.spy-and-mock.stats-util :refer :all]
+            [schema.spec.core :refer :all]
             )
   (:import (io.github.hglabplh_tech.tests.utils Utilities)))
 (defrecord CustomMeta [c-stat-key c-stat-val])
@@ -123,15 +123,15 @@
   (when-not (and (= cond? :when) (= delim :<-))
     (throw (java.lang.IllegalArgumentException.
              "Invalid call-cond-> syntax! Expected :when <ret-pred> :<- <args-vect> <when-action> [:else <else-action>]")))
-  (let [fun-meta  (meta fun-var)
-        qual-sym  (symbol (qualified-fun-name fun-meta))
+  (let [fun-meta (meta fun-var)
+        qual-sym (symbol (qualified-fun-name fun-meta))
         args-list (mapv
                     (clojure.core/fn [arg-element]
                       (let [arg-pred-key (first arg-element)
-                            arg-pred     (if (keyword? arg-pred-key)
-                                           (get-type-pred-by-key arg-pred-key)
-                                           arg-pred-key)
-                            parameters   (rest arg-element)]
+                            arg-pred (if (keyword? arg-pred-key)
+                                       (get-type-pred-by-key arg-pred-key)
+                                       arg-pred-key)
+                            parameters (rest arg-element)]
                         (clojure.core/fn [value]
                           (if (and (= :$ (first parameters))
                                    (= (count parameters) 2))
@@ -166,15 +166,12 @@
   "Returns all rules registered for the function described by `fun-meta`."
   [fun-meta]
   (let [unqual-sym (:name fun-meta)
-        qual-sym   (symbol (qualified-fun-name fun-meta))]
+        qual-sym (symbol (qualified-fun-name fun-meta))]
     (filter (clojure.core/fn [rule]
               (let [target (:function-name rule)]
                 (or (= target qual-sym)
                     (= target unqual-sym))))
             @rule-vect)))
-
-
-
 
 (clojure.core/defn get-cached-args-descr
   "Retrieves pre-reflected :args-types-list from @mock-meta, populating @mock-meta if absent."
@@ -192,10 +189,10 @@
 
 (clojure.core/defn get-schema-active-meta
 
-  [all-meta-data gen-meta-data] ;; FIXME metadata have to be overviewed
+  [all-meta-data gen-meta-data]                             ;; FIXME metadata have to be overviewed
   (let [active-fun-meta (get all-meta-data fn-realm-meta-key {})
         schema-meta-data (get all-meta-data :schema)
-        result-meta (conj {:schema schema-meta-data fn-realm-meta-key active-fun-meta}  all-meta-data)]
+        result-meta (conj {:schema schema-meta-data fn-realm-meta-key active-fun-meta} all-meta-data)]
     result-meta
 
     )
@@ -206,8 +203,8 @@
 ;; with using constantly seems to me a very good idea
 
 (clojure.core/defn collect-meta-by-ns [the-fun-ns]
-      (swap! ns-f-meta-atom conj (name the-fun-ns)
-             ))
+  (swap! ns-f-meta-atom conj (name the-fun-ns)
+         ))
 
 (defmacro transfer-fun-meta
   "Macro to set the Meta of the mocked function to a mock"
@@ -247,6 +244,7 @@
                       (assoc (meta (var ~fun-name))
                         to-spy ~fun-name)))
        (var ~fun-name)))
+
 (clojure.core/defn collect-fun-meta-data
   "Populates @mock-meta once per qualified function name if not already cached."
   [fun-meta]
@@ -282,11 +280,11 @@
   (let [{:keys [record? filtered-args]} (apply-param-filter fun-meta fun-args-descr args)]
     (when record?
       (let [recursive-call-depth (get @recur-data-map fun-name 0)
-            recursive-call?      (> recursive-call-depth 1)]
+            recursive-call? (> recursive-call-depth 1)]
         (swap! statistic-control-flow update :flow-stats conj
                [{:name                 fun-name
                  :args                 filtered-args
-                 :pos-named--args      (pspecs/format-args fun-args-descr filtered-args)
+                 :pos-named-args      (pspecs/format-args fun-args-descr filtered-args)
                  :args-descr           fun-args-descr
                  :recursive-call-depth recursive-call-depth
                  :recursive?           recursive-call?
@@ -294,37 +292,39 @@
                  :ret-val              ret-val}])
         (swap! statistic-control-flow update-in [:statistics fun-name]
                (fn [existing]
-                   (-> (or existing {:fun-calls-count 0 :exceptions-count 0})
-                       (assoc :fun-calls-count call-count))))))))
+                 (-> (or existing {:fun-calls-count 0 :exceptions-count 0})
+                     (assoc :fun-calls-count call-count))))))))
 
 (clojure.core/defn collect-flow-statistics
   "Records normal return flow statistics using pre-cached reflection metadata."
   [fun-meta ret-value args]
-  (let [fun-name#        (qualified-fun-name-with-thread-prefix fun-meta)
-        fun-args-descr#  (get-cached-args-descr fun-meta)
-        fun-calls#       (get-in @statistic-control-flow [:statistics fun-name# :fun-calls-count] 0)
+  (let [fun-name# (qualified-fun-name-with-thread-prefix fun-meta)
+        fun-args-descr# (get-cached-args-descr fun-meta)
+        fun-calls# (get-in @statistic-control-flow [:statistics fun-name# :fun-calls-count] 0)
         funcall-counter# (inc fun-calls#)]
     (add-upd-spy-statistics fun-meta fun-name# fun-args-descr# funcall-counter# ret-value args)))
 (def track-exceptions? (atom true))
 
-;; Controls whether/which exceptions are recorded in @statistic-control-flow.
-;; Can be `true` (all exceptions), `false` (none), or a predicate `(fn [ex] ...)`.
-(clojure.core/defn should-track-exception? [ex]
+
+(clojure.core/defn should-track-exception?
+  "Controls whether/which exceptions are recorded in @statistic-control-flow.
+   Can be `true` (all exceptions), `false` (none), or a predicate `(fn [ex] ...)`."
+  [ex]
   (let [policy @track-exceptions?]
     (cond
       (fn? policy) (boolean (policy ex))
-      :else        (boolean policy))))
+      :else (boolean policy))))
 
 (clojure.core/defn collect-exception-statistics
   "Records thrown exception details into @statistic-control-flow using pre-cached reflection metadata."
   [fun-meta ex args]
   (when (should-track-exception? ex)
-    (let [fun-name#        (qualified-fun-name-with-thread-prefix fun-meta)
-          fun-args-descr#  (get-cached-args-descr fun-meta)
-          recursive-call?  (> (get @recur-data-map fun-name# 0) 1)
-          ex-details#      {:class   (.getName (class ex))
-                            :message (.getMessage ex)
-                            :data    (ex-data ex)}]
+    (let [fun-name# (qualified-fun-name-with-thread-prefix fun-meta)
+          fun-args-descr# (get-cached-args-descr fun-meta)
+          recursive-call? (> (get @recur-data-map fun-name# 0) 1)
+          ex-details# {:class   (.getName (class ex))
+                       :message (.getMessage ex)
+                       :data    (ex-data ex)}]
       (swap! statistic-control-flow update :flow-stats conj
              [{:name       fun-name#
                :args       args
@@ -374,31 +374,31 @@
   (let [raw-stats (:flow-stats @statistic-control-flow)]
     raw-stats))
 (clojure.core/defn analyze-call-determinism
-      "Iterates over `:flow-stats` using `loop` and groups calls by `[fun-name args]`.
-       Returns a map of `{[fun-name args-vec] {:call-count n, :return-values [...], :consistent-result? bool}}`."
-      [flow-stats]
-      (loop [entries flow-stats
-             acc     {}]
-        (if (empty? entries)
-          ;; Final pass: compute :consistent-result? (true if all calls with same args yielded the exact same outcome)
-          (into {}
-                (map (fn [[k stats]]
-                       [k (assoc stats :consistent-result? (= 1 (count (set (:outcomes stats)))))]))
-                acc)
-          (let [entry   (first entries)
-                ;; Unwrap [{:name ...}] if wrapped in a single-element vector
-                record  (if (vector? entry) (first entry) entry)
-                call-key [(:name record) (vec (:args record))]
-                outcome  (if (:threw? record)
-                           {:threw (:exception record)}
-                           (:ret-val record))]
-            (recur (rest entries)
-                   (-> acc
-                       (update-in [call-key :call-count] (fnil inc 0))
-                       (update-in [call-key :outcomes] (fnil conj []) outcome)))))))
+  "Iterates over `:flow-stats` using `loop` and groups calls by `[fun-name args]`.
+   Returns a map of `{[fun-name args-vec] {:call-count n, :return-values [...], :consistent-result? bool}}`."
+  [flow-stats]
+  (loop [entries flow-stats
+         acc {}]
+    (if (empty? entries)
+      ;; Final pass: compute :consistent-result? (true if all calls with same args yielded the exact same outcome)
+      (into {}
+            (map (fn [[k stats]]
+                   [k (assoc stats :consistent-result? (= 1 (count (set (:outcomes stats)))))]))
+            acc)
+      (let [entry (first entries)
+            ;; Unwrap [{:name ...}] if wrapped in a single-element vector
+            record (if (vector? entry) (first entry) entry)
+            call-key [(:name record) (vec (:args record))]
+            outcome (if (:threw? record)
+                      {:threw (:exception record)}
+                      (:ret-val record))]
+        (recur (rest entries)
+               (-> acc
+                   (update-in [call-key :call-count] (fnil inc 0))
+                   (update-in [call-key :outcomes] (fnil conj []) outcome)))))))
 
 (clojure.core/defn find-meta-for-fun [function-id]
-      (get @mock-meta function-id))
+  (get @mock-meta function-id))
 
 
 (clojure.core/defn get-spy-statistics-by-funs
@@ -409,42 +409,42 @@
   ([]
    (get-spy-statistics-by-funs nil))
   ([& fun-syms]
-   (let [fun-parts      (->> fun-syms (remove nil?) (mapv str))
-         matches-fun?   (fn [entry-name]
-                          (or (empty? fun-parts)
-                              (some #(str/includes? (str entry-name) %) fun-parts)))
-         raw-stats      (:statistics @statistic-control-flow)
+   (let [fun-parts (->> fun-syms (remove nil?) (mapv str))
+         matches-fun? (fn [entry-name]
+                        (or (empty? fun-parts)
+                            (some #(str/includes? (str entry-name) %) fun-parts)))
+         raw-stats (:statistics @statistic-control-flow)
          selected-stats (into {}
                               (filter (fn [[k _]] (matches-fun? k)))
                               raw-stats)
-         all-flows      (mapv first (:flow-stats @statistic-control-flow))
+         all-flows (mapv first (:flow-stats @statistic-control-flow))
          determinism-analysis (analyze-call-determinism all-flows)
          selected-flows (filterv #(matches-fun? (:name %)) all-flows)
-         exceptions     (filterv :threw? selected-flows)
+         exceptions (filterv :threw? selected-flows)
          normal-returns (filterv (comp not :threw?) selected-flows)
-         recur-vect     (filterv (fn [entry]
-                                   (some matches-fun? (vals entry)))
-                                 @recur-data-vect)
-         recur-map      (into {}
-                              (filter (fn [[k _]] (matches-fun? k)))
-                              @recur-data-map)
-         selected-meta  (into {}
-                              (filter (fn [[k _]] (matches-fun? k)))
-                              @mock-meta)
-         hooked-funs    (->> (keys @redirected-bindings)
-                             (filter matches-fun?)
-                             vec)]
-     {:hooked-functions hooked-funs
-      :selected-stats   selected-stats
-      :summary          {:total-calls      (reduce + 0 (map :fun-calls-count (vals selected-stats)))
-                         :total-exceptions (reduce + 0 (map #(get % :exceptions-count 0) (vals selected-stats)))}
-      :flow-stats       selected-flows
+         recur-vect (filterv (fn [entry]
+                               (some matches-fun? (vals entry)))
+                             @recur-data-vect)
+         recur-map (into {}
+                         (filter (fn [[k _]] (matches-fun? k)))
+                         @recur-data-map)
+         selected-meta (into {}
+                             (filter (fn [[k _]] (matches-fun? k)))
+                             @mock-meta)
+         hooked-funs (->> (keys @redirected-bindings)
+                          (filter matches-fun?)
+                          vec)]
+     {:hooked-functions     hooked-funs
+      :selected-stats       selected-stats
+      :summary              {:total-calls      (reduce + 0 (map :fun-calls-count (vals selected-stats)))
+                             :total-exceptions (reduce + 0 (map #(get % :exceptions-count 0) (vals selected-stats)))}
+      :flow-stats           selected-flows
       :determinism-analysis determinism-analysis
-      :exceptions       exceptions
-      :normal-returns   normal-returns
-      :recursion        {:call-log  recur-vect
-                         :depth-map recur-map}
-      :reflected-meta   selected-meta})))
+      :exceptions           exceptions
+      :normal-returns       normal-returns
+      :recursion            {:call-log  recur-vect
+                             :depth-map recur-map}
+      :reflected-meta       selected-meta})))
 
 (clojure.core/defn- rule-args-match? [rule args]
   (let [predicates (:param-cond (:when-clauses rule))]

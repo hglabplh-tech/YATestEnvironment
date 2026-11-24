@@ -1,0 +1,28 @@
+{:use-cases
+ [{:use-case
+   {:id "store-doc"
+    :steps
+    [{:step       "init"
+      :ns/pkg     io.git.hub
+      :class      DocBuild   ;; symbol for Java/OOP, or :none for Clojure/FP
+      :do-reflect true
+      :step-fun   init-store
+      :reflect-fallback
+      {:params    [0 {:type :string :value "doc-id"}
+                   1 {:type :string :value "user-id"}
+                   2 {:type :boolean :value true}
+                   {:doc-id {:type :keyword :required? true :optional? false :value [:uuid-val] :default :none}}
+                   {:write-format {:type :keyword :required? false :optional? false :value :JSON :default :XML}}
+                   {:resource {:type :keyword :required? false :optional? false :value :database :default :file}}]
+       :ret-value {:type :boolean :await true}}
+      :next-step-if {:cond {:ok {:ret-value true} :else :excp}}}
+
+     {:step       "write"
+      :ns/pkg     io.git.hub
+      :class      :none
+      :do-reflect true
+      :step-fun   store
+      :reflect-fallback
+      {:params    []
+       :ret-value {:type :integer :await 0}}
+      :next-step-if {:cond {:ok {:ret-value 0} :else :excp}}}]}}]}

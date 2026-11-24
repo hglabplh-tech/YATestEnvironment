@@ -3,7 +3,11 @@
             [clojure.spec.alpha :as spec]
             [clojure.spec.gen.alpha :as gen]
             [clojure.string :as str]
-            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :as misc]))
+            [schema.core :as sc]
+            [io.github.hglabplh-tech.test.suite.spy-and-mock.stats-util :as stats]
+            [io.github.hglabplh_tech.test.suite.spy-and-mock.mock-spy-misc-util :as misc]
+            ))
+
 
 ;; =============================================================================
 ;; 1. TYPE / SPEC -> SAMPLE VALUE SYNTHESIZER
@@ -97,7 +101,7 @@
   [fun-sym structured-meta]
   (let [fun-meta     {:name (symbol (name fun-sym))
                       :ns   (some-> (namespace fun-sym) symbol find-ns)}
-        stats-conf   (misc/resolve-stats-conf fun-meta)
+        stats-conf   (stats/resolve-stats-conf fun-meta)
         synthetic    (generate-call-vectors structured-meta stats-conf)
         ;; Also pull any real recorded calls from @statistic-control-flow
         recorded     (->> (get @misc/statistic-control-flow :flow-stats)
