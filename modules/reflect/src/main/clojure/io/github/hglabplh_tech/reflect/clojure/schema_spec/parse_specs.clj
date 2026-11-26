@@ -1,81 +1,40 @@
 (ns io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs
   (:require [clojure.pprint :refer [pprint]]
+            [io.github.hglabplh-tech.reflect.util.misc-utils :as mu]
             [clojure.spec.alpha :as spec]))
 
-(defn- with-type-hint [parameter binding-form]
-  (if-let [hint (:tag (meta binding-form))]
+(defn- with-type-hint [parameter binding-form named?]
+  (if-let [hint
+           (:tag (meta binding-form))]
     (assoc parameter :type-hint hint)
     parameter))
 
 (clojure.core/defn printerr [& args]
   (binding [*out* *err*]
     (apply println args)))
+(defn resolve-leaf-spec
+  "Recursively unwraps a spec keyword or spec form into its underlying predicate/description."
+  ([spec-or-kw]
+   (resolve-leaf-spec spec-or-kw #{}))
+  ([spec-or-kw seen]
+   (cond
+     ;; Prevent cycles if specs reference themselves
+     (contains? seen spec-or-kw)
+     spec-or-kw
 
-(defn reflect-mixed-params
-  "Reflect the first arity's positional, named and rest parameters.
-   Preserve specs and defaults; include :type-hint only when declared."
-  [fun-meta]
-  (loop [result-list []
-         raw-args-list (:arglists fun-meta)]
-    (if (empty? raw-args-list)
-      result-list
-      (let [func-name (symbol (str (:ns fun-meta) "/" (:name fun-meta)))
-            raw-args (first raw-args-list)
-            fixed-args (take-while #(not= '& %) raw-args)
-            rest-arg (second (drop-while #(not= '& %) raw-args))
-            destructured-map (first (filter map? (concat fixed-args [rest-arg])))
-            spec-form (when-let [sp (spec/get-spec func-name)]
-                        (spec/describe sp))
-            flat-spec-lookup (apply hash-map (rest spec-form))
-            args-spec (:args flat-spec-lookup)
-            pos-specs (when (and (seq? args-spec)
-                                 (contains? #{'cat 'clojure.spec.alpha/cat}
-                                            (first args-spec)))
-                        (mapv second (partition 2 (rest args-spec))))
-            keys-spec-form (->> args-spec
-                                (tree-seq coll? seq)
-                                (filter #(and (seq? %)
-                                              (contains? #{'keys 'clojure.spec.alpha/keys}
-                                                         (first %))))
-                                first)
-            keys-map (when keys-spec-form
-                       (apply hash-map (rest keys-spec-form)))
-            req-keys (set (map (comp symbol name) (:req-un keys-map)))
-            opt-keys (set (map (comp symbol name) (:opt-un keys-map)))
-            return-hint (or (:tag fun-meta) (:tag (meta raw-args)))
-            result
-            {:function-name func-name
-             :positional-parameters
-             (->> fixed-args
-                  (map-indexed
-                    (fn [position binding-form]
-                      (when (symbol? binding-form)
-                        (with-type-hint
-                          {:param    binding-form
-                           :position position
-                           :spec     (get pos-specs position)}
-                          binding-form))))
-                  (remove nil?)
-                  vec)
-             :named-parameters
-             (when destructured-map
-               (let [defaults (:or destructured-map)]
-                 (into {}
-                       (map (fn [k]
-                              [k (with-type-hint
-                                   {:required? (contains? req-keys k)
-                                    :optional? (contains? opt-keys k)
-                                    :default   (get defaults k :none)}
-                                   k)]))
-                       (:keys destructured-map))))
-             :return-spec   (:ret flat-spec-lookup)}]
-        (recur (conj result-list (cond-> result
-                                         return-hint (assoc :return-type-hint return-hint)
-                                         (symbol? rest-arg)
-                                         (assoc :rest-parameter
-                                                (with-type-hint {:param rest-arg :variadic? true} rest-arg))))
-               (rest raw-args-list))
-        ))))
+     ;; Registered keyword spec (e.g., :my-app/recipient) -> look up and describe
+     (keyword? spec-or-kw)
+     (if-let [sub-spec (spec/get-spec spec-or-kw)]
+       (resolve-leaf-spec (spec/describe sub-spec) (conj seen spec-or-kw))
+       spec-or-kw)
+
+     ;; Already a raw Spec object -> describe it first
+     (spec/spec? spec-or-kw)
+     (resolve-leaf-spec (spec/describe spec-or-kw) (conj seen spec-or-kw))
+
+     ;; Predicate symbol or form (e.g., string?, int?, (and int? pos?))
+     :else
+     spec-or-kw)))
 
 (defn- select-param-list [fun-args-descr arg-count]
   (let [valid-arities (filter #(<= (count (:positional-parameters %)) arg-count)
@@ -89,6 +48,94 @@
                                              (when (= item min-val) idx))
                                            min-diff-vect))]
     (nth candidates index-of-min)))
+(clojure.core/defn reflect-mixed-params
+  "Reflect each arity's positional, named, and rest parameters.
+   Preserves specs, resolved leaf predicates (:spec-type), and defaults;
+   includes :type-hint only when declared."
+  [fun-meta]
+  (loop [result-list   []
+         raw-args-list (:arglists fun-meta)]
+    (if (empty? raw-args-list)
+      result-list
+      (let [func-name        (symbol (str (:ns fun-meta) "/" (:name fun-meta)))
+            raw-args         (first raw-args-list)
+            fixed-args       (take-while #(not= '& %) raw-args)
+            rest-arg         (second (drop-while #(not= '& %) raw-args))
+            destructured-map (first (filter map? (concat fixed-args [rest-arg])))
+            spec-form        (when-let [sp (spec/get-spec func-name)]
+                               (spec/describe sp))
+            flat-spec-lookup (when spec-form
+                               (apply hash-map (rest spec-form)))
+            args-spec        (:args flat-spec-lookup)
+            pos-specs        (when (and (seq? args-spec)
+                                        (contains? #{'cat 'clojure.spec.alpha/cat}
+                                                   (first args-spec)))
+                               (mapv second (partition 2 (rest args-spec))))
+            ;; FIX 1: Include 'keys* and 'clojure.spec.alpha/keys* alongside 'keys
+            keys-spec-form   (->> args-spec
+                                  (tree-seq coll? seq)
+                                  (filter #(and (seq? %)
+                                                (contains? #{'keys 'clojure.spec.alpha/keys
+                                                             'keys* 'clojure.spec.alpha/keys*}
+                                                           (first %))))
+                                  first)
+            keys-map         (when keys-spec-form
+                               (apply hash-map (rest keys-spec-form)))
+            ;; Collect all registered spec keywords from :req, :req-un, :opt, :opt-un
+            all-req-specs    (concat (:req keys-map) (:req-un keys-map))
+            all-opt-specs    (concat (:opt keys-map) (:opt-un keys-map))
+            ;; Map local symbol (e.g. 'greeting) -> qualified spec keyword (e.g. :my-app/greeting)
+            named-spec-by-sym (into {}
+                                    (map (fn [spec-kw] [(symbol (name spec-kw)) spec-kw]))
+                                    (concat all-req-specs all-opt-specs))
+            req-keys         (set (map (comp symbol name) all-req-specs))
+            opt-keys         (set (map (comp symbol name) all-opt-specs))
+            return-hint      (or (:tag fun-meta) (:tag (meta raw-args)))
+            ret-spec-raw     (:ret flat-spec-lookup)
+            result
+            {:function-name func-name
+             :positional-parameters
+             (->> fixed-args
+                  (map-indexed
+                    (fn [position binding-form]
+                      (when (symbol? binding-form)
+                        (let [p-spec (get pos-specs position)]
+                          (with-type-hint
+                            {:param     binding-form
+                             :position  position
+                             :spec      p-spec
+                             ;; FIX 2: Resolve the registered spec keyword/form, not the local symbol
+                             :spec-type (when p-spec (resolve-leaf-spec p-spec))}
+                            binding-form false)))))
+                  (remove nil?)
+                  vec)
+             :named-parameters
+             (when destructured-map
+               (let [defaults (:or destructured-map)]
+                 (into {}
+                       (map (fn [k]
+                              (let [spec-kw (get named-spec-by-sym k)]
+                                [k (with-type-hint
+                                     {:required? (contains? req-keys k)
+                                      :optional? (contains? opt-keys k)
+                                      :req-keys  (if (contains? req-keys k) req-keys :none)
+                                      :opt-keys  (if (contains? opt-keys k) opt-keys :none)
+                                      :spec      spec-kw
+                                      ;; FIX 3: Resolve the qualified spec keyword (e.g. :my-app/greeting -> string?)
+                                      :spec-type (when spec-kw (resolve-leaf-spec spec-kw))
+                                      :default   (get defaults k :none)}
+                                     k true)])))
+                       (:keys destructured-map))))
+             :return-spec      ret-spec-raw
+             :return-spec-type (when ret-spec-raw (resolve-leaf-spec ret-spec-raw))}]
+        (recur (conj result-list
+                     (cond-> result
+                             return-hint (assoc :return-type-hint return-hint)
+                             (symbol? rest-arg)
+                             (assoc :rest-parameter
+                                    (with-type-hint {:param rest-arg :variadic? true} rest-arg false))))
+               (rest raw-args-list))))))
+
 
 (defn- format-pos-args
   [fun-args-descr arguments]
@@ -136,6 +183,8 @@
                  (rest named-param-keys)
                  (rest named-param-keys-kwd)
                  (rest named-param-values)))))))
+
+
 
 
 (clojure.core/defn format-args [fun-args-descr arguments]

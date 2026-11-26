@@ -51,6 +51,17 @@
           (.toUpperCase msg)
           msg)))
 
+(clojure.core/defn format-message-typed
+  "Formats a message with positional arguments and optional named parameters."
+  [^String recipient ^String body & {:keys [^String greeting ^String punctuation ^boolean uppercase?]
+                     :or   {greeting "Hello"
+                            punctuation "!"
+                            uppercase? false}}]
+  (let [msg (str greeting ", " recipient ": " body punctuation)]
+    (if uppercase?
+      (.toUpperCase msg)
+      msg)))
+
 (defn fun-store-being-spyed :- realm/boolean
       [msg :- realm/string a :- realm/number b :- realm/number]
   (let [res (* a b)]
@@ -65,7 +76,7 @@
     [(fun-store-being-spyed "Inner call: " 5 6) result])
   ))
 
-(prolog to-spy  my-enum-test try-it fun-store-being-spyed factorial factorial-wo-recur format-message)
+(prolog to-spy  my-enum-test try-it fun-store-being-spyed factorial factorial-wo-recur format-message format-message-typed)
 (prolog to-mock  i-am-a-fake-fun )
 (deftest test-extended-mock
   (testing "the extended mock"
@@ -124,6 +135,7 @@
     (factorial 10)
     (factorial-wo-recur 10)
     (format-message "Bob" "Server is down" :uppercase? true :greeting "Alert")
+    (format-message-typed "Abby" "The bears gone crazy" :uppercase? true :greeting "Tilt")
     (println "=============== mock-meta==============================")
     ;;(pprint @mock-meta)
     (println "=============== END mock-meta==============================")

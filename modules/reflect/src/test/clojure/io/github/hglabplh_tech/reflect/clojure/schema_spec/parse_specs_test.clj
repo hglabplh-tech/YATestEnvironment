@@ -1,6 +1,10 @@
 (ns io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs-test
   (:require [clojure.pprint :refer :all]
             [clojure.test :refer :all]
+            [io.github.hglabplh-tech.tests.utils.general-utils :as utils]
+            [clojure.spec.alpha :as s]
+            [io.github.hglabplh-tech.reflect.clojure.fun-reader :as fr]
+            [io.github.hglabplh-tech.reflect.examples.clojure.complex.mixed-defs :refer :all]
             [io.github.hglabplh-tech.reflect.clojure.schema-spec.parse-specs :as pspecs]))
 
 (defn very-simple [n m]
@@ -20,20 +24,67 @@
    (if (zero? n)
      acc
      (recur (dec n) (*' acc n) {sense true}))))
+(s/def ::recipient string?)
+(s/def ::body string?)
+(s/def ::greeting string?)
+(s/def ::punctuation string?)
+(s/def ::uppercase? boolean?)
+
+(s/fdef format-message
+        :args (s/cat :recipient string?
+                     :body      string?
+                     :opts      (s/keys :req-un [::greeting ] :opt-un [::punctuation ::uppercase?]))
+        :ret  string?
+        :fn   (fn [{:keys [args ret]}]
+                ;; Optional behavioral invariant: if :uppercase? was true, output must be uppercase
+                (if (get-in args [:opts :uppercase?])
+                  (= ret (.toUpperCase ^String ret))
+                  true)))
+
+(clojure.core/defn format-message
+  "Formats a message with positional arguments and optional named parameters."
+  [recipient body & {:keys [greeting punctuation uppercase?]
+                     :or   {greeting "Hello"
+                            punctuation "!"
+                            uppercase? false}}]
+  (let [msg (str greeting ", " recipient ": " body punctuation)]
+    (if uppercase?
+      (.toUpperCase msg)
+      msg)))
+
+(clojure.core/defn format-message-typed
+  "Formats a message with positional arguments and optional named parameters."
+  [^String recipient ^String body & {:keys [^String greeting ^String punctuation ^Boolean uppercase?]
+                                     :or   {greeting "Hello"
+                                            punctuation "!"
+                                            uppercase? false}}]
+  (let [msg (str greeting ", " recipient ": " body punctuation)]
+    (if uppercase?
+      (.toUpperCase msg)
+      msg)))
 
 (deftest parse-multiple-arity-fun (testing "functions with multiple arity definitions mata-data parsing"
                                     (let [meta-vsimple (meta #'very-simple)
                                           meta-data-fact (meta #'fact)
                                           meta-data-fact-ext (meta #'fact-extended)
+                                          meta-data-format (meta #'format-message)
+                                          meta-data-format-typed (meta #'format-message-typed)
                                           param-def-vsimple (pspecs/reflect-mixed-params meta-vsimple)
                                           param-def-fact (pspecs/reflect-mixed-params meta-data-fact)
-                                          param-def-fact-ext (pspecs/reflect-mixed-params meta-data-fact-ext)]
-                                      (pprint meta-vsimple)
-                                      (pprint meta-data-fact)
-                                      (pprint meta-data-fact-ext)
+                                          param-def-fact-ext (pspecs/reflect-mixed-params meta-data-fact-ext)
+                                          param-def-format (pspecs/reflect-mixed-params meta-data-format)
+                                          param-def-format-typed (pspecs/reflect-mixed-params meta-data-format-typed)]
+                                      (utils/print-all-meta meta-vsimple)
+                                      (utils/print-all-meta meta-data-fact)
+                                      (utils/print-all-meta meta-data-fact-ext)
+                                      (utils/print-all-meta meta-data-format)
+                                      (utils/print-all-meta meta-data-format-typed)
+                                      (pprint (fr/get-structured-meta-data meta-data-format))
                                       (pprint param-def-vsimple)
                                       (pprint param-def-fact)
                                       (pprint param-def-fact-ext)
+                                      (pprint param-def-format)
+                                      (pprint param-def-format-typed)
                                       )))
 
 (deftest test-parm-arg-coll-build (testing "test param arguments as collection build"
