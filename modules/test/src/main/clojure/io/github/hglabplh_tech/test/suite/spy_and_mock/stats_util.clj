@@ -122,7 +122,7 @@
     (merge schema-defaults runtime-map)))
 
 (defn apply-param-filter
-  "Uses `args-descr` (from `pspecs/reflect-mixed-params`) to filter/transform
+  "Uses `args-descr` (from `reflect-mixed-params`) to filter/transform
    positional and named `args` according to `:stats-config` in `fun-meta`.
    Returns `{:record? bool :filtered-args [...]}`."
   [fun-meta args-descr args]
